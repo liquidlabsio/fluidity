@@ -71,10 +71,10 @@
 <!--            </resource>-->
 <!--        </resources>-->
 <!--        <testSourceDirectory>test</testSourceDirectory>-->
-<!--        <testResources>-->
-<!--            <testResource>-->
-<!--            <directory>test-data</directory>-->
-<!--        </testResource></testResources>-->
+        <testResources>
+            <testResource>
+            <directory>test-data</directory>
+        </testResource></testResources>
 
         <pluginManagement>
             <plugins>
