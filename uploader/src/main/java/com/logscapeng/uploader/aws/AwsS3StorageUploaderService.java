@@ -57,7 +57,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
             // Create a list of ETag objects. You retrieve ETags for each object part uploaded,
             // then, after each individual part has been uploaded, pass the list of ETags to
             // the request to complete the upload.
-            List<PartETag> partETags = new ArrayList<PartETag>();
+            List<PartETag> partETags = new ArrayList<>();
 
             // Initiate the multipart upload.
             InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucketName, filePath, objectMetadata);
@@ -87,7 +87,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
                 filePosition += partSize;
             }
 
-            System.out.println("ETags:" + partETags);
+            log.debug("ETags:" + partETags);
             // Complete the multipart upload.
             CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, filePath,
                     initResponse.getUploadId(), partETags);
@@ -95,16 +95,15 @@ public class AwsS3StorageUploaderService implements StorageUploader {
         } catch (AmazonServiceException e) {
             // The call was transmitted successfully, but Amazon S3 couldn't process
             // it, so it returned an error response.
-            e.printStackTrace();
+            log.error("AmazonServiceException S3 Upload failed to process:{}", upload, e);
         } catch (SdkClientException e) {
             // Amazon S3 couldn't be contacted for a response, or the client
             // couldn't parse the response from Amazon S3.
-            e.printStackTrace();
+            log.error("SdkClientException S3 not responding:{}", upload, e);
         } finally {
             file.delete();
         }
         return String.format("file:%s was uploaded", upload.filename);
-
     }
 
     private File createTempFile(byte[] filecontent) {
@@ -116,6 +115,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
             fos.close();
             return tempFile;
         } catch (IOException e) {
+            log.error("Failed to created temp file:{}", e);
             e.printStackTrace();
         }
         throw new RuntimeException("Failed to create temp file");
