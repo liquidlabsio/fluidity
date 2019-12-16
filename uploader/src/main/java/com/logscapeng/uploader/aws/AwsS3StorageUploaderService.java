@@ -1,4 +1,4 @@
-package com.liquidlabs.logscapeng.uploader;
+package com.logscapeng.uploader.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
@@ -7,7 +7,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import org.apache.commons.io.IOUtils;
+import com.logscapeng.uploader.FileMeta;
+import com.logscapeng.uploader.StorageUploader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -17,20 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
-public class AWSS3UploaderService {
+public class AwsS3StorageUploaderService implements StorageUploader {
 
+    private final Logger log = LogManager.getLogger(AwsS3StorageUploaderService.class);
 
+    @Override
+    public String upload(FileMeta upload, String region) {
+        log.info("uploading:" + upload);
 
-    public String upload(UploadMeta upload) {
-        Regions clientRegion = Regions.EU_WEST_2;
-        String bucketName = upload.tenant;
-        String keyName = upload.resource + "/" + upload.filename;
+        Regions clientRegion = Regions.fromName(region);
+        String bucketName = upload.getTenantWithDate();
         String filePath = upload.resource + "/" + upload.filename;
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.addUserMetadata("tags", upload.tags);
         objectMetadata.addUserMetadata("tenant", upload.tenant);
-        objectMetadata.addUserMetadata("length", ""+upload.filecontent.length);
+        objectMetadata.addUserMetadata("length", "" + upload.filecontent.length);
 
 
         File file = createTempFile(upload.filecontent);
@@ -44,8 +49,9 @@ public class AWSS3UploaderService {
                     .build();
 
 
-            if (!s3Client.doesBucketExistV2(upload.tenant)) {
-                s3Client.createBucket(upload.tenant);
+            if (!s3Client.doesBucketExistV2(bucketName)) {
+                log.info("Bucket:{} doesnt exist, creating", bucketName);
+                s3Client.createBucket(bucketName);
             }
 
             // Create a list of ETag objects. You retrieve ETags for each object part uploaded,
@@ -54,7 +60,7 @@ public class AWSS3UploaderService {
             List<PartETag> partETags = new ArrayList<PartETag>();
 
             // Initiate the multipart upload.
-            InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucketName, keyName, objectMetadata);
+            InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucketName, filePath, objectMetadata);
             InitiateMultipartUploadResult initResponse = s3Client.initiateMultipartUpload(initRequest);
 
 
@@ -67,7 +73,7 @@ public class AWSS3UploaderService {
                 // Create the request to upload a part.
                 UploadPartRequest uploadRequest = new UploadPartRequest()
                         .withBucketName(bucketName)
-                        .withKey(keyName)
+                        .withKey(filePath)
                         .withUploadId(initResponse.getUploadId())
                         .withPartNumber(i)
                         .withFileOffset(filePosition)
@@ -83,7 +89,7 @@ public class AWSS3UploaderService {
 
             System.out.println("ETags:" + partETags);
             // Complete the multipart upload.
-            CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, keyName,
+            CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, filePath,
                     initResponse.getUploadId(), partETags);
             s3Client.completeMultipartUpload(compRequest);
         } catch (AmazonServiceException e) {
@@ -97,8 +103,7 @@ public class AWSS3UploaderService {
         } finally {
             file.delete();
         }
-
-        return "yay";
+        return String.format("file:%s was uploaded", upload.filename);
 
     }
 
@@ -120,7 +125,7 @@ public class AWSS3UploaderService {
     public static void main(String[] args) throws IOException {
         Regions clientRegion = Regions.DEFAULT_REGION;
         String bucketName = "*** Bucket name ***";
-        String keyName =  "*** Key name ***";
+        String keyName = "*** Key name ***";
         String filePath = "*** Path to file to upload ***";
 
         File file = new File(filePath);
@@ -179,7 +184,6 @@ public class AWSS3UploaderService {
             e.printStackTrace();
         }
     }
-
 
 
 }
