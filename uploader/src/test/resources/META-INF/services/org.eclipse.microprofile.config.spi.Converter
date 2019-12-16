@@ -1,2 +1,2 @@
-com.logscapeng.uploader.FixturedStorageConvertor
-#com.logscapeng.uploader.aws.AwsStorageConvertor
+com.logscapeng.uploader.fixture.FixturedStorageConverter
+#com.logscapeng.uploader.aws.AwsStorageConverter

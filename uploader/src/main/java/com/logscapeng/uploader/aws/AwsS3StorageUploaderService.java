@@ -24,6 +24,10 @@ public class AwsS3StorageUploaderService implements StorageUploader {
 
     private final Logger log = LogManager.getLogger(AwsS3StorageUploaderService.class);
 
+    public AwsS3StorageUploaderService(){
+        log.info("CREATED:");
+    }
+
     @Override
     public String upload(FileMeta upload, String region) {
         log.info("uploading:" + upload);
