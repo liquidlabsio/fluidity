@@ -56,12 +56,5 @@ jobs:
           command: ./mvnw -Daws.region=eu-west-2 test
 
 
-
 #      - run: mvn package install -Dmaven.test.skip=true
-#      - run: mvn dependency:go-offline
-
-
-
-      # run tests!
       #- run: mvn integration-test
-      - run: mvn -Dprofile=test test
