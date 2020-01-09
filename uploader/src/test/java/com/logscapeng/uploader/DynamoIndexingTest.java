@@ -31,6 +31,17 @@ public class DynamoIndexingTest {
 
     @BeforeAll
     static void startContainer() {
+        // Note: CIRCLE CI AWS credential for when error msg below received
+        // 13:54:22 WARN  [software.amazon.awssdk.regions.internal.util.EC2MetadataUtils] Unable to retrieve the requested metadata.
+        //software.amazon.awssdk.core.exception.SdkClientException: Unable to load region from any of the providers in the chain
+        // software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain@3ef0e576:
+        // [software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider@79604abe:
+        // Unable to load region from system settings. Region must be specified either via environment variable (AWS_REGION)
+        // or  system property (aws.region).,
+        // software.amazon.awssdk.regions.providers.AwsProfileRegionProvider@5834198f: No region provided in profile: default,
+        // software.amazon.awssdk.regions.providers.InstanceProfileRegionProvider@5d84e363: Unable to retrieve region information from EC2 Metadata service.
+        // Please make sure the application is running on EC2.]
+        System.setProperty("aws.region", "eu-west-2");
         // create it here to prevent non-related classes from creating the static instance
         dynamoDB = new LocalDynamoDbContainer();
         dynamoDB.start();
