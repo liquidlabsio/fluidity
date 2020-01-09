@@ -28,6 +28,9 @@
         <spotbugs.maven.plugin.version>3.1.12</spotbugs.maven.plugin.version>
         <junit.version>4.12</junit.version>
 
+        <dynamodblocal.version>1.11.86</dynamodblocal.version>
+        <dynamodblocal.repository.url>https://s3-us-west-2.amazonaws.com/dynamodb-local/release</dynamodblocal.repository.url>
+
     </properties>
 
     <modules>
@@ -36,21 +39,13 @@
 
 
     <dependencies>
-
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.12.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.12.1</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.30</version>
         </dependency>
 
-
-
-        <!-- Required for running tests -->
+        <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -141,7 +136,7 @@
                     <reuseForks>false</reuseForks>
                     <workingDirectory>${project.build.directory}/..</workingDirectory>
                     <systemPropertyVariables>
-                        <log4j.configuration>file:${project.basedir}/../common/log4j.properties</log4j.configuration>
+<!--                        <log4j.configuration>file:${project.basedir}/../common/log4j.properties</log4j.configuration>-->
                     </systemPropertyVariables>
                     <argLine>-Dlog4j.debug=false  -Dfile.encoding:ISO-8859-1 -verbose:gc -Xloggc:"${project.build.directory}/gc.log"</argLine>
                     <excludes>
@@ -195,4 +190,11 @@
 
         </plugins>
     </reporting>
+    <repositories>
+        <repository>
+            <id>dynamodb-local</id>
+            <name>DynamoDB Local Release Repository</name>
+            <url>${dynamodblocal.repository.url}</url>
+        </repository>
+    </repositories>
 </project>

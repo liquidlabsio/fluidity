@@ -9,8 +9,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.logscapeng.uploader.FileMeta;
 import com.logscapeng.uploader.StorageUploader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -22,14 +22,16 @@ import java.util.List;
 @ApplicationScoped
 public class AwsS3StorageUploaderService implements StorageUploader {
 
-    private final Logger log = LogManager.getLogger(AwsS3StorageUploaderService.class);
+    private final Logger log = LoggerFactory.getLogger(AwsS3StorageUploaderService.class);
+
+
 
     public AwsS3StorageUploaderService(){
         log.info("CREATED:");
     }
 
     @Override
-    public String upload(FileMeta upload, String region) {
+    public FileMeta upload(final FileMeta upload, final String region) {
         log.info("uploading:" + upload);
 
         Regions clientRegion = Regions.fromName(region);
@@ -37,7 +39,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
         String filePath = upload.resource + "/" + upload.filename;
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.addUserMetadata("tags", upload.tags);
+        objectMetadata.addUserMetadata("tags", upload.getTags().toString());
         objectMetadata.addUserMetadata("tenant", upload.tenant);
         objectMetadata.addUserMetadata("length", "" + upload.filecontent.length);
 
@@ -55,7 +57,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
 
             if (!s3Client.doesBucketExistV2(bucketName)) {
                 log.info("Bucket:{} doesnt exist, creating", bucketName);
-                s3Client.createBucket(bucketName);
+                Bucket bucket = s3Client.createBucket(bucketName);
             }
 
             // Create a list of ETag objects. You retrieve ETags for each object part uploaded,
@@ -95,7 +97,10 @@ public class AwsS3StorageUploaderService implements StorageUploader {
             // Complete the multipart upload.
             CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, filePath,
                     initResponse.getUploadId(), partETags);
-            s3Client.completeMultipartUpload(compRequest);
+            CompleteMultipartUploadResult completeMultipartUploadResult = s3Client.completeMultipartUpload(compRequest);
+
+            upload.storageUrl = completeMultipartUploadResult.getLocation();
+
         } catch (AmazonServiceException e) {
             // The call was transmitted successfully, but Amazon S3 couldn't process
             // it, so it returned an error response.
@@ -107,7 +112,8 @@ public class AwsS3StorageUploaderService implements StorageUploader {
         } finally {
             file.delete();
         }
-        return String.format("file:%s was uploaded", upload.filename);
+
+        return upload;
     }
 
     private File createTempFile(byte[] filecontent) {
