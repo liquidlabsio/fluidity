@@ -53,7 +53,7 @@ jobs:
           command: ./mvnw clean package -DskipTests -Dmaven.test.skip=true
       - run:
           name: Verify (Standard)
-          command: ./mvnw test
+          command: ./mvnw -Daws.region=eu-west-2 test
 
 
 
