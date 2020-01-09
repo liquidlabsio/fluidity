@@ -25,6 +25,10 @@ public class UploaderResource {
     @ConfigProperty(name = "storage.uploader")
     StorageUploader uploader;
 
+    @ConfigProperty(name = "storage.indexer")
+    StorageIndexer indexer;
+
+
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String id() {
@@ -36,6 +40,15 @@ public class UploaderResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
     public Response uploadFile(@MultipartForm FileMeta fileMeta) {
-        return Response.status(200).entity(uploader.upload(fileMeta, cloudRegion)).build();
+
+        // this series of actions should be put on an event queue
+        FileMeta indexedFile = indexer.enrichMeta(fileMeta);
+        FileMeta storedAndIndexedFile = uploader.upload(indexedFile, cloudRegion);
+        // ideally we would trigger an indexing function from the S3 bucket write.
+        // for now Im doing it in process here.
+        FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
+
+
+        return Response.status(200).entity("Uploaded and Indexed:" + stored).build();
     }
 }

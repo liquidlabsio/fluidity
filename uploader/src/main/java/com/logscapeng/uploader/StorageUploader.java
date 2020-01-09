@@ -1,5 +1,11 @@
 package com.logscapeng.uploader;
 
 public interface StorageUploader {
-    String upload(FileMeta upload, String region);
+    /**
+     * Store and Capture the Storage URL
+     * @param upload
+     * @param region
+     * @return
+     */
+    FileMeta upload(FileMeta upload, String region);
 }

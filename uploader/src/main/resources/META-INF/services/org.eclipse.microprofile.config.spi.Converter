@@ -1,1 +1,2 @@
 com.logscapeng.uploader.aws.AwsStorageConverter
+com.logscapeng.uploader.fixture.FixturedIndexConverter

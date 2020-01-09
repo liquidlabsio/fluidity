@@ -1,30 +1,40 @@
 package com.logscapeng.uploader;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
 /**
  * Captured relevant file meta data: name, location, source, size, tags etc
  */
+@RegisterForReflection
 public class FileMeta {
+    public long getFromTime() {
+        return fromTime;
+    }
 
-    @FormParam("tenant")
-    @PartType(MediaType.TEXT_PLAIN)
-    public String tenant;
+    public void setFromTime(long fromTime) {
+        this.fromTime = fromTime;
+    }
 
-    @FormParam("resource")
-    @PartType(MediaType.TEXT_PLAIN)
-    public String resource;
+    public long getToTime() {
+        return toTime;
+    }
 
-    @FormParam("tags")
-    @PartType(MediaType.TEXT_PLAIN)
-    public String tags;
+    public void setToTime(long toTime) {
+        this.toTime = toTime;
+    }
+
+    public boolean isMatch(String filenamePart, String tagNamePart) {
+        return this.filename.contains(filenamePart) && this.getTags().contains(tagNamePart);
+    }
+
+    // This is used to help with ORM mappings
+    public enum Fields { filename, filecontent, tenant, resource, tags, storageUrl, fromTime, toTime}
 
     @FormParam("filename")
     @PartType(MediaType.TEXT_PLAIN)
@@ -34,13 +44,53 @@ public class FileMeta {
     @PartType(MediaType.APPLICATION_OCTET_STREAM)
     public byte[] filecontent;
 
+    @FormParam("tenant")
+    @PartType(MediaType.TEXT_PLAIN)
+    public String tenant;
+
+    @FormParam("resource")
+    @PartType(MediaType.TEXT_PLAIN)
+    public String resource;
+
+    @FormParam("fromTime")
+    @PartType(MediaType.TEXT_PLAIN)
+    public long fromTime;
+
+    @FormParam("toTime")
+    @PartType(MediaType.TEXT_PLAIN)
+    public long toTime;
+
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    /**
+     * Note: tags is a collection - but cannot be passed through a form
+     * as such, so use a String and leave delimitation up to the user
+     */
+    @FormParam("tags")
+    @PartType(MediaType.TEXT_PLAIN)
+    public String tags;
+
+    @FormParam("storageUrl")
+    @PartType(MediaType.TEXT_PLAIN)
+    public String storageUrl;
+
+
     public FileMeta(){};
-    public FileMeta(String tenant, String resource, String[] tags, String filename, byte[] filecontent) {
+    public FileMeta(String tenant, String resource, String tags, String filename, byte[] filecontent, long fromTime, long toTime) {
         this.tenant = tenant;
         this.resource = resource;
-        this.tags = Arrays.toString(tags);
+        this.tags = tags;
         this.filename = filename;
         this.filecontent = filecontent;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
     }
 
     public String getTenantWithDate() {
@@ -58,5 +108,65 @@ public class FileMeta {
                 ", filename='" + filename + '\'' +
                 ", filecontent=" + Arrays.toString(filecontent) +
                 '}';
+    }
+
+    public String getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(String tenant) {
+        this.tenant = tenant;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FileMeta fileMeta = (FileMeta) o;
+
+        if (!filename.equals(fileMeta.filename)) return false;
+        if (!tenant.equals(fileMeta.tenant)) return false;
+        return resource.equals(fileMeta.resource);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = filename.hashCode();
+        result = 31 * result + tenant.hashCode();
+        result = 31 * result + resource.hashCode();
+        return result;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public byte[] getFilecontent() {
+        return filecontent;
+    }
+
+    public void setFilecontent(byte[] filecontent) {
+        this.filecontent = filecontent;
+    }
+
+    public String getStorageUrl() {
+        return storageUrl;
+    }
+
+    public void setStorageUrl(String storageUrl) {
+        this.storageUrl = storageUrl;
     }
 }

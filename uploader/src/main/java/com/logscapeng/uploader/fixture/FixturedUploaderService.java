@@ -2,19 +2,19 @@ package com.logscapeng.uploader.fixture;
 
 import com.logscapeng.uploader.FileMeta;
 import com.logscapeng.uploader.StorageUploader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FixturedUploaderService implements StorageUploader {
-    private final Logger log = LogManager.getLogger(FixturedUploaderService.class);
+    private final Logger log = LoggerFactory.getLogger(FixturedUploaderService.class);
 
     public FixturedUploaderService(){
-        log.warn("Created");
+        log.info("CREATED");
     }
 
     @Override
-    public String upload(FileMeta upload, String region) {
-        log.warn("uploading:" + upload);
-        return getClass().getSimpleName() + " uploaded:" + upload;
+    public FileMeta upload(FileMeta upload, String region) {
+        log.info("uploading:" + upload);
+        return upload;
     }
 }
