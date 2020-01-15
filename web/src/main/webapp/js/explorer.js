@@ -1,5 +1,6 @@
 // define pub-sub topics
 Logscape.Explorer.Topics = {
+    uploadFile: 'explorerUploadFile',
     getListFiles: 'explorerGetListFiles',
     setListFiles: 'explorerSetListFiles',
     getFileContent: 'explorerGetFileContent',
@@ -42,9 +43,9 @@ Logscape.Explorer.FileList = function (table) {
                 sPaginationType: "full_numbers",
                 iDisplayLength: 20,
                 aoColumns: [
-                    { mData: "name", bVisible: true },
-                    { mData: "tag" },
-                    { mData: "host" },
+                    { mData: "filename", bVisible: true },
+                    { mData: "tags" },
+                    { mData: "resource" },
                     { mData: "size" },
                     { mData: "from" },
                     { mData: "to" }
@@ -68,12 +69,18 @@ Logscape.Explorer.FileList = function (table) {
     })
     function setListing(listing) {
         dataTable.fnClearTable()
-        jQuery.each(listing, function (i, item) {
-            item.volume = 0
-            item.actions = "<a class='ds_search fa fa-search btn btn-link' dsid='" + item.id + "' href='#' title='Search against this'></a> <a class='ds_remove fa fa-times btn btn-link' dsid='" + item.id + "' href='#' title='Delete'></a><a class='ds_reindex fa fa-repeat btn btn-link ' dsid='" + item.id + "' href='#' title='ReIndex'></a> "
-        })
-        dataTable.fnAddData(listing)
-        sources = listing.files
+        if (listing.length >0) {
+            jQuery.each(listing, function (i, item) {
+                item.volume = 0
+                item.size = Number(item.sizeBytes/1024).toLocaleString()  + "Kb"
+                item.from = new Date(item.fromTime).toLocaleString();
+                item.to =  new Date(item.toTime).toLocaleString();
+                // item.actions = "<a class='ds_search fa fa-search btn btn-link' dsid='" + item.id + "' href='#' title='Search against this'></a> <a class='ds_remove fa fa-times btn btn-link' dsid='" + item.id + "' href='#' title='Delete'></a><a class='ds_reindex fa fa-repeat btn btn-link ' dsid='" + item.id + "' href='#' title='ReIndex'></a> "
+            })
+            dataTable.fnAddData(listing)
+            sources = listing.files
+        }
+
     }
 
     function refreshIt() {

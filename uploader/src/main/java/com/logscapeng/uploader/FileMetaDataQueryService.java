@@ -1,8 +1,9 @@
 package com.logscapeng.uploader;
 
+import javax.inject.Singleton;
 import java.util.List;
 
-public interface FileMetaDataService {
+public interface FileMetaDataQueryService {
     void createTable();
 
     void put(FileMeta fileMeta);

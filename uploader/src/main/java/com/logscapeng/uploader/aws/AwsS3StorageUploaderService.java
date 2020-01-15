@@ -41,10 +41,10 @@ public class AwsS3StorageUploaderService implements StorageUploader {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.addUserMetadata("tags", upload.getTags().toString());
         objectMetadata.addUserMetadata("tenant", upload.tenant);
-        objectMetadata.addUserMetadata("length", "" + upload.filecontent.length);
+        objectMetadata.addUserMetadata("length", "" + upload.fileContent.length);
 
 
-        File file = createTempFile(upload.filecontent);
+        File file = createTempFile(upload.fileContent);
         long contentLength = file.length();
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB.
 
@@ -72,7 +72,7 @@ public class AwsS3StorageUploaderService implements StorageUploader {
 
             // Upload the file parts.
             long filePosition = 0;
-            for (int i = 1; filePosition < upload.filecontent.length; i++) {
+            for (int i = 1; filePosition < upload.fileContent.length; i++) {
                 // Because the last part could be less than 5 MB, adjust the part size as needed.
                 partSize = Math.min(partSize, (contentLength - filePosition));
 

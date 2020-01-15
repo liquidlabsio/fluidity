@@ -1,6 +1,6 @@
 package com.logscapeng.uploader;
 
-import com.logscapeng.uploader.aws.AwsFileMetaDataService;
+import com.logscapeng.uploader.aws.AwsFileMetaDataQueryService;
 import com.logscapeng.uploader.aws.LocalDynamoDbContainer;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
@@ -10,8 +10,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -51,7 +49,7 @@ public class DynamoIndexingTest {
     }
 
     @Inject
-    AwsFileMetaDataService metaDataService;
+    AwsFileMetaDataQueryService metaDataService;
 
     @Test
     public void ormTest() throws InterruptedException, IOException {

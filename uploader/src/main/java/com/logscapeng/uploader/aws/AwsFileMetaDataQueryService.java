@@ -1,7 +1,7 @@
 package com.logscapeng.uploader.aws;
 
 import com.logscapeng.uploader.FileMeta;
-import com.logscapeng.uploader.FileMetaDataService;
+import com.logscapeng.uploader.FileMetaDataQueryService;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Key;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.MappedDatabase;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.MappedTable;
@@ -22,7 +22,7 @@ import static software.amazon.awssdk.extensions.dynamodb.mappingclient.Attribute
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.operations.QueryConditional.equalTo;
 
 @ApplicationScoped
-public class AwsFileMetaDataService implements FileMetaDataService {
+public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     @Inject
     DynamoDbClient dynamoDbClient;
@@ -30,7 +30,7 @@ public class AwsFileMetaDataService implements FileMetaDataService {
     private MappedDatabase database;
     private MappedTable<FileMeta> fileMetaTable;
 
-    public AwsFileMetaDataService() {
+    public AwsFileMetaDataQueryService() {
     }
 
     @Override

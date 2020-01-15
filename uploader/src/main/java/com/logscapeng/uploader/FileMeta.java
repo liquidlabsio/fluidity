@@ -40,9 +40,9 @@ public class FileMeta {
     @PartType(MediaType.TEXT_PLAIN)
     public String filename;
 
-    @FormParam("filecontent")
+    @FormParam("fileContent")
     @PartType(MediaType.APPLICATION_OCTET_STREAM)
-    public byte[] filecontent;
+    public byte[] fileContent;
 
     @FormParam("tenant")
     @PartType(MediaType.TEXT_PLAIN)
@@ -59,6 +59,9 @@ public class FileMeta {
     @FormParam("toTime")
     @PartType(MediaType.TEXT_PLAIN)
     public long toTime;
+
+
+    public long sizeBytes;
 
 
     public String getTags() {
@@ -83,12 +86,12 @@ public class FileMeta {
 
 
     public FileMeta(){};
-    public FileMeta(String tenant, String resource, String tags, String filename, byte[] filecontent, long fromTime, long toTime) {
+    public FileMeta(String tenant, String resource, String tags, String filename, byte[] fileContent, long fromTime, long toTime) {
         this.tenant = tenant;
         this.resource = resource;
         this.tags = tags;
         this.filename = filename;
-        this.filecontent = filecontent;
+        this.fileContent = fileContent;
         this.fromTime = fromTime;
         this.toTime = toTime;
     }
@@ -106,7 +109,7 @@ public class FileMeta {
                 ", resource='" + resource + '\'' +
                 ", tags='" + tags + '\'' +
                 ", filename='" + filename + '\'' +
-                ", filecontent=" + Arrays.toString(filecontent) +
+//                ", filecontent=" + Arrays.toString(filecontent) +
                 '}';
     }
 
@@ -154,12 +157,12 @@ public class FileMeta {
         this.filename = filename;
     }
 
-    public byte[] getFilecontent() {
-        return filecontent;
+    public byte[] getFileContent() {
+        return fileContent;
     }
 
-    public void setFilecontent(byte[] filecontent) {
-        this.filecontent = filecontent;
+    public void setFileContent(byte[] fileContent) {
+        this.fileContent = fileContent;
     }
 
     public String getStorageUrl() {
