@@ -17,7 +17,7 @@ $(document).ready(function () {
 
 
     $.Topic(Logscape.Explorer.Topics.setFileContent).subscribe(function(event) {
-        editor.setValue(event)
+        editor.setValue(event.fileContent)
     })
 
 
@@ -72,7 +72,12 @@ Logscape.Explorer.FileList = function (table) {
         if (listing.length >0) {
             jQuery.each(listing, function (i, item) {
                 item.volume = 0
-                item.size = Number(item.sizeBytes/1024).toLocaleString()  + "Kb"
+                if (item.sizeBytes > 2048) {
+                    item.size = Number(item.sizeBytes/1024).toLocaleString()  + "Kb"
+                } else {
+                    item.size = Number(item.sizeBytes).toLocaleString()  + "b"
+                }
+
                 item.from = new Date(item.fromTime).toLocaleString();
                 item.to =  new Date(item.toTime).toLocaleString();
                 // item.actions = "<a class='ds_search fa fa-search btn btn-link' dsid='" + item.id + "' href='#' title='Search against this'></a> <a class='ds_remove fa fa-times btn btn-link' dsid='" + item.id + "' href='#' title='Delete'></a><a class='ds_reindex fa fa-repeat btn btn-link ' dsid='" + item.id + "' href='#' title='ReIndex'></a> "

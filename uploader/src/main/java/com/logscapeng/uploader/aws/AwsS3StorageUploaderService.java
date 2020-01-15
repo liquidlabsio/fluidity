@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApplicationScoped
 public class AwsS3StorageUploaderService implements StorageUploader {
 
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageUploaderService.class);
+
 
 
 
@@ -114,6 +114,11 @@ public class AwsS3StorageUploaderService implements StorageUploader {
         }
 
         return upload;
+    }
+
+    @Override
+    public byte[] get(String storageUrl) {
+        throw new RuntimeException("Not implemented yet!");
     }
 
     private File createTempFile(byte[] filecontent) {

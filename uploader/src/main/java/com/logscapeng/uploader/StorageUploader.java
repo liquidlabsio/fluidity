@@ -8,4 +8,6 @@ public interface StorageUploader {
      * @return
      */
     FileMeta upload(FileMeta upload, String region);
+
+    byte[] get(String storageUrl);
 }

@@ -61,8 +61,11 @@ class RestVersion extends FilesInterface {
     }
 
     fileContents(filename) {
-        // return "this is the contents of a file from REST";
-        $.Topic(Logscape.Explorer.Topics.setListFiles).publish(results);
+            $.get(LOGSCAPE_URL + '/query/get', {tenant:'unknown', filename: filename},
+                function(response) {
+                    $.Topic(Logscape.Explorer.Topics.setFileContent).publish(response);
+                }
+            )
     }
 
 }

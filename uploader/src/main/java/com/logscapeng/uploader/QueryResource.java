@@ -26,6 +26,10 @@ public class QueryResource implements FileMetaDataQueryService {
     @ConfigProperty(name = "storage.query")
     FileMetaDataQueryService query;
 
+    @ConfigProperty(name = "storage.uploader")
+    StorageUploader uploader;
+
+
     @GET
     @Path("/id")
     @Produces(MediaType.TEXT_PLAIN)
@@ -46,10 +50,12 @@ public class QueryResource implements FileMetaDataQueryService {
     }
 
     @GET
-    @Path("/get/{tenant}/{filename}")
+    @Path("/get")
     @Produces("application/json")
-    public FileMeta get(@PathParam("tenant") String tenant, @PathParam("filename")  String filename) {
-        return query.get(tenant, filename);
+    public FileMeta get(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
+        FileMeta fileMeta = query.get(tenant, filename);
+        fileMeta.setFileContent(uploader.get(fileMeta.getStorageUrl()));
+        return fileMeta;
     }
 
     @DELETE

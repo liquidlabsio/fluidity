@@ -41,7 +41,8 @@ public class FileMeta {
     public String filename;
 
     @FormParam("fileContent")
-    @PartType(MediaType.APPLICATION_OCTET_STREAM)
+//    @PartType(MediaType.APPLICATION_OCTET_STREAM)
+    @PartType(MediaType.TEXT_PLAIN)
     public byte[] fileContent;
 
     @FormParam("tenant")
