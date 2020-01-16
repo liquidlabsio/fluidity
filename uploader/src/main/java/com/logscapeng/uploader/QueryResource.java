@@ -50,24 +50,32 @@ public class QueryResource implements FileMetaDataQueryService {
     }
 
     @GET
+    @Path("/find")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FileMeta find(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
+        return query.find(tenant, filename);
+    }
+
+
+    @GET
     @Path("/get")
-    @Produces("application/json")
-    public FileMeta get(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
-        FileMeta fileMeta = query.get(tenant, filename);
-        fileMeta.setFileContent(uploader.get(fileMeta.getStorageUrl()));
-        return fileMeta;
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public byte[] get(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
+        FileMeta fileMeta = query.find(tenant, filename);
+        return uploader.get(fileMeta.getStorageUrl());
+//        return fileMeta;
     }
 
     @DELETE
     @Path("/delete/{tenant}/{filename}")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public FileMeta delete(@PathParam("tenant") String tenant, @PathParam("filename")  String filename) {
         return query.delete(tenant, filename);
     }
 
     @GET
     @Path("/query/{tenant}/{filenamePart}/{tagNamePart}")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<FileMeta> query(
             @PathParam("tenant") String tenant
             , @PathParam("filenamePart") String filenamePart

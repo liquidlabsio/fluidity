@@ -4,7 +4,8 @@ Logscape.Explorer.Topics = {
     getListFiles: 'explorerGetListFiles',
     setListFiles: 'explorerSetListFiles',
     getFileContent: 'explorerGetFileContent',
-    setFileContent: 'explorerSetFileContent'
+    setFileContent: 'explorerSetFileContent',
+    downloadFileContent: 'explorerDownloadFileContent'
 }
 
 $(document).ready(function () {
@@ -16,8 +17,8 @@ $(document).ready(function () {
     editor.session.setMode("ace/mode/javascript");
 
 
-    $.Topic(Logscape.Explorer.Topics.setFileContent).subscribe(function(event) {
-        editor.setValue(event.fileContent)
+    $.Topic(Logscape.Explorer.Topics.setFileContent).subscribe(function(content ) {
+        editor.setValue(content)
     })
 
 
@@ -83,22 +84,26 @@ Logscape.Explorer.FileList = function (table) {
                 item.from = new Date(item.fromTime).toLocaleString();
                 item.to =  new Date(item.toTime).toLocaleString();
                 item.actions =
-                    "<a class='fas fa-eye btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='View'></a>"+
+                    "<a class='fas fa-eye btn btn-link explorerFileActions view' data-filename='" + item.filename + "' href='#' title='View'></a>"+
                     "<a class='fas fa-search btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Search against this'></a>"+
                     "<a class='fas fa-times btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Delete'></a>"+
-                    "<a class='fas fa-cloud-download-alt btn btn-link explorerFileActions' data-filename='" + item.id + "' href='#' title='Download'></a> "
+                    "<a class='fas fa-cloud-download-alt btn btn-link explorerFileActions download' data-filename='" + item.filename + "' href='#' title='Download'></a> "
             })
             dataTable.fnAddData(listing)
             sources = listing.files
         }
 
         $(".explorerFileActions").unbind();
-        $(".explorerFileActions").click(function(event){
+        $(".explorerFileActions.view").click(function(event){
                     let filename = $(event.currentTarget).data().filename;
                     $("#explorerOpenFileName").text("Filename: " + filename)
                     $.Topic(Logscape.Explorer.Topics.getFileContent).publish(filename)
         });
 
+        $(".explorerFileActions.download").click(function(event){
+                    let filename = $(event.currentTarget).data().filename;
+                    $.Topic(Logscape.Explorer.Topics.downloadFileContent).publish(filename)
+        });
 
     }
 

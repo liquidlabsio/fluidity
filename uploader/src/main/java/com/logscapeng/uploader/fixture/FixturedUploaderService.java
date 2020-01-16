@@ -20,7 +20,7 @@ public class FixturedUploaderService implements StorageUploader {
     @Override
     public FileMeta upload(FileMeta upload, String region) {
         log.info("uploading:" + upload);
-        upload.setStorageUrl("s3://somebucket"+region + "/some/path");
+        upload.setStorageUrl("s3://somebucket/"+region + "/" + upload.getFilename() + "-to-time=" + upload.getToTime());
         storage.put(upload.getStorageUrl(), upload.fileContent);
         upload.setFileContent(new byte[0]);
         return upload;

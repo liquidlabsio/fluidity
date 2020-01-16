@@ -3,7 +3,6 @@ package com.logscapeng.uploader.fixture;
 import com.logscapeng.uploader.FileMeta;
 import com.logscapeng.uploader.FileMetaDataQueryService;
 
-import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +23,13 @@ public class FixturedFileMetaDataQueryService implements FileMetaDataQueryServic
     }
 
     @Override
-    public FileMeta get(String tenant, String filename) {
+    public FileMeta find(String tenant, String filename) {
         return storage.get(filename);
+    }
+
+    @Override
+    public byte[] get(String tenant, String filename) {
+        return storage.get(filename).getFileContent();
     }
 
     @Override

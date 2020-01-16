@@ -54,10 +54,17 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     public void put(FileMeta fileMeta) {
         getTable().execute(PutItem.of(fileMeta));
     }
+
     @Override
-    public FileMeta get(String tenant, String filename) {
+    public FileMeta find(String tenant, String filename) {
         return getTable().execute(GetItem.of(Model.getKey(tenant, filename)));
     }
+
+    @Override
+    public byte[] get(String tenant, String filename) {
+        return getTable().execute(GetItem.of(Model.getKey(tenant, filename))).getFileContent();
+    }
+
     @Override
     public FileMeta delete(String tenant, String filename) {
         return getTable().execute(DeleteItem.of(Model.getKey(tenant, filename)));

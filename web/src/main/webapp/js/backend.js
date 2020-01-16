@@ -4,7 +4,14 @@ KEY = '5b578yg9yvi8sogirbvegoiufg9v9g579gviuiub8' // not real
 
 $(document).ready(function () {
     binding()
+
 });
+
+
+//import streamSaver from 'streamsaver'
+//const streamSaver = require('streamsaver')
+//const streamSaver = window.streamSaver
+
 
 class FilesInterface {
 
@@ -49,6 +56,9 @@ class FilesFixture extends  FilesInterface {
     }
 }
 
+
+
+
 class RestVersion extends FilesInterface {
 
     listFiles() {
@@ -68,6 +78,26 @@ class RestVersion extends FilesInterface {
             )
     }
 
+    downloadFileContent(filename) {
+            $.get(LOGSCAPE_URL + '/query/get', {tenant:'unknown', filename: filename},
+                function(response) {
+                // TODO: look at these: https://github.com/jimmywarting/StreamSaver.js/tree/master/examples
+                try {
+                    let blob = new Blob([response])
+                    let fileStream = streamSaver.createWriteStream(filename, {
+                      size: blob.size // Makes the percentage visible in the download
+                    })
+//                    let fileStream = streamSaver.createWriteStream(filename)
+                    let writer = fileStream.getWriter()
+                     writer.write(response)
+                     writer.close()
+                 } catch (err) {
+                    console.log(err)
+                 }
+
+                }
+            )
+    }
 }
 
 function binding () {
@@ -85,6 +115,11 @@ function binding () {
     $.Topic(Logscape.Explorer.Topics.getFileContent).subscribe(function(event) {
         filesFixture.fileContents(event);
     })
+
+    $.Topic(Logscape.Explorer.Topics.downloadFileContent).subscribe(function(event) {
+        filesFixture.downloadFileContent(event);
+    })
+
 
 }
 
