@@ -116,3 +116,23 @@ Logscape UI
 #explorerEditor {
   height: 400px;
 }
+
+/**
+File upload UI
+**/
+.file {
+   position: relative;
+   background: linear-gradient(to right, lightblue 50%, transparent 50%);
+   background-size: 200% 100%;
+   background-position: right bottom;
+   transition:all 1s ease;
+}
+ .file.done {
+   background: lightgreen;
+}
+ .file a {
+   display: block;
+   position: relative;
+   padding: 5px;
+   color: black;
+}

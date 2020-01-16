@@ -13,6 +13,7 @@ import java.util.*;
  */
 @RegisterForReflection
 public class FileMeta {
+
     public long getFromTime() {
         return fromTime;
     }
@@ -34,7 +35,7 @@ public class FileMeta {
     }
 
     // This is used to help with ORM mappings
-    public enum Fields { filename, filecontent, tenant, resource, tags, storageUrl, fromTime, toTime}
+    public enum Fields { filename, fileContent, tenant, resource, tags, storageUrl, fromTime, toTime}
 
     @FormParam("filename")
     @PartType(MediaType.TEXT_PLAIN)
@@ -61,8 +62,7 @@ public class FileMeta {
     @PartType(MediaType.TEXT_PLAIN)
     public long toTime;
 
-
-    public long sizeBytes;
+    public long size;
 
 
     public String getTags() {

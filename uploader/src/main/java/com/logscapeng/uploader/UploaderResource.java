@@ -37,6 +37,8 @@ public class UploaderResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response uploadFile(@MultipartForm FileMeta fileMeta) {
 
+        fileMeta.size = fileMeta.fileContent.length;
+
         // this series of actions should be put on an event queue
         FileMeta indexedFile = indexer.enrichMeta(fileMeta);
         FileMeta storedAndIndexedFile = uploader.upload(indexedFile, cloudRegion);
@@ -44,12 +46,11 @@ public class UploaderResource {
         // for now Im doing it in process here.
         FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
 
-        // same as above
-        fileMeta.sizeBytes = fileMeta.fileContent.length;
+
         query.put(stored);
 
         Response.ResponseBuilder responseBuilder = Response.status(200).entity("Uploaded and Indexed:" + stored);
-//        responseBuilder.header(  "Access-Control-Allow-Origin", "*");
+        responseBuilder.header(  "Access-Control-Allow-Origin", "*");
         return responseBuilder.build();
     }
 }

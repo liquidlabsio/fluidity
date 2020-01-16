@@ -48,7 +48,8 @@ Logscape.Explorer.FileList = function (table) {
                     { mData: "resource" },
                     { mData: "size" },
                     { mData: "from" },
-                    { mData: "to" }
+                    { mData: "to" },
+                    { mData: "actions" }
                 ]
             })
     }
@@ -59,6 +60,7 @@ Logscape.Explorer.FileList = function (table) {
 
             $("#explorerOpenFileName").text("Filename: " + filename)
             $.Topic(Logscape.Explorer.Topics.getFileContent).publish(filename)
+            return false;
         } catch (err) {
             console.log(err.stack)
         }
@@ -72,19 +74,31 @@ Logscape.Explorer.FileList = function (table) {
         if (listing.length >0) {
             jQuery.each(listing, function (i, item) {
                 item.volume = 0
-                if (item.sizeBytes > 2048) {
-                    item.size = Number(item.sizeBytes/1024).toLocaleString()  + "Kb"
+                if (item.size > 2048) {
+                    item.size = Number(item.size/1024).toLocaleString()  + "Kb"
                 } else {
-                    item.size = Number(item.sizeBytes).toLocaleString()  + "b"
+                    item.size = Number(item.size).toLocaleString()  + "b"
                 }
 
                 item.from = new Date(item.fromTime).toLocaleString();
                 item.to =  new Date(item.toTime).toLocaleString();
-                // item.actions = "<a class='ds_search fa fa-search btn btn-link' dsid='" + item.id + "' href='#' title='Search against this'></a> <a class='ds_remove fa fa-times btn btn-link' dsid='" + item.id + "' href='#' title='Delete'></a><a class='ds_reindex fa fa-repeat btn btn-link ' dsid='" + item.id + "' href='#' title='ReIndex'></a> "
+                item.actions =
+                    "<a class='fas fa-eye btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='View'></a>"+
+                    "<a class='fas fa-search btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Search against this'></a>"+
+                    "<a class='fas fa-times btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Delete'></a>"+
+                    "<a class='fas fa-cloud-download-alt btn btn-link explorerFileActions' data-filename='" + item.id + "' href='#' title='Download'></a> "
             })
             dataTable.fnAddData(listing)
             sources = listing.files
         }
+
+        $(".explorerFileActions").unbind();
+        $(".explorerFileActions").click(function(event){
+                    let filename = $(event.currentTarget).data().filename;
+                    $("#explorerOpenFileName").text("Filename: " + filename)
+                    $.Topic(Logscape.Explorer.Topics.getFileContent).publish(filename)
+        });
+
 
     }
 
