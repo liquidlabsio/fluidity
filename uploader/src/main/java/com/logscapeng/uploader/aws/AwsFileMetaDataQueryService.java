@@ -63,7 +63,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     public byte[] get(String tenant, String filename) {
         FileMeta execute = getTable().execute(GetItem.of(Model.getKey(tenant, filename)));
         // TODO: fix content getting - content should be from the storage projection view - not here - it needs to be injected and delegated
-        return execute.getFilename().getBytes();
+        return execute.getStorageUrl().getBytes();
     }
 
     @Override
