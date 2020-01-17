@@ -59,6 +59,8 @@ public class DynamoIndexingTest {
                 "tag1, tag2", filename, bytes
                 , System.currentTimeMillis()-1000, System.currentTimeMillis());
 
+        fileMeta.setStorageUrl("s3://somewhere");
+
         metaDataService.createTable();
         metaDataService.put(fileMeta);
         byte[] content  = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
