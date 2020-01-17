@@ -61,8 +61,8 @@ public class DynamoIndexingTest {
 
         metaDataService.createTable();
         metaDataService.put(fileMeta);
-        FileMeta fileMeta1 = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
-        assertNotNull(fileMeta1);
+        byte[] content  = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
+        assertNotNull(content);
 
         List<FileMeta> listed = metaDataService.list();
         assertEquals(1, listed.size());
