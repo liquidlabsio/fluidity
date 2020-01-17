@@ -6,10 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -38,12 +35,14 @@ class UploaderResourceTest {
 
     @Test
     public void sendFile() throws Exception {
+
+        Thread.sleep(60 * 1000);
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("logscape-ng-test", "IoTDevice",
                 "tag1, tag2", filename, bytes, System.currentTimeMillis()-1000, System.currentTimeMillis());
         given()
-                .multiPart("filecontent", fileMeta.filename, fileMeta.filecontent)
+                .multiPart("fileContent", fileMeta.filename, fileMeta.fileContent)
                 .formParam("filename", fileMeta.filename)
                 .formParam("tenant", fileMeta.tenant)
                 .formParam("resource", fileMeta.resource)

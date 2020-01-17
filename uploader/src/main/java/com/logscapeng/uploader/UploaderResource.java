@@ -3,22 +3,16 @@ package com.logscapeng.uploader;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
  * First (naive) implementation.
- * Server side uploader the runs with AWS Client credentials.
- * Loads directly to S3 bucket, driven by a REST based client that does a multi-part, binary post.
- *
- * A Lambda wont handle the volume of data required.
  */
 @Path("/upload")
 public class UploaderResource {
 
-    @Inject
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-1")
     String cloudRegion;
 
@@ -28,6 +22,8 @@ public class UploaderResource {
     @ConfigProperty(name = "storage.indexer")
     StorageIndexer indexer;
 
+    @ConfigProperty(name = "storage.query")
+    FileMetaDataQueryService query;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -41,6 +37,8 @@ public class UploaderResource {
     @Produces(MediaType.TEXT_PLAIN)
     public Response uploadFile(@MultipartForm FileMeta fileMeta) {
 
+        fileMeta.size = fileMeta.fileContent.length;
+
         // this series of actions should be put on an event queue
         FileMeta indexedFile = indexer.enrichMeta(fileMeta);
         FileMeta storedAndIndexedFile = uploader.upload(indexedFile, cloudRegion);
@@ -49,6 +47,10 @@ public class UploaderResource {
         FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
 
 
-        return Response.status(200).entity("Uploaded and Indexed:" + stored).build();
+        query.put(stored);
+
+        Response.ResponseBuilder responseBuilder = Response.status(200).entity("Uploaded and Indexed:" + stored);
+        responseBuilder.header(  "Access-Control-Allow-Origin", "*");
+        return responseBuilder.build();
     }
 }

@@ -13,6 +13,7 @@ import java.util.*;
  */
 @RegisterForReflection
 public class FileMeta {
+
     public long getFromTime() {
         return fromTime;
     }
@@ -34,15 +35,16 @@ public class FileMeta {
     }
 
     // This is used to help with ORM mappings
-    public enum Fields { filename, filecontent, tenant, resource, tags, storageUrl, fromTime, toTime}
+    public enum Fields { filename, fileContent, tenant, resource, tags, storageUrl, fromTime, toTime}
 
     @FormParam("filename")
     @PartType(MediaType.TEXT_PLAIN)
     public String filename;
 
-    @FormParam("filecontent")
-    @PartType(MediaType.APPLICATION_OCTET_STREAM)
-    public byte[] filecontent;
+    @FormParam("fileContent")
+//    @PartType(MediaType.APPLICATION_OCTET_STREAM)
+    @PartType(MediaType.TEXT_PLAIN)
+    public byte[] fileContent;
 
     @FormParam("tenant")
     @PartType(MediaType.TEXT_PLAIN)
@@ -59,6 +61,8 @@ public class FileMeta {
     @FormParam("toTime")
     @PartType(MediaType.TEXT_PLAIN)
     public long toTime;
+
+    public long size;
 
 
     public String getTags() {
@@ -83,12 +87,12 @@ public class FileMeta {
 
 
     public FileMeta(){};
-    public FileMeta(String tenant, String resource, String tags, String filename, byte[] filecontent, long fromTime, long toTime) {
+    public FileMeta(String tenant, String resource, String tags, String filename, byte[] fileContent, long fromTime, long toTime) {
         this.tenant = tenant;
         this.resource = resource;
         this.tags = tags;
         this.filename = filename;
-        this.filecontent = filecontent;
+        this.fileContent = fileContent;
         this.fromTime = fromTime;
         this.toTime = toTime;
     }
@@ -106,7 +110,7 @@ public class FileMeta {
                 ", resource='" + resource + '\'' +
                 ", tags='" + tags + '\'' +
                 ", filename='" + filename + '\'' +
-                ", filecontent=" + Arrays.toString(filecontent) +
+//                ", filecontent=" + Arrays.toString(filecontent) +
                 '}';
     }
 
@@ -154,12 +158,12 @@ public class FileMeta {
         this.filename = filename;
     }
 
-    public byte[] getFilecontent() {
-        return filecontent;
+    public byte[] getFileContent() {
+        return fileContent;
     }
 
-    public void setFilecontent(byte[] filecontent) {
-        this.filecontent = filecontent;
+    public void setFileContent(byte[] fileContent) {
+        this.fileContent = fileContent;
     }
 
     public String getStorageUrl() {
