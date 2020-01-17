@@ -66,6 +66,17 @@ public class QueryResource implements FileMetaDataQueryService {
 //        return fileMeta;
     }
 
+    @GET
+    @Path("/download/{tenant}/{filename}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response download(@PathParam("tenant") String tenant, @PathParam("filename")  String filename) {
+        FileMeta fileMeta = query.find(tenant, filename);
+        byte[] content = uploader.get(fileMeta.getStorageUrl());
+        return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM)
+                .header("content-disposition", "attachment; filename=\"" + filename + "\"")
+                .header("Content-Length", content.length).build();
+    }
+
     @DELETE
     @Path("/delete/{tenant}/{filename}")
     @Produces(MediaType.APPLICATION_JSON)

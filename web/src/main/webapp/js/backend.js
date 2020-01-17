@@ -71,7 +71,7 @@ class RestVersion extends FilesInterface {
     }
 
     fileContents(filename) {
-            $.get(LOGSCAPE_URL + '/query/get', {tenant:'unknown', filename: filename},
+            $.get(LOGSCAPE_URL + '/query/get', {tenant:'unknown', filename: filename, download: true},
                 function(response) {
                     $.Topic(Logscape.Explorer.Topics.setFileContent).publish(response);
                 }
@@ -79,23 +79,9 @@ class RestVersion extends FilesInterface {
     }
 
     downloadFileContent(filename) {
-            $.get(LOGSCAPE_URL + '/query/get', {tenant:'unknown', filename: filename},
-                function(response) {
-                // TODO: look at these: https://github.com/jimmywarting/StreamSaver.js/tree/master/examples
-                try {
-                    let blob = new Blob([response])
-                    let fileStream = streamSaver.createWriteStream(filename, {
-                      size: blob.size // Makes the percentage visible in the download
-                    })
-//                    let fileStream = streamSaver.createWriteStream(filename)
-                    let writer = fileStream.getWriter()
-                     writer.write(response)
-                     writer.close()
-                 } catch (err) {
-                    console.log(err)
-                 }
-
-                }
+        let tenant = 'individual';
+            window.open(
+              LOGSCAPE_URL + '/query/download/' + tenant + '/'  + filename
             )
     }
 }
