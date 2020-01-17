@@ -38,7 +38,6 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         if (!tableExists()) {
             ProvisionedThroughput.Builder provisionedThroughput = ProvisionedThroughput.builder().readCapacityUnits(10l).writeCapacityUnits(10L);
             CreateTable<FileMeta> fileMetaCreateTable = CreateTable.of(provisionedThroughput.build()).toBuilder().build();
-//            CreateTable<FileMeta> fileMetaCreateTable = CreateTable.create();
             MappedTable<FileMeta> table = getTable();
             table.execute(fileMetaCreateTable);
         }
@@ -62,7 +61,9 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     @Override
     public byte[] get(String tenant, String filename) {
-        return getTable().execute(GetItem.of(Model.getKey(tenant, filename))).getFileContent();
+        FileMeta execute = getTable().execute(GetItem.of(Model.getKey(tenant, filename)));
+        // TODO: fix content getting - content should be from the storage projection view - not here - it needs to be injected and delegated
+        return execute.getFilename().getBytes();
     }
 
     @Override
