@@ -1,22 +1,56 @@
 /* globals Chart:false, feather:false */
 
-// (function () {
 $(document).ready(function () {
   'use strict'
 
-  $("#fileupload").attr("data-url", LOGSCAPE_URL + '/upload/file')
+    $("#dataImportForm").submit(function(event) {
+        let inputs = $(this).serializeArray();
+
+        if (inputs[0].value.length == 0 || inputs[1].value.length == 0 || inputs[2].value.length == 0) {
+            alert("Please provide values for all 3 inputs")
+            return false;
+        }
+        $.Topic(Precognito.Explorer.Topics.importFromStorage).publish(
+                inputs[0].value, inputs[1].value, inputs[2].value
+        );
+        return false;
+    })
+
+
+    $("#removeFromStorageButton").click(function(event) {
+        let inputs = $("#dataImportForm").serializeArray();
+
+        if (inputs[0].value.length == 0 || inputs[1].value.length == 0 || inputs[2].value.length == 0) {
+            alert("Please provide values for all 3 inputs")
+            return false;
+        }
+        $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).publish(
+                inputs[0].value, inputs[1].value, inputs[2].value
+        );
+
+    })
+
+   $.Topic(Precognito.Explorer.Topics.importedFromStorage).subscribe(function(event) {
+        alert("Data was imported:" + event)
+   })
+      $.Topic(Precognito.Explorer.Topics.removedImportFromStorage).subscribe(function(event) {
+           alert("Data was un-imported:" + event)
+      })
+
+
+  $("#fileupload").attr("data-url", SERVICE_URL + '/storage/upload')
   $("#fileupload").fileupload({
     dataType: "json",
     add: function(e, data) {
       data.formData = {
                 filename: data.files[0].name,
                 toTime: data.files[0].lastModified,
-                tenant: $("#uploadResourceInput").val(),
+                tenant: DEFAULT_TENANT,
                 resource: $("#uploadResourceInput").val(),
                 tags: $("#uploadTagsInput").val()
                 }
       if (data.formData.resource.length == 0 || data.formData.tags.length == 0) {
-        alert("Resource value must be specified; try again")
+        alert("Resource identifier must be specified; try again")
         return false;
       }
       data.context = $('<p class="file">')
@@ -41,7 +75,6 @@ $(document).ready(function () {
     .bind('fileuploaddone', function (e, data) {
     console.log("done!!")
     })
-
 });
 
 

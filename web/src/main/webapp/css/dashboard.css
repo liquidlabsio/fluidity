@@ -107,15 +107,22 @@ body {
 
 
 /**
-Logscape UI
+APP UI
  */
 
 #explorerFileListTable {
   padding: 10px;
 }
-#explorerEditor {
-  height: 400px;
+.normalSizeEditor {
+ height: 400px;
 }
+.mediumSizeEditor {
+ height: 600px;
+}
+.largeSizeEditor {
+ height: 900px;
+}
+
 
 /**
 File upload UI
@@ -135,4 +142,24 @@ File upload UI
    position: relative;
    padding: 5px;
    color: black;
+}
+
+.file-upload-label {
+    width: 180px;
+}
+
+.navCompressed {
+  width: 45px;
+}
+#spinnerHome {
+    width: 40px;
+    height: 20px;
+    padding:5px;
+}
+.spinner {
+    display: none;
+    padding: 5px;
+    spadding-right: 20px;
+    width: 20px;
+    height: 20px;
 }

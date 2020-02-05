@@ -1,0 +1,9 @@
+# Note: run with quarkus:test will use fixtures quarkus:dev will use local services with remote storage
+# ./mvnw package -Pnative -Dquarkus.profile=prod-aws`
+# quarkus:prod - The default profile when not running in development or test mode
+io.precognito.services.storage.StorageFactoryConverter
+io.precognito.services.query.QueryFactoryConverter
+io.precognito.services.search.SearchFactoryConverter
+io.precognito.services.IndexingFactoryConverter
+
+

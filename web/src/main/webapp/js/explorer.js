@@ -1,41 +1,89 @@
 // define pub-sub topics
-Logscape.Explorer.Topics = {
+Precognito.Explorer.Topics = {
     uploadFile: 'explorerUploadFile',
     getListFiles: 'explorerGetListFiles',
     setListFiles: 'explorerSetListFiles',
     getFileContent: 'explorerGetFileContent',
     setFileContent: 'explorerSetFileContent',
-    downloadFileContent: 'explorerDownloadFileContent'
+    importFromStorage: 'importFromStorage',
+    importedFromStorage: 'importedFromStorage',
+    removeImportFromStorage: 'removeImportFromStorage',
+    removedImportFromStorage: 'removedImportFromStorage',
+
+    downloadFileContent: 'explorerDownloadFileContent',
+
+    startSpinner: 'startSpinner',
+    stopSpinner: 'stopSpinner'
 }
 
 $(document).ready(function () {
 
-    let fileList = new Logscape.Explorer.FileList($('#explorerFileListTable'));
-
-    let editor = ace.edit("explorerEditor");
-    editor.setTheme("ace/theme/monokai");
-    editor.session.setMode("ace/mode/javascript");
+    let fileList = new Precognito.Explorer.FileList($('#explorerFileListTable'));
 
 
-    $.Topic(Logscape.Explorer.Topics.setFileContent).subscribe(function(content ) {
-        editor.setValue(content)
-    })
-
-
-    $('#refreshFiles').click(function(){
-        $.Topic(Logscape.Explorer.Topics.getListFiles).publish("doit")
-    });
-    $.Topic(Logscape.Explorer.Topics.getListFiles).publish("get file list on page load")
 });
 
-Logscape.Explorer.FileList = function (table) {
-    console.log("Logscape.Explorer.FileList created")
+Precognito.Explorer.FileList = function (table) {
+    console.log("Precognito.Explorer.FileList created")
 
     let dataTable
     let sources
+    bindEditor()
 
     bindIdsToTable()
 
+
+    function bindEditor() {
+
+        let explorerEditor = ace.edit("explorerEditor");
+        explorerEditor.setTheme("ace/theme/monokai");
+        explorerEditor.session.setMode("ace/mode/javascript");
+        explorerEditor.session.setUseWrapMode(true);
+
+
+        $.Topic(Precognito.Explorer.Topics.setFileContent).subscribe(function(content) {
+            $("#explorerOpenFileName").get(0).scrollIntoView();
+            explorerEditor.setValue(content)
+        })
+
+
+        $('#refreshFiles').click(function(){
+            $.Topic(Precognito.Explorer.Topics.getListFiles).publish("doit")
+        });
+        $.Topic(Precognito.Explorer.Topics.getListFiles).publish("get file list on page load")
+
+        $('.zoomExplorer').click(function(event){
+                let zoomDirection = $(event.currentTarget).data().zoom;
+                let normalClass = "normalSizeEditor";
+                let mediumClass = "mediumSizeEditor";
+                let largeClass = "largeSizeEditor";
+                let editor = $('#explorerEditor')
+                if (editor.hasClass(normalClass)) {
+                    if (zoomDirection == "in") {
+                        editor.removeClass(normalClass)
+                        editor.addClass(mediumClass)
+                    } else {
+                    // already at normal size
+                    }
+                } else if (editor.hasClass(mediumClass)) {
+                    editor.removeClass(mediumClass)
+                    if (zoomDirection == "in") {
+                        editor.addClass(largeClass)
+                    } else {
+                        editor.addClass(normalClass)
+                    }
+                } else if (editor.hasClass(largeClass)) {
+                  if (zoomDirection == "in") {
+                  } else {
+                     editor.removeClass(largeClass)
+                      editor.addClass(mediumClass)
+                  }
+                }
+                aceEditor.resize()
+                $("#explorerOpenFileName").get(0).scrollIntoView();
+                return false;
+        })
+    }
     function bindIdsToTable() {
 
         dataTable = table.dataTable(
@@ -55,19 +103,28 @@ Logscape.Explorer.FileList = function (table) {
             })
     }
 
-    table.click(function (event) {
+    $('#explorerFileListTable').on('click','td', function (event) {
         try {
-            let filename = event.target.parentElement.childNodes[0].childNodes[0].nodeValue;
+            let filename = dataTable.api().row( this ).data().filename;
+            let cell = dataTable.api().cell( this )
+            let action = $(event.target).data().action
 
-            $("#explorerOpenFileName").text("Filename: " + filename)
-            $.Topic(Logscape.Explorer.Topics.getFileContent).publish(filename)
-            return false;
+            if (action == "view") {
+                $("#explorerOpenFileName").text("Filename: " + filename)
+                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename)
+            } else if (action == "download"){
+                $.Topic(Precognito.Explorer.Topics.downloadFileContent).publish(filename)
+            } else {
+                $("#explorerOpenFileName").text("Filename: " + filename)
+                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename)
+            }
         } catch (err) {
             console.log(err.stack)
         }
+        return false;
     })
 
-    $.Topic(Logscape.Explorer.Topics.setListFiles).subscribe(function (listing) {
+    $.Topic(Precognito.Explorer.Topics.setListFiles).subscribe(function (listing) {
         setListing(listing)
     })
     function setListing(listing) {
@@ -84,31 +141,18 @@ Logscape.Explorer.FileList = function (table) {
                 item.from = new Date(item.fromTime).toLocaleString();
                 item.to =  new Date(item.toTime).toLocaleString();
                 item.actions =
-                    "<a class='fas fa-eye btn btn-link explorerFileActions view' data-filename='" + item.filename + "' href='#' title='View'></a>"+
-                    "<a class='fas fa-search btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Search against this'></a>"+
-                    "<a class='fas fa-times btn btn-link explorerFileActions' data-filename='" + item.filename + "' href='#' title='Delete'></a>"+
-                    "<a class='fas fa-cloud-download-alt btn btn-link explorerFileActions download' data-filename='" + item.filename + "' href='#' title='Download'></a> "
+                    "<a class='fas fa-eye btn btn-link explorerFileActions view' data-action='view' data-filename='" + item.filename + "' href='#' title='View'></a>"+
+                    "<a class='fas fa-search btn btn-link explorerFileActions' data-action='search' data-filename='" + item.filename + "' href='#' title='Search against this'></a>"+
+                    "<a class='fas fa-times btn btn-link explorerFileActions' data-action='delete' data-filename='" + item.filename + "' href='#' title='Delete'></a>"+
+                    "<a class='fas fa-cloud-download-alt btn btn-link explorerFileActions download' data-action='download' data-filename='" + item.filename + "' href='#' title='Download'></a> "
             })
             dataTable.fnAddData(listing)
             sources = listing.files
         }
-
-        $(".explorerFileActions").unbind();
-        $(".explorerFileActions.view").click(function(event){
-                    let filename = $(event.currentTarget).data().filename;
-                    $("#explorerOpenFileName").text("Filename: " + filename)
-                    $.Topic(Logscape.Explorer.Topics.getFileContent).publish(filename)
-        });
-
-        $(".explorerFileActions.download").click(function(event){
-                    let filename = $(event.currentTarget).data().filename;
-                    $.Topic(Logscape.Explorer.Topics.downloadFileContent).publish(filename)
-        });
-
     }
 
     function refreshIt() {
-        $.Topic(Logscape.Explorer.Topics).publish("")
+        $.Topic(Precognito.Explorer.Topics).publish("")
     }
 
     return {

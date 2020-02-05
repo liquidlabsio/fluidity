@@ -3,9 +3,9 @@
     
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.logscape-ng</groupId>
+    <groupId>io.precognito</groupId>
     <artifactId>parent</artifactId>
-    <name>LogscapeNG</name>
+    <name>Precognito</name>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -35,7 +35,7 @@
 
     <modules>
         <module>web</module>
-        <module>uploader</module>
+        <module>services</module>
     </modules>
 
 
