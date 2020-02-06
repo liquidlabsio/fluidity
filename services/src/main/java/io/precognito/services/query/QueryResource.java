@@ -22,11 +22,11 @@ public class QueryResource implements FileMetaDataQueryService {
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
 
-    @ConfigProperty(name = "precognito.query")
+    @ConfigProperty(name = "precognito.services.query")
     FileMetaDataQueryService query;
 
-    @ConfigProperty(name = "precognito.uploader")
-    Storage uploader;
+    @ConfigProperty(name = "precognito.services.storage")
+    Storage storage;
 
     @GET
     @Path("/id")
@@ -58,7 +58,7 @@ public class QueryResource implements FileMetaDataQueryService {
         if (fileMeta == null) {
             return ("Failed to find FileMeta for:" + tenant + " file:" + filename).getBytes();
         }
-        return uploader.get(cloudRegion, fileMeta.getStorageUrl());
+        return storage.get(cloudRegion, fileMeta.getStorageUrl());
     }
 
     @GET
@@ -69,7 +69,7 @@ public class QueryResource implements FileMetaDataQueryService {
         if (fileMeta == null) {
             return "Error: Couldnt load FileMeta:" + tenant + "/"+ filename;
         }
-        return uploader.getSignedDownloadURL(cloudRegion, fileMeta.getStorageUrl());
+        return storage.getSignedDownloadURL(cloudRegion, fileMeta.getStorageUrl());
     }
 
     /**
@@ -83,7 +83,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response download(@org.jboss.resteasy.annotations.jaxrs.PathParam("tenant") String tenant, @org.jboss.resteasy.annotations.jaxrs.PathParam("filename")  String filename) {
         FileMeta fileMeta = query.find(tenant, filename);
-        byte[] content = uploader.get(cloudRegion, fileMeta.getStorageUrl());
+        byte[] content = storage.get(cloudRegion, fileMeta.getStorageUrl());
         return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM)
                 .header("content-disposition", "attachment; filename=\"" + filename + "\"")
                 .header("Content-Length", content.length).build();

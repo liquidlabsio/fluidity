@@ -23,13 +23,13 @@ public class StorageResource {
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
 
-    @ConfigProperty(name = "precognito.uploader")
-    Storage uploader;
+    @ConfigProperty(name = "precognito.services.storage")
+    Storage storage;
 
-    @ConfigProperty(name = "precognito.indexer")
+    @ConfigProperty(name = "precognito.services.indexer")
     StorageIndexer indexer;
 
-    @ConfigProperty(name = "precognito.query")
+    @ConfigProperty(name = "precognito.services.query")
     FileMetaDataQueryService query;
 
     @GET
@@ -50,7 +50,7 @@ public class StorageResource {
 
             // this series of actions should be put on an event queue
             FileMeta indexedFile = indexer.enrichMeta(fileMeta);
-            FileMeta storedAndIndexedFile = uploader.upload(cloudRegion, indexedFile);
+            FileMeta storedAndIndexedFile = storage.upload(cloudRegion, indexedFile);
             // ideally we would trigger an indexing function from the S3 bucket write.
             // for now Im doing it in process here.
             FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
@@ -72,7 +72,7 @@ public class StorageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<FileMeta> importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
                                                                                 @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags) {
-        List<FileMeta> imported = uploader.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
+        List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
         imported.stream().forEach(fileMeta -> query.put(indexer.index(fileMeta, cloudRegion)));
         return imported;
     }
@@ -81,7 +81,7 @@ public class StorageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<FileMeta> removeByStorageId(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
                                                                                 @QueryParam("includeFileMask") String includeFileMask) {
-        List<FileMeta> removed = uploader.removeByStorageId(cloudRegion, tenant, storageId, includeFileMask);
+        List<FileMeta> removed = storage.removeByStorageId(cloudRegion, tenant, storageId, includeFileMask);
         removed.stream().forEach(fileMeta -> query.delete(fileMeta.getTenant(), fileMeta.getFilename()));
         return removed;
     }

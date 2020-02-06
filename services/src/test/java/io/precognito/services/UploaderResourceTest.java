@@ -29,7 +29,7 @@ class UploaderResourceTest {
     public void testIdEndpoint() {
 
         given()
-                .when().get("/upload")
+                .when().get("/storage")
                 .then()
                 .statusCode(200)
                 .body(is(StorageResource.class.getName()));
@@ -38,7 +38,6 @@ class UploaderResourceTest {
     @Test
     public void sendFile() throws Exception {
 
-        Thread.sleep(60 * 1000);
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("ng-test", "IoTDevice",
@@ -50,7 +49,7 @@ class UploaderResourceTest {
                 .formParam("resource", fileMeta.resource)
                 .formParam("tags", fileMeta.tags)
                 .when()
-                .post("/upload/file")
+                .post("/storage/upload")
                 .then()
                 .statusCode(200)
                 .body(containsString("Uploaded"));

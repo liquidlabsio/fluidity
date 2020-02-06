@@ -20,7 +20,7 @@ public class SecurityResource {
     @ConfigProperty(name = "user.hashes", defaultValue = "-906277200")
     String userHashes;
 
-    @ConfigProperty(name = "user.domain", defaultValue = "logscape")
+    @ConfigProperty(name = "user.domain", defaultValue = "precognito")
     String userDomain;
 
 
