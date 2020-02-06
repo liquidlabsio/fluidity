@@ -54,7 +54,7 @@ public class DynamoIndexingTest {
     public void ormTest() throws InterruptedException, IOException {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
-        FileMeta fileMeta = new FileMeta("logscape-ng-test", "IoTDevice",
+        FileMeta fileMeta = new FileMeta("precognito-ng-test", "IoTDevice",
                 "tag1, tag2", filename, bytes
                 , System.currentTimeMillis()-1000, System.currentTimeMillis());
 

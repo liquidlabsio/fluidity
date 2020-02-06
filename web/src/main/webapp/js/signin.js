@@ -18,7 +18,7 @@ $(document).ready(function () {
                    data: form, // serializes the form's elements.
                    success: function(data)
                    {
-                       window.localStorage.setItem("logscape-auth", data)
+                       window.localStorage.setItem("precognito-auth", data)
                        window.location.href = "index.html"
                    },
                    fail: function(data){

@@ -2,10 +2,10 @@
 
 # Configured before any deployment
 ## application code
-export S3_BUCKET=logscape-runtime
-export STACK_NAME=logscape-faas-runtime
+export S3_BUCKET=precongnito-runtime
+export STACK_NAME=precongnito-faas-runtime
 
-## uploaded user data (will be prefixed with loscape-dev or logscape-prod when it is automatically created)
+## uploaded user data (will be prefixed with precongnito-dev or precongnito-prod when it is automatically created)
 export S3_TENANT_BUCKET=tenant-userstore
 
 

@@ -11,7 +11,7 @@ $(document).ready(function () {
   $(".nav-link.active").trigger("click")
 
   $("#signout").click(function() {
-    window.localStorage.removeItem("logscape-auth")
+    window.localStorage.removeItem("precognito-auth")
     window.location.href = "signin.html"
   })
 

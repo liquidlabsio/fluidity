@@ -8,7 +8,7 @@ cloud:
   region: eu-west-2
 
 precognito:
-  prefix: logscape-dev
+  prefix: precognito-dev
   services:
     storage: TEST
     indexer: TEST
@@ -39,8 +39,8 @@ precognito:
         region: eu-west-2
         credentials:
           type: default
-  logscape:
-    prefix: logscape-prod
+  precognito:
+    prefix: precognito-prod
     storage:
       storage: AWS
       indexer: AWS
@@ -71,5 +71,5 @@ quarkus:
 
 # custom loggers
       category:
-        "com.liquidlabs.logscape":
+        "io.precognito":
           level: INFO

@@ -53,7 +53,7 @@ Data can be uploaded, or better yet it already exists in Cloud Storage (S3, CFG 
 
 Notes and limits: 
 - If you want data to load quickly to the browser then enable CORS on each S3 bucket and 
-logscape will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
+Precognito will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
 If not enabled, then a signed download be tried, and upon failure revert to using a Lambda.
 - The largest browsable file is 100MB before the browser starts to choke on memory (about 250k lines of text) 
 The same file will gzip down to 3.6MB and can be handled by a Function call. AWS Function download limits are limited by lambda return limits -  5MB   
@@ -61,8 +61,8 @@ The same file will gzip down to 3.6MB and can be handled by a Function call. AWS
 Prerequisites: 
 - Install AWS SAM: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html
 - Install the AWS cli. I used version 2.0 - i.e. all cli commands are `> aws2 --stuff--`
-- Create an S3 bucket for the logscape runtime (lambda-code, front-end website) deployment (put that name into env.sh) <YOUR_S3_BUCKET>
-- Configure the S3 logscape-runtime bucket for static website hosting
+- Create an S3 bucket for the Precognito cloud runtime (lambda-code, front-end website) deployment (put that name into env.sh) <YOUR_S3_BUCKET>
+- Configure the S3 precognito-runtime bucket for static website hosting
 - AWS account for the SAM user such that Cloudformation etc is available. Brute force unsecure json as follows: <br>
     **IAM -> User (x) -> inline-policy ** <BR>
     IAMFullAccess,   AmazonS3FullAccess,  AmazonDynamoDBFullAccess  
@@ -89,14 +89,14 @@ Prerequisites:
 ```
 
 #### Scripted
-1. $ cd logscape-ng/etc
+1. $ cd precognito/etc
 1. edit env.sh with S3 bucket, tenant information etc
 1. $ ./deploy-backend.sh
 1. edit env.sh with APIGateway address
 1. $ ./deploy-frontend.sh 
 1. S3 cp generally fails so change to ./temp-web-package and 'aws2 s3 cp . s3://<BUCKET> --recurvise' files again
 1. Point your browser to the URL in this message 'Point your browser to:'
-1. Username:anything@logscape.com pwd: 'secret'
+1. Username:anything@precognito.io pwd: 'secret'
 
 ##### Troubleshooting
 1. Check the deployment user has correct permissions - error message will indicate so
@@ -110,9 +110,9 @@ Reference: https://quarkus.io/guides/amazon-lambda-http
 
 **Notes:**
 This approach uses the AWS Gateway Proxy (i.e. the Gateway passes through everything). Quarkus has a HTTP handler embedded in the Lambda the calls on the RX Rest endpoint locally.
-1. Create the logscape fat jar <br>
+1. Create the precognito fat jar <br>
  `$ mvn clean install` ->
- `target/logscape-0.1-SNAPSHOT-runner.jar`<br>
+ `target/precognito-0.1-SNAPSHOT-runner.jar`<br>
 1. Package the deployment:<br>
  `$ sam package --template-file sam.jvm.yaml --output-template-file packaged.yaml --s3-bucket <YOUR_S3_BUCKET>`
 1. Deploy it using any stack-name<br>
@@ -127,9 +127,9 @@ The output will display the API-Gateway URL for the front end
 ```json
  { "StackSummaries": [
         {
-            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/logscape-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
-            "StackName": "logscape-faas",
-            "TemplateDescription": "AWS Serverless Quarkus HTTP - liquidlabs::logscape",
+            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/precognito-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
+            "StackName": "precognito-faas",
+            "TemplateDescription": "AWS Serverless Quarkus HTTP - liquidlabs::precognito",
             "CreationTime": "2020-01-22T15:54:04.530000+00:00",
             "LastUpdatedTime": "2020-01-22T15:54:09.927000+00:00",
             "StackStatus": "CREATE_COMPLETE",
@@ -141,15 +141,15 @@ The output will display the API-Gateway URL for the front end
 }
 ```
 1. Note the API-Gateway-Proxy REST URL<br>
-`$ aws2 cloudformation describe-stacks --stack-name logscape-faas`
+`$ aws2 cloudformation describe-stacks --stack-name precognito-faas`
 ```json
 {
     "Stacks": [
         {
-            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/logscape-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
-            "StackName": "logscape-faas",
+            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/precognito-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
+            "StackName": "precognito-faas",
             "ChangeSetId": "arn:aws:cloudformation:eu-west-2:001814218767:changeSet/samcli-deploy1579708443/2f0ce821-122f-40b5-ad6f-26861bc64daf",
-            "Description": "Serverless log analysis- liquidlabs::logscape",
+            "Description": "Serverless log analysis- liquidlabs::precognito",
             "CreationTime": "2020-01-22T15:54:04.530000+00:00",
             "LastUpdatedTime": "2020-01-22T15:54:09.927000+00:00",
             "RollbackConfiguration": {},
@@ -161,10 +161,10 @@ The output will display the API-Gateway URL for the front end
             ],
             "Outputs": [
                 {
-                    "OutputKey": "LogscapeApi",
+                    "OutputKey": "PrecognitoApi",
                     "OutputValue": "https://3dwlmgnks6.execute-api.eu-west-2.amazonaws.com/Prod/",
                     "Description": "URL for application",
-                    "ExportName": "LogscapeApi"
+                    "ExportName": "PrecognitoApi"
                 }
             ],
             "Tags": [],
@@ -182,6 +182,6 @@ The output will display the API-Gateway URL for the front end
  
 ```
 Browser URL: https://3dwlmgnks6.execute-api.eu-west-2.amazonaws.com/Prod/query/id
-Response:    com.liquidlabs.logscape.cloud.query.QueryResource
+Response:    io.precognito.services.query.QueryResource
 ```
 1. Configure the User interface URL to point to the API-Gateway address

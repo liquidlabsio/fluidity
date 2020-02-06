@@ -3,7 +3,7 @@ DEFAULT_TENANT='precognito-user-data'
 
 function checkUserLogin(){
     if (window.location.pathname.endsWith("index.html")) {
-        let auth = window.localStorage.getItem("logscape-auth")
+        let auth = window.localStorage.getItem("precognito-auth")
         if (auth == null || auth.length == 0) {
             alert("User is not logged in")
             window.location.href = "signin.html"
