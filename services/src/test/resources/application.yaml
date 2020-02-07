@@ -1,0 +1,57 @@
+# TEST Configuration file
+# key = value
+
+# used to configured how real the test is;
+# TEST = no connectivity; DEV = connected; PROD = connected
+#
+cloud:
+  region: eu-west-2
+
+precognito:
+  prefix: precog-dev
+  services:
+    storage: TEST
+    indexer: TEST
+    query: TEST
+
+"%dev":
+  precognito:
+    services:
+      storage: AWS
+      indexer: AWS
+      query: AWS
+  quarkus:
+    dynamodb:
+      sync-client:
+        type: apache
+      aws:
+        region: eu-west-2
+        credentials:
+          type: default
+
+quarkus:
+  dynamodb:
+    sync-client:
+      type: apache
+    #      endpoint-override: http://192.168.99.100:8000
+    aws:
+      credentials:
+        type: default
+  # DEBUG console logging
+  log:
+    console:
+      enable: true
+      format: "%d{HH:mm:ss} %-5p [%c] %s%e%n"
+      level: TRACE
+
+    # TRACE file logging
+    file:
+      enable: true
+      path: /tmp/quarkus.log
+      level: TRACE
+      format: "%d{HH:mm:ss} %-5p [%c{2.}]] (%t) %s%e%n"
+
+    # custom loggers
+    category:
+      "io.precognito":
+        level: DEBUG

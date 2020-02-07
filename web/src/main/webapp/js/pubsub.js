@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
 
-    console.log("Logscape PubSub")
+    console.log("Precognito PubSub")
 
     var topics = {}
 

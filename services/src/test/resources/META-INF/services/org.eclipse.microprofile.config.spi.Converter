@@ -1,0 +1,4 @@
+io.precognito.services.storage.StorageFactoryConverter
+io.precognito.services.storage.IndexingFactoryConverter
+io.precognito.services.query.QueryFactoryConverter
+io.precognito.services.search.SearchFactoryConverter
