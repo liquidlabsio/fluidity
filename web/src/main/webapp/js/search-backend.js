@@ -1,6 +1,6 @@
 
 $(document).ready(function () {
-    binding()
+    searchBackendBinding()
 
 });
 
@@ -31,7 +31,7 @@ class SearchFixture extends SearchInterface {
     submitSearch(search) {
         $.Topic(Precognito.Search.Topics.setSearchFiles).publish(searchFileUrls);
     }
-    searchFile(fileUrl, search) {
+    searchFile(search, fileUrl) {
         $.Topic(Precognito.Search.Topics.setSearchFileResults).publish(searchFileResults);
     }
     getFinalResult(search, searchedFiles) {
@@ -42,62 +42,99 @@ class SearchFixture extends SearchInterface {
 
 class SearchRest extends SearchInterface {
 
+    searchToForm(search) {
+        var formData = new FormData();
+//        formData.append("origin", JSON.stringify(search.origin));
+        formData.append("uid", search.uid);
+        formData.append("expression", JSON.stringify(search.expression));
+        formData.append("from", search.from);
+        formData.append("to", search.to);
+        return formData;
+    }
+
     submitSearch(search) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/search/submit', search,
-            function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Search.Topics.setSearchFiles).publish(response);
+        jQuery.ajax({
+            type: 'POST',
+            url: SERVICE_URL + '/search/submit',
+            contentType: 'application/json',
+            data: JSON.stringify(search),
+            dataType: 'json',
+            success: function(response) {
+                                       $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                                       $.Topic(Precognito.Search.Topics.setSearchFiles).publish(response);
+                                   }
+            ,
+            fail: function (xhr, ajaxOptions, thrownError) {
+                                   alert(xhr.status);
+                                   alert(thrownError);
+                                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+
             }
-        ).fail(
-            function (xhr, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(thrownError);
-            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-        })
+        });
     }
-    searchFile(fileUrl, search) {
+    searchFile(search, fileUrls) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/search/file/', { fileUrl: fileUrl, search: search },
-            function(response) {
+        let self = this;
+        let formData = this.searchToForm(search);
+
+        jQuery.ajax({
+            type: 'POST',
+            url: SERVICE_URL + '/search/files/' + encodeURIComponent(DEFAULT_TENANT) + "/"+ encodeURIComponent(fileUrls),
+            contentType: 'multipart/form-data',
+            data: self.searchToForm(search),
+            processData: false,
+            contentType: false,
+            cache : false,
+            success: function(response) {
+               $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+               $.Topic(Precognito.Search.Topics.setSearchFileResults).publish(response);
+            },
+            fail: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Search.Topics.setSearchFileResults).publish(response);
             }
-        ).fail(
-            function (xhr, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(thrownError);
-            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-        })
+        });
     }
     getFinalResult(search, searchedFiles) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/search/finalize', { search: search, searchedFiles: searchedFiles},
-            function(response) {
+        let self = this;
+        let formData = this.searchToForm(search);
+
+        jQuery.ajax({
+            type: 'POST',
+            url: SERVICE_URL + '/search/finalize/' + encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(searchedFiles),
+            contentType: 'multipart/form-data',
+            data: self.searchToForm(search),
+            processData: false,
+            contentType: false,
+            cache : false,
+            success: function(response) {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Logscape.Search.Topics.setFinalResult).publish(response);
+                $.Topic(Precognito.Search.Topics.setFinalResult).publish(response);
+            },
+            fail: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
             }
-        ).fail(
-            function (xhr, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(thrownError);
-            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-        })
+        });
     }
 
 }
 
-function binding () {
-     let backend = new SearchFixture();
-//    let backend = new SearchRest();
+function searchBackendBinding() {
+//     let backend = new SearchFixture();
+    let backend = new SearchRest();
 
     console.log("Backend is using:" + backend.constructor.name)
 
     $.Topic(Precognito.Search.Topics.submitSearch).subscribe(function(search) {
         backend.submitSearch(search);
     })
-    $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(fileUrl, search) {
-        backend.searchFile(fileUrl, search);
+    $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, fileUrl) {
+        backend.searchFile(search, fileUrl);
     })
     $.Topic(Precognito.Search.Topics.getFinalResult).subscribe(function(search, searchedFiles) {
         backend.getFinalResult(search, searchedFiles);

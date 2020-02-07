@@ -5,6 +5,8 @@ import io.precognito.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,4 +49,21 @@ public class FixturedStorageService implements Storage {
     public String getSignedDownloadURL(String region, String storageUrl) {
         return "not implemented";
     }
+
+    @Override
+    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+        return null;
+    }
+
+    @Override
+    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
+        return null;
+    }
+
+    @Override
+    public String getBucketName(String tenant) {
+        return "s3://" + tenant;
+    }
+
+
 }

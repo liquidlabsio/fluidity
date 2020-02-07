@@ -33,6 +33,7 @@ class Search {
         $('#submitSearch').click(function(){
                 console.log("Submit Search")
                 self.submitSearch({
+                    origin: 'username',
                     uid: new Date().getTime(),
                     expression: $('#searchInput').val(),
                     from: new Date().getTime() - 1000,
@@ -56,21 +57,25 @@ class Search {
 
 
     submitSearch(search) {
-        this.search = search;
-        $.Topic(Precognito.Search.Topics.submitSearch).publish(search);
+        console.log("Setting Search:"+ search)
+        this.searchRequest = search;
+        $.Topic(Precognito.Search.Topics.submitSearch).publish(this.searchRequest);
     }
     setFileUrls(fileUrls) {
-        self = this;
+        console.log("Got Files:" + fileUrls)
+        let self = this;
         this.searchFileUrls = fileUrls;
         this.searchedFileUrls = []
         this.searchFileUrls.forEach(function(fileUrl, index, arr){
-            $.Topic(Precognito.Search.Topics.searchFile).publish(fileUrl, self.search)
+            console.log("fileRequest:" + fileUrl + " index:" + index + " self:" + self)
+            console.log(self)
+            // TODO: look at chunking them together
+            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileUrl])
         })
-
     }
 
     setSearchFileResults(histoUrl, eventsUrl) {
-        self = this;
+        let self = this;
         console.log("Got Result, total: " + this.searchedFileUrls.length + " of :" + searchFileUrls )
         this.searchEditor.setValue("Got Result, total: " + this.searchedFileUrls.length + " of:" + this.searchFileUrls.length)
 
@@ -79,11 +84,11 @@ class Search {
             histoUrl: histoUrl
         })
         if (this.searchedFileUrls.size == searchFileUrls.size) {
-            $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.search, self.searchedFileUrls);
+            $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedFileUrls);
         }
     }
     setFinalResult(results) {
-        this.searchEditor.setValue(results);
-        console.log("Finished:" + this.search)
+        this.searchEditor.setValue(JSON.stringify(results));
+        console.log("Finished:" + this.searchRequest)
     }
 }

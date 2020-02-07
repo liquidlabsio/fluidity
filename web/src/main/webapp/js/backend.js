@@ -1,7 +1,9 @@
 
 $(document).ready(function () {
+
+    backendBinding()
 $.ajaxSetup({
-//    crossDomain: true
+    crossDomain: true
 //    ,
 //    xhrFields: {
 //        withCredentials: true
@@ -10,7 +12,7 @@ $.ajaxSetup({
 //    password: 'test'
 });
 
-    binding()
+
 
 });
 
@@ -197,7 +199,7 @@ class RestVersion extends FilesInterface {
     }
 }
 
-function binding () {
+function backendBinding () {
     // let backend = new FilesFixture();
     let backend = new RestVersion();
 

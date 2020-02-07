@@ -3,11 +3,11 @@
 
 # What is it?
 
-Cloud native, serverless log analysis runtime that uses the latest technologies to run at minimum cost on the Cloud. 
-Logging is expensive; this tool is meant to be cheap and simple. It provides basic 
+Cloud native, serverless machine learning, serverless search engine using the latest technologies to run at minimum cost on the Cloud. 
+Data processing is expensive; this tool is meant to be cheap and simple. It provides basic 
 functionality that most people need. 
 * upload data to storage
-* import existing storeage data
+* import existing storage data
 * then enrich it with meta data (i.e. human readable tags)
 * find it by the tags and view the raw data
 * search, like a distributed grep
@@ -28,7 +28,7 @@ If you want streaming realtime correlations and alerts etc then look elsewhere. 
 # Why another logging tool?
 
 Because you can never have enough! 
-Seriously though, Logscape runs in your VPC. This means you own the total 
+Seriously though, Precognito runs in your VPC and its b. This means you own the total 
 cost of infrastructure. It is designed to run serverless in the most optimial 
 way possible; mostly running in the free tier on supported cloud providers
  (currently AWS). When not in use you only pay for S3/GFS storage (which is relatively cheap). 

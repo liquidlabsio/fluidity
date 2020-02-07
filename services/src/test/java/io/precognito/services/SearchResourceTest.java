@@ -53,8 +53,10 @@ class SearchResourceTest {
         search.expression = "this is a test";
         ExtractableResponse<Response> response = given()//.contentType("application/json")
                 .multiPart("search", search)
-                .when().pathParam("files", new String[] { fileUrl })
-                .post("/search/file/{files}")
+                .when()
+                .pathParam("tenant", "tenant")
+                .pathParam("files", new String[] { fileUrl, fileUrl })
+                .post("/search/files/{tenant}/{files}")
                 .then()
                 .statusCode(200).extract();
         String[] as = response.body().as(String[].class);
@@ -67,8 +69,10 @@ class SearchResourceTest {
         search.expression = "this is a test";
         ExtractableResponse<Response> response = given()
                 .multiPart("search", search)
-                .when().pathParam("files", new String[] { fileUrl })
-                .post("/search/finalize/{files}")
+                .when()
+                .pathParam("files", new String[] { fileUrl })
+                .pathParam("tenant", "tenant")
+                .post("/search/finalize/{tenant}/{files}")
                 .then()
                 .statusCode(200).extract();
         String[] as = response.body().as(String[].class);

@@ -55,7 +55,6 @@ public class StorageResource {
             // for now Im doing it in process here.
             FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
 
-
             query.put(stored);
 
             Response.ResponseBuilder responseBuilder = Response.status(200).entity("Uploaded and Indexed:" + stored);

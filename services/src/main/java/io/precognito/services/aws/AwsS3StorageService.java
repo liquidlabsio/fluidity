@@ -17,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +30,7 @@ public class AwsS3StorageService implements Storage {
     private static final long LIMIT = (long) (FileUtils.ONE_MB * 4.5);
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageService.class);
 
-    @ConfigProperty(name = "precognito.prefix", defaultValue = "precognito.")
+    @ConfigProperty(name = "precognito.prefix", defaultValue = "precognito-")
     private String PREFIX;
 
 
@@ -171,7 +168,7 @@ public class AwsS3StorageService implements Storage {
         return upload;
     }
 
-    private String getBucketName(String tenant) {
+    public String getBucketName(String tenant) {
         return (PREFIX + "-" + tenant).toLowerCase();
     }
 
@@ -209,6 +206,7 @@ public class AwsS3StorageService implements Storage {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             IOUtils.copyLarge(inputStream, baos, 0, LIMIT);
+            inputStream.close();
             return baos.toByteArray();
 
         } catch (Exception e) {
@@ -216,6 +214,30 @@ public class AwsS3StorageService implements Storage {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+        bind();
+        try {
+            URI uri = new URI(storageUrl);
+            String bucket = uri.getHost();
+            String filename = uri.getPath().substring(1);
+
+            AmazonS3 s3Client = getAmazonS3Client(region);
+            S3Object s3object = s3Client.getObject(bucket, filename);
+            return s3object.getObjectContent();
+
+        } catch (Exception e) {
+            log.error("Failed to retrieve {}", storageUrl, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
+        throw new RuntimeException("Not implemented yet");
+    }
+
     @Override
     public String getSignedDownloadURL(String region, String storageUrl) {
         bind();

@@ -1,6 +1,7 @@
 package io.precognito.services.search;
 
 import io.precognito.services.query.FileMetaDataQueryService;
+import io.precognito.services.storage.Storage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
@@ -26,6 +27,9 @@ public class SearchResource {
     @ConfigProperty(name = "precognito.search")
     SearchService searchService;
 
+    @ConfigProperty(name = "precognito.storage")
+    Storage storageService;
+
     @GET
     @Path("/id")
     @Produces(MediaType.TEXT_PLAIN)
@@ -36,20 +40,20 @@ public class SearchResource {
     @POST
     @Path("/submit")
     public String[] submit(Search search) {
-        return searchService.submit(search);
+        return searchService.submit(search, query);
     }
 
     @POST
-    @Path("/file/{files}")
+    @Path("/files/{tenant}/{files}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String[] file(@PathParam("files") String[] fileUrl, @MultipartForm Search search) {
-        return searchService.searchFile(fileUrl, search);
+    public String[] file(@PathParam("tenant") String tenant, @PathParam("files") String[] fileUrl, @MultipartForm Search search) {
+        return searchService.searchFile(fileUrl, search, storageService, cloudRegion, tenant);
     }
 
     @POST
-    @Path("/finalize/{files}")
+    @Path("/finalize/{tenant}/{files}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String[] finaliseResults(@PathParam("files") String[] files, @MultipartForm Search search) {
+    public String[] finaliseResults(@PathParam("tenant") String tenant, @PathParam("files") String[] files, @MultipartForm Search search) {
         return searchService.finalizeResults(files, search);
     }
 }
