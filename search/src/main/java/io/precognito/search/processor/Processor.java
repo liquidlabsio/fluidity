@@ -1,6 +1,6 @@
-package io.precognito.services.search.processor;
+package io.precognito.search.processor;
 
-import io.precognito.services.search.Search;
+import io.precognito.search.Search;
 
 import java.io.InputStream;
 import java.io.OutputStream;

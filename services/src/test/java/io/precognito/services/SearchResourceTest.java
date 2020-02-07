@@ -1,7 +1,6 @@
 package io.precognito.services;
 
-import io.precognito.services.search.Search;
-import io.precognito.services.search.SearchResource;
+import io.precognito.search.Search;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -9,9 +8,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;

@@ -36,6 +36,7 @@
     <modules>
         <module>web</module>
         <module>services</module>
+        <module>search</module>
     </modules>
 
 

@@ -1,8 +1,9 @@
 package io.precognito.services.search;
 
+import io.precognito.search.Search;
+import io.precognito.search.processor.SimpleSearch;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
-import io.precognito.services.search.processor.SimpleSearch;
 import io.precognito.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

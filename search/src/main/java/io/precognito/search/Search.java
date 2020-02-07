@@ -1,11 +1,10 @@
-package io.precognito.services.search;
+package io.precognito.search;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
