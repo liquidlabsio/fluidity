@@ -1,31 +1,36 @@
 package io.precognito.search.processor;
 
 import io.precognito.search.Search;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
-import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import java.io.*;
 
 class SimpleSearchTest {
 
     @Test
-    public void testSubmit() {
+    public void testSearchGrep() throws Exception {
 
-//        Search search = new Search();
-//        search.expression = "this is a test";
-//        ExtractableResponse<Response> response = given().contentType("application/json")
-//                .body(search)
-//                .when()
-//                .post("/search/submit")
-//                .then()
-//                .statusCode(200).extract();
-//        String[] as = response.body().as(String[].class);
-//        System.out.println("Got:" + Arrays.toString(as));
+        StringBuilder fileContentAsString = makeFileContent();
+
+        SimpleSearch simpleSearch = new SimpleSearch();
+        Search search = new Search();
+        search.expression = "* | * | * | * | CPU | *";
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int process = simpleSearch.process(search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos);
+        System.out.println("Processed:" + process);
+        String outFileContents = new String(baos.toByteArray());
+        System.out.println(outFileContents);
     }
 
+    private StringBuilder makeFileContent() throws InterruptedException {
+        StringBuilder fileContentAsString = new StringBuilder();
+        for (int i = 0; i< 100; i++) {
+            fileContentAsString.append(String.format("%s %s CPU:%d", System.currentTimeMillis(), i % 2 == 0 ?"ERROR" : "INFO", i));
+            fileContentAsString.append('\n');
+            Thread.sleep(10);
+        }
+        return fileContentAsString;
+    }
 
 }

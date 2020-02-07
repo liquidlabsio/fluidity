@@ -1,5 +1,6 @@
 package io.precognito.search;
 
+import io.precognito.search.matchers.*;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
@@ -9,10 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- *   uid: new Date().getTime(),
- *                     search: $('#searchInput').val(),
- *                     from: new Date().getTime() - 1000,
- *                     to: new Date().getTime()
+ *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor
  */
 @RegisterForReflection
 public class Search {
@@ -25,6 +23,7 @@ public class Search {
     @PartType(MediaType.TEXT_PLAIN)
     public String uid;
 
+    // Parts: bucket | host | tags | filename | lineMatcher | fieldExtractor
     @FormParam("expression")
     @PartType(MediaType.TEXT_PLAIN)
     public String expression;
@@ -47,5 +46,13 @@ public class Search {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    transient PMatcher matcher;
+    public boolean matches(String nextLine) {
+        if (matcher == null){
+            matcher = MatcherFactory.getMatcher(expression);
+        }
+        return matcher.matches(nextLine);
     }
 }
