@@ -18,7 +18,7 @@ public class SimpleSearch implements Processor {
 
     @Override
     public void close() throws Exception {
-        input.close();
-        output.close();
+        if (input !=null) input.close();
+        if (output !=null) output.close();
     }
 }

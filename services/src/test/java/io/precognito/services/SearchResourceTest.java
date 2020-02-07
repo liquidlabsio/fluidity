@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;
@@ -24,10 +26,6 @@ class SearchResourceTest {
     @AfterEach
     void tearDown() {
     }
-
-    @Inject
-    SearchResource search;
-
 
     @Test
     public void testSubmit() {
@@ -48,14 +46,19 @@ class SearchResourceTest {
     @Test
     public void testFileSearch() {
 
-        String fileUrl = "s3://bucket/fileUrl";
+        /**
+         * Note: file url arrays dont get passed properly from RestAssured
+         */
         Search search = new Search();
+        search.origin = "123";
         search.expression = "this is a test";
-        ExtractableResponse<Response> response = given()//.contentType("application/json")
-                .multiPart("search", search)
-                .when()
+        ExtractableResponse<Response> response = given()
+                .multiPart("origin", search.origin)
+                .multiPart("expression", search.expression)
+
                 .pathParam("tenant", "tenant")
-                .pathParam("files", new String[] { fileUrl, fileUrl })
+                .pathParam("files",  "s3://bucket/fileUrl")
+                .when()
                 .post("/search/files/{tenant}/{files}")
                 .then()
                 .statusCode(200).extract();
@@ -64,13 +67,14 @@ class SearchResourceTest {
     }
     @Test
     public void testFinalize() {
-        String fileUrl = "fileUrl";
         Search search = new Search();
+        search.origin = "123";
         search.expression = "this is a test";
         ExtractableResponse<Response> response = given()
-                .multiPart("search", search)
+                .multiPart("origin", search.origin)
+                .multiPart("expression", search.expression)
                 .when()
-                .pathParam("files", new String[] { fileUrl })
+                .pathParam("files",  "s3://bucket/fileUrl")
                 .pathParam("tenant", "tenant")
                 .post("/search/finalize/{tenant}/{files}")
                 .then()
