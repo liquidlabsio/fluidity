@@ -34,7 +34,7 @@ jobs:
       - store_test_results:
           path: test-results
 
-    - run:
+      - run:
         name: Install module deps download to work
         command: mvn package install -Dmaven.test.skip=true
 
