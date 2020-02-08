@@ -35,8 +35,8 @@ jobs:
           path: test-results
 
       - run:
-        name: Install module deps download to work
-        command: mvn package install -Dmaven.test.skip=true
+          name: Install module deps download to work
+          command: mvn package install -Dmaven.test.skip=true
 
       # Download maven dependencies so that we can cache them
       # ########################
