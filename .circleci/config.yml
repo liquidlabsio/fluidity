@@ -35,6 +35,11 @@ jobs:
           path: test-results
 
       - run:
+          name: Setup maven
+          commnd: mvn -N io.takari:maven:wrapper
+          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+
+      - run:
           name: Install module deps download to work
           command: mvn package install -Dmaven.test.skip=true
 
@@ -44,10 +49,6 @@ jobs:
           name: Download Dependencies
           command: mvn dependency:go-offline
 
-      - run:
-          name: Setup maven
-          commnd: mvn -N io.takari:maven:wrapper
-          command: mvn -N io.takari:maven:wrapper -Dmaven=3.5.3
 
 
       # Standard maven build and test phases - does not perform a native build (or verify)
