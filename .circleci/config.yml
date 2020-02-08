@@ -41,13 +41,13 @@ jobs:
 
       - run:
           name: Install module deps download to work
-          command: mvn package install -Dmaven.test.skip=true
+          command: ./mvnw package install -Dmaven.test.skip=true
 
       # Download maven dependencies so that we can cache them
       # ########################
       - run:
           name: Download Dependencies
-          command: mvn dependency:go-offline
+          command: ./mvnw dependency:go-offline
 
 
 
