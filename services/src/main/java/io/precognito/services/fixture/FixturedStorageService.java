@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FixturedStorageService implements Storage {
@@ -59,7 +56,10 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
-        return urls.stream().collect(Collectors.toMap(url -> url, url -> getInputStream(region, tenant, url)));
+        // Note: Using linked hashmap to to match the urls list indexing
+        LinkedHashMap<String, InputStream> results = new LinkedHashMap<>();
+        urls.stream().forEach(url -> results.put(url, getInputStream(region, tenant, url)));
+        return results;
     }
 
     @Override

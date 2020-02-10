@@ -102,7 +102,7 @@ public class FileMeta {
 
         @Override
         public String toString() {
-            return "UploadMeta{" +
+            return "FileMeta{" +
                     "tenant='" + tenant + '\'' +
                     ", resource='" + resource + '\'' +
                     ", tags='" + tags + '\'' +

@@ -13,14 +13,9 @@ public class MatcherFactory {
      */
     public static List<PMatcher> matchers = Arrays.asList(new PPatternMatcher(), new GrepMatcher(), new AllMatcher());
 
-    public static PMatcher getMatcher(String expression) {
-        String[] split = expression.split("\\|");
-
-        final String lineMatcherExpression = split.length > 4 ? split[4].trim() : "";
-
-
-        List<PMatcher> collect = matchers.stream().filter(matcher -> matcher.isForMe(lineMatcherExpression)).collect(Collectors.toList());
+    public static PMatcher getMatcher(String lineFilter) {
+        List<PMatcher> collect = matchers.stream().filter(matcher -> matcher.isForMe(lineFilter)).collect(Collectors.toList());
         if (collect.size() == 0) return new AllMatcher();
-        else return collect.iterator().next().clone(lineMatcherExpression);
+        else return collect.iterator().next().clone(lineFilter);
     }
 }

@@ -1,12 +1,9 @@
 package io.precognito.search.processor;
 
-import com.google.common.io.LineReader;
 import io.precognito.search.Search;
 
 import java.io.*;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Grep or Filter lines according to the search expression.
@@ -29,20 +26,27 @@ public class SimpleSearch implements Processor {
 
         int read = 0;
 
+        BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
         Scanner scanner = new Scanner(bis);
+        long position = 0;
         while (scanner.hasNextLine()) {
             String nextLine = scanner.nextLine();
-            if (search.matches(nextLine)) {
-                output.write(Long.toString(System.currentTimeMillis()).getBytes());
-                output.write(':');
-                output.write(nextLine.getBytes());
-                output.write('\n');
-                read++;
-            }
-        }
-        return read;
 
+            if (search.matches(nextLine)) {
+                bos.write(Long.toString(System.currentTimeMillis()).getBytes());
+                bos.write(':');
+                bos.write(Long.toString(position).getBytes());
+                bos.write(':');
+                bos.write(nextLine.getBytes());
+                bos.write('\n');
+                read++;
+                read++;// NL
+            }
+            position += nextLine.length();
+        }
+        bos.flush();
+        return read;
     }
 
     @Override

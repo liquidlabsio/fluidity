@@ -22,7 +22,10 @@ class SimpleRawFileAggregatorTest {
         Search search = null;
         SimpleRawFileAggregator aggregator = new SimpleRawFileAggregator(streams, null);
         String[] processed = aggregator.process();
-        String eventsData = processed[1];
+        int totalEvents = Integer.parseInt(processed[0]);
+
+        assertEquals(20, totalEvents);
+        String eventsData = processed[2];
         System.out.println(eventsData);
         assertTrue(eventsData != null);
         assertTrue(eventsData.contains("file1.txt,1"));

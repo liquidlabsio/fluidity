@@ -57,7 +57,7 @@ class SearchFixturedIntegrationTest {
         Search search = getSearch();
 
         System.out.printf("Executing: %s%n", search);
-        List<String> fileUrls = search(search);
+        List<FileMeta> fileUrls = search(search);
 
         System.out.printf("Searching these files:%s%n", fileUrls);
 
@@ -89,15 +89,15 @@ class SearchFixturedIntegrationTest {
     }
 
 
-    private List<String> searchFile(String fileUrl, Search search) {
-        return Arrays.asList(searchResource.file("TENANT", new String[] { fileUrl}, search));
+    private List<String> searchFile(FileMeta file, Search search) {
+        return Arrays.asList(searchResource.file("TENANT", new String[] { file.getStorageUrl()}, new Long[] { file.getToTime() }, search));
     }
 
-    private List<String> search(Search search) {
-        String[] fileUrls = searchResource.submit(search);
-        assertNotNull(fileUrls);
-        assertEquals("No files listed", 1, fileUrls.length);
-        return Arrays.asList(fileUrls);
+    private List<FileMeta> search(Search search) {
+        FileMeta[] files = searchResource.submit(search);
+        assertNotNull(files);
+        assertEquals("No files listed", 1, files.length);
+        return Arrays.asList(files);
     }
 
     public void upload() throws Exception {

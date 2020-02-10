@@ -9,7 +9,7 @@ class MatcherFactoryTest {
     @Test
     public void testGrepReturned() throws Exception {
         // bucket | host | tags | filename | lineMatcher | fieldExtractor
-        String expression = "* | * | * | * | CPU | *";
+        String expression = "CPU";
         PMatcher matcher = MatcherFactory.getMatcher(expression);
         assertEquals(GrepMatcher.class.getSimpleName(), matcher.getClass().getSimpleName());
     }
@@ -17,7 +17,7 @@ class MatcherFactoryTest {
     @Test
     public void testPatternReturned() throws Exception {
         // bucket | host | tags | filename | lineMatcher | fieldExtractor
-        String expression = "* | * | * | * | .*CPU.* | *";
+        String expression = ".*CPU.*";
         PMatcher matcher = MatcherFactory.getMatcher(expression);
         assertEquals(PPatternMatcher.class.getSimpleName(), matcher.getClass().getSimpleName());
     }
@@ -25,7 +25,7 @@ class MatcherFactoryTest {
     @Test
     public void testAllMatchReturned() throws Exception {
         // bucket | host | tags | filename | lineMatcher | fieldExtractor
-        String expression = "* | * | * | * | * | *";
+        String expression = "*";
         PMatcher matcher = MatcherFactory.getMatcher(expression);
         assertEquals(AllMatcher.class.getSimpleName(), matcher.getClass().getSimpleName());
     }

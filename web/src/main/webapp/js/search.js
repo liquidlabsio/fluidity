@@ -49,7 +49,7 @@ class Search {
             self.setSearchFileResults(fileResults[0], fileResults[1])
         })
         $.Topic(Precognito.Search.Topics.setFinalResult).subscribe(function(finalResult) {
-                console.log("Set final results:" + finalResult)
+//                console.log("Set final results:" + finalResult)
                 self.setFinalResult(finalResult)
         })
         $('.searchZoom').click(function(event){
@@ -90,39 +90,43 @@ class Search {
     submitSearch(search) {
         console.log("Setting Search:"+ search)
         this.searchRequest = search;
+        this.startTime =  new Date();
         $.Topic(Precognito.Search.Topics.submitSearch).publish(this.searchRequest);
     }
-    setFileUrls(fileUrls) {
-        console.log("Got Files:" + fileUrls)
+    setFileUrls(fileMetas) {
+        console.log("Got Files:" + fileMetas)
         let self = this;
-        this.searchFileUrls = fileUrls;
+        this.searchFileMetas = fileMetas;
         this.searchedEvents = []
         this.searchedHistos = []
-        this.searchFileUrls.forEach(function(fileUrl, index, arr){
-            console.log("fileRequest:" + fileUrl + " index:" + index + " self:" + self)
+        this.searchFileMetas.forEach(function(fileMeta, index, arr){
+            console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
             console.log(self)
             // TODO: look at chunking them together
-            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileUrl])
+            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta.storageUrl], [fileMeta.toTime])
         })
     }
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-        console.log("Got Result, total: " + this.searchedHistos.length + " of :" + searchFileUrls )
-        this.searchEditor.setValue("Got Result, total: " + this.searchedHistos.length + " of:" + this.searchFileUrls.length)
+        console.log("Got Result, total: " + this.searchedHistos.length + " of :" + this.searchFileMetas.length )
+        this.searchEditor.setValue("Got Result, total: " + this.searchedHistos.length + " of:" + this.searchFileMetas.length)
 
         this.searchedEvents.push(eventsUrl)
         this.searchedHistos.push(histoUrl)
 
-        if (this.searchedEvents.size == searchFileUrls.size) {
+        if (this.searchedEvents.length == this.searchFileMetas.length) {
+            this.searchEditor.setValue("Got all results! Requesting aggregation:" + this.searchFileMetas.length)
             $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedHistos, self.searchedEvents);
         }
     }
-    setFinalResult(results) {
 
-        console.log("Result")
-        console.log(results)
-        this.searchEditor.setValue(results[1]);
+    setFinalResult(results) {
+//        console.log("Result")
+//        console.log(results)
+        let elapsed = new Date().getTime() - this.startTime.getTime();
+        $("#searchStats").text("Events: " + Precognito.formatNumber(results[0]) + " Elapsed: " + Precognito.formatNumber(elapsed))
+        this.searchEditor.setValue(results[2]);
         console.log("Finished:" + this.searchRequest)
     }
 }

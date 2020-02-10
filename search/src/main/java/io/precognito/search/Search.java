@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 /**
- *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor
+ *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
  */
 @RegisterForReflection
 public class Search {
@@ -52,7 +52,9 @@ public class Search {
     transient PMatcher matcher;
     public boolean matches(String nextLine) {
         if (matcher == null){
-            matcher = MatcherFactory.getMatcher(expression);
+            String[] split = expression.split("\\|");
+            final String lineMatcherExpression = split.length > 4 ? split[4].trim() : "";
+            matcher = MatcherFactory.getMatcher(lineMatcherExpression);
         }
         return matcher.matches(nextLine);
     }

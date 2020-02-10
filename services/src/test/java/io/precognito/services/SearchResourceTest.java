@@ -50,7 +50,7 @@ class SearchResourceTest {
                 .post("/search/submit")
                 .then()
                 .statusCode(200).extract();
-        String[] as = response.body().as(String[].class);
+        FileMeta[] as = response.body().as(FileMeta[].class);
         System.out.println("Got:" + Arrays.toString(as));
     }
 
@@ -72,8 +72,9 @@ class SearchResourceTest {
 
                 .pathParam("tenant", "tenant")
                 .pathParam("files",  "s3://fixtured-storage-bucket/resource/test-data/file-to-upload.txt")
+                .pathParam("mods", "1234")
                 .when()
-                .post("/search/files/{tenant}/{files}")
+                .post("/search/files/{tenant}/{files}/{mods}")
                 .then()
                 .statusCode(200).extract();
         String[] as = response.body().as(String[].class);

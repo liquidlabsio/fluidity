@@ -114,7 +114,9 @@ if (typeof Precognito == 'undefined') {
             if (current != null) return current;
             return "en"
         },
-
+        formatNumber: function(num) {
+            return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+        },
         Workspace: {},
         Components: {},
         Util: {
