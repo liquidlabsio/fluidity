@@ -1,5 +1,6 @@
 package io.precognito.services.search;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.services.query.FileMetaDataQueryService;
 import io.precognito.services.storage.Storage;
@@ -8,6 +9,7 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
 
 /**
  *     submitSearch(search)
@@ -52,9 +54,12 @@ public class SearchResource {
     }
 
     @POST
-    @Path("/finalize/{tenant}/{files}")
+    @Path("/finalize/{tenant}/{histos}/{events}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String[] finaliseResults(@PathParam("tenant") String tenant, @PathParam("files") String[] files, @MultipartForm Search search) {
-        return searchService.finalizeResults(files, search);
+    public String[] finaliseResults(@PathParam("tenant") String tenant, @PathParam("histos") String histos, @PathParam("events") String events,  @MultipartForm Search search) {
+        String[] histoArray = histos.split(",");
+        String[] eventsArray = events.split(",");
+
+        return searchService.finalizeResults(Arrays.asList(histoArray), Arrays.asList(eventsArray), search, tenant, cloudRegion, storageService);
     }
 }

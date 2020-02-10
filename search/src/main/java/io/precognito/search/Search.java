@@ -8,6 +8,7 @@ import org.jboss.resteasy.annotations.providers.multipart.PartType;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 /**
  *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor
@@ -38,12 +39,12 @@ public class Search {
 
     public String getSearchDestination(String bucketName, String searchUrl) {
         try {
-            URI uri = new URI(searchUrl);
+            URI uri = new URI(searchUrl.replace(" ", "%20"));
             String bucket = uri.getHost();
             String filename = uri.getPath().substring(1);
-            return new URI("s3://" + bucketName + "/" + "search-staging-/" + this.uid + "/" + filename).toString();
+            return new URI(bucketName + "/" + "search-staging/" + this.uid + "/" + filename).toString();
 
-        } catch (URISyntaxException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -54,5 +55,17 @@ public class Search {
             matcher = MatcherFactory.getMatcher(expression);
         }
         return matcher.matches(nextLine);
+    }
+
+    @Override
+    public String toString() {
+        return "Search{" +
+                "origin='" + origin + '\'' +
+                ", uid='" + uid + '\'' +
+                ", expression='" + expression + '\'' +
+                ", from=" + from +
+                ", to=" + to +
+                ", matcher=" + matcher +
+                '}';
     }
 }

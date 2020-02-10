@@ -5,12 +5,12 @@ import io.precognito.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FixturedStorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(FixturedStorageService.class);
@@ -24,7 +24,7 @@ public class FixturedStorageService implements Storage {
     @Override
     public FileMeta upload(String region, FileMeta upload) {
         log.info("uploading:" + upload);
-        upload.setStorageUrl("s3://somebucket/"+region + "/" + upload.getFilename() + "-to-time=" + upload.getToTime());
+        upload.setStorageUrl("s3://fixtured-storage-bucket/" + upload.getResource() + "/" + upload.getFilename());
         storage.put(upload.getStorageUrl(), upload.fileContent);
         upload.setFileContent(new byte[0]);
         return upload;
@@ -52,12 +52,26 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
-        return null;
+        byte[] content = this.get(region, storageUrl);
+        if (content == null) throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
+        return new ByteArrayInputStream(content);
+    }
+
+    @Override
+    public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
+        return urls.stream().collect(Collectors.toMap(url -> url, url -> getInputStream(region, tenant, url)));
     }
 
     @Override
     public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
-        return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream() {
+            @Override
+            public void close() throws IOException {
+                storage.put(stagingFileResults, this.buf);
+            }
+        };
+
+        return baos;
     }
 
     @Override

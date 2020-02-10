@@ -79,7 +79,7 @@ Precognito.Explorer.FileList = function (table) {
                       editor.addClass(mediumClass)
                   }
                 }
-                aceEditor.resize()
+                explorerEditor.resize()
                 $("#explorerOpenFileName").get(0).scrollIntoView();
                 return false;
         })

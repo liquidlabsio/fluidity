@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -231,6 +232,11 @@ public class AwsS3StorageService implements Storage {
             log.error("Failed to retrieve {}", storageUrl, e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
+        return urls.stream().collect(Collectors.toMap(item -> item, item -> getInputStream(region, tenant, item)));
     }
 
     @Override

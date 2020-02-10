@@ -28,7 +28,6 @@ class Search {
         this.searchEditor.session.setUseWrapMode(true);
     }
     bind() {
-
         let self = this;
         $('#submitSearch').click(function(){
                 console.log("Submit Search")
@@ -53,6 +52,38 @@ class Search {
                 console.log("Set final results:" + finalResult)
                 self.setFinalResult(finalResult)
         })
+        $('.searchZoom').click(function(event){
+                let zoomDirection = $(event.currentTarget).data().zoom;
+                let normalClass = "normalSizeEditor";
+                let mediumClass = "mediumSizeEditor";
+                let largeClass = "largeSizeEditor";
+                let editor = $('#searchResultsEditor')
+                if (editor.hasClass(normalClass)) {
+                    if (zoomDirection == "in") {
+                        editor.removeClass(normalClass)
+                        editor.addClass(mediumClass)
+                    } else {
+                    // already at normal size
+                    }
+                } else if (editor.hasClass(mediumClass)) {
+                    editor.removeClass(mediumClass)
+                    if (zoomDirection == "in") {
+                        editor.addClass(largeClass)
+                    } else {
+                        editor.addClass(normalClass)
+                    }
+                } else if (editor.hasClass(largeClass)) {
+                  if (zoomDirection == "in") {
+                  } else {
+                     editor.removeClass(largeClass)
+                      editor.addClass(mediumClass)
+                  }
+                }
+                self.searchEditor.resize()
+                $("#searchResultsEditor").get(0).scrollIntoView();
+                return false;
+        })
+
     }
 
 
@@ -65,7 +96,8 @@ class Search {
         console.log("Got Files:" + fileUrls)
         let self = this;
         this.searchFileUrls = fileUrls;
-        this.searchedFileUrls = []
+        this.searchedEvents = []
+        this.searchedHistos = []
         this.searchFileUrls.forEach(function(fileUrl, index, arr){
             console.log("fileRequest:" + fileUrl + " index:" + index + " self:" + self)
             console.log(self)
@@ -76,19 +108,21 @@ class Search {
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-        console.log("Got Result, total: " + this.searchedFileUrls.length + " of :" + searchFileUrls )
-        this.searchEditor.setValue("Got Result, total: " + this.searchedFileUrls.length + " of:" + this.searchFileUrls.length)
+        console.log("Got Result, total: " + this.searchedHistos.length + " of :" + searchFileUrls )
+        this.searchEditor.setValue("Got Result, total: " + this.searchedHistos.length + " of:" + this.searchFileUrls.length)
 
-        this.searchedFileUrls.push( {
-            filteredDataUrl: eventsUrl,
-            histoUrl: histoUrl
-        })
-        if (this.searchedFileUrls.size == searchFileUrls.size) {
-            $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedFileUrls);
+        this.searchedEvents.push(eventsUrl)
+        this.searchedHistos.push(histoUrl)
+
+        if (this.searchedEvents.size == searchFileUrls.size) {
+            $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedHistos, self.searchedEvents);
         }
     }
     setFinalResult(results) {
-        this.searchEditor.setValue(JSON.stringify(results));
+
+        console.log("Result")
+        console.log(results)
+        this.searchEditor.setValue(results[1]);
         console.log("Finished:" + this.searchRequest)
     }
 }

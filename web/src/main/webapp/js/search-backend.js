@@ -97,14 +97,17 @@ class SearchRest extends SearchInterface {
             }
         });
     }
-    getFinalResult(search, searchedFiles) {
+    getFinalResult(search, histoFiles, eventFiles) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
 
         jQuery.ajax({
             type: 'POST',
-            url: SERVICE_URL + '/search/finalize/' + encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(searchedFiles),
+            url: SERVICE_URL + '/search/finalize/'
+                    + encodeURIComponent(DEFAULT_TENANT)
+                    + "/" + encodeURIComponent(histoFiles)
+                    + "/" + encodeURIComponent(eventFiles),
             contentType: 'multipart/form-data',
             data: self.searchToForm(search),
             processData: false,
@@ -136,8 +139,8 @@ function searchBackendBinding() {
     $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, fileUrl) {
         backend.searchFile(search, fileUrl);
     })
-    $.Topic(Precognito.Search.Topics.getFinalResult).subscribe(function(search, searchedFiles) {
-        backend.getFinalResult(search, searchedFiles);
+    $.Topic(Precognito.Search.Topics.getFinalResult).subscribe(function(search, eventFiles, histoFiles) {
+        backend.getFinalResult(search, eventFiles, histoFiles);
     })
 
 }

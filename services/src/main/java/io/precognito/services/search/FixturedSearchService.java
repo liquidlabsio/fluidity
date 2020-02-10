@@ -1,7 +1,9 @@
 package io.precognito.services.search;
 
 import io.precognito.search.Search;
+import io.precognito.search.agg.SimpleRawFileAggregator;
 import io.precognito.search.processor.SimpleSearch;
+
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
 import io.precognito.services.storage.Storage;
@@ -10,9 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FixturedSearchService implements SearchService {
@@ -43,11 +43,15 @@ public class FixturedSearchService implements SearchService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new String[] { searchDestination };
+        return new String[] { "s3://no-histo-available", searchDestination };
     }
 
     @Override
-    public String[] finalizeResults(String[] files, Search search) {
-        return new String[] { "histo-results", "Have some text results"};
+    public String[] finalizeResults(List<String> histos, List<String> events, Search search, String tenant, String region, Storage storage) {
+        try (SimpleRawFileAggregator aggregator = new SimpleRawFileAggregator(storage.getInputStreams(region, tenant, events), search)){
+            return aggregator.process();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

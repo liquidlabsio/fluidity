@@ -38,7 +38,6 @@ class StorageResourceTest {
     @Test
     public void sendFile() throws Exception {
 
-        Thread.sleep(60 * 1000);
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("precog-ng-test", "IoTDevice",

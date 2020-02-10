@@ -57,9 +57,11 @@ jobs:
           name: Build (Standard)
           command: ./mvnw clean package -DskipTests -Dmaven.test.skip=true
       - run:
-          name: Verify (Standard)
+          name: Unit Test
           command: ./mvnw -Daws.region=eu-west-2 test
-
+      - run:
+          name: Integration Test
+          command: ./mvnw -Daws.region=eu-west-2 test -P integration
 
 #      - run: mvn package install -Dmaven.test.skip=true
       #- run: mvn integration-test

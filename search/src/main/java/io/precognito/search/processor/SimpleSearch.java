@@ -34,6 +34,8 @@ public class SimpleSearch implements Processor {
         while (scanner.hasNextLine()) {
             String nextLine = scanner.nextLine();
             if (search.matches(nextLine)) {
+                output.write(Long.toString(System.currentTimeMillis()).getBytes());
+                output.write(':');
                 output.write(nextLine.getBytes());
                 output.write('\n');
                 read++;
