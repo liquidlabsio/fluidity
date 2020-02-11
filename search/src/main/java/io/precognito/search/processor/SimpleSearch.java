@@ -61,7 +61,7 @@ public class SimpleSearch implements Processor {
      */
     private long guessTimeInterval(long fromTime, long toTime, long length) {
         // presume average line length = 1024 bytes;
-        long guessedLineCount = length/1024;
+        long guessedLineCount = length > 1024 ? length/1024 : 10;
         return (toTime - fromTime)/guessedLineCount;
     }
 
