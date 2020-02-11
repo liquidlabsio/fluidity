@@ -2,7 +2,10 @@ package io.precognito.search.agg;
 
 import io.precognito.search.Search;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,13 +19,18 @@ import java.util.stream.Collectors;
  * Where FileIndex is the 'index' into the steams LinkedHashMap
  */
 public class SimpleRawFileAggregator implements EventsAggregator {
-    private final Map<String, Scanner> streams;
+    private final Map<String, BufferedReader> streams;
     private final Map<String, Integer> fileLut;
     private final Search search;
     private boolean splitLine = false;
 
     public SimpleRawFileAggregator(Map<String, InputStream> streams, Search search) {
-        this.streams = streams.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> new Scanner(entry.getValue())));
+        this.streams = streams.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey()
+                        , entry -> new BufferedReader(new InputStreamReader(entry.getValue()))
+                        )
+                );
         this.fileLut = populateLut(streams.keySet());
         this.search = search;
         populateLineMap(this.streams);
@@ -34,9 +42,15 @@ public class SimpleRawFileAggregator implements EventsAggregator {
         return results;
     }
 
-    private void populateLineMap(Map<String, Scanner> streams) {
-        streams.entrySet().stream().filter(entry -> entry.getValue().hasNextLine())
-                .forEach(entry -> nextLines.put(entry.getKey(), split(entry.getValue().nextLine()) ));
+    private void populateLineMap(Map<String, BufferedReader> streams) {
+        streams.entrySet().stream()//.filter(entry -> entry.getValue().hasNextLine())
+                .forEach(entry -> {
+                    try {
+                        nextLines.put(entry.getKey(), split(entry.getValue().readLine()) );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 
     private Map.Entry<Long, String> split(String nextLine) {
@@ -54,7 +68,8 @@ public class SimpleRawFileAggregator implements EventsAggregator {
         }
     }
 
-    public String[] process() {
+    @Override
+    public String[] process() throws IOException {
         StringBuilder results = new StringBuilder();
         String[] streamNameAndLine = new String[0];
         int totalEvents = 0;
@@ -69,7 +84,7 @@ public class SimpleRawFileAggregator implements EventsAggregator {
     }
 
     Map<String, Map.Entry<Long, String>> nextLines = new HashMap<>();
-    private String[] getNextLine(Map<String, Scanner> streams) {
+    private String[] getNextLine(Map<String, BufferedReader> streams) throws IOException {
         Map.Entry<String, Map.Entry<Long, String >> nextLine = findNextLine(nextLines);
         if (nextLine == null) {
             return null;
@@ -94,15 +109,22 @@ public class SimpleRawFileAggregator implements EventsAggregator {
         else return collect.iterator().next();
     }
 
-    private Map.Entry<Long, String> readNewStreamLine(Scanner inputStream) {
-        if (inputStream.hasNextLine()){
-            return split(inputStream.nextLine());
+    private Map.Entry<Long, String> readNewStreamLine(BufferedReader reader) throws IOException {
+        String line = reader.readLine();
+        if (line != null) {
+            return split(line);
         }
         return null;
     }
 
     @Override
     public void close() throws Exception {
-        this.streams.values().stream().forEach(scanner -> scanner.close());
+        this.streams.values().stream().forEach(reader -> {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

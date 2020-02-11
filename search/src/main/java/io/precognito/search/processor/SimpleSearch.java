@@ -3,7 +3,6 @@ package io.precognito.search.processor;
 import io.precognito.search.Search;
 
 import java.io.*;
-import java.util.Scanner;
 
 /**
  * Grep or Filter lines according to the search expression.
@@ -28,12 +27,12 @@ public class SimpleSearch implements Processor {
 
         BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
-        Scanner scanner = new Scanner(bis);
+        BufferedReader scanner = new BufferedReader(new InputStreamReader(bis));
         long position = 0;
         long startingTime = fromTime;
         long guessTimeInterval = guessTimeInterval(fromTime, toTime, length);
-        while (scanner.hasNextLine()) {
-            String nextLine = scanner.nextLine();
+        String nextLine = "";
+        while ((nextLine = scanner.readLine()) != null) {
 
             if (search.matches(nextLine)) {
                 bos.write(Long.toString(startingTime).getBytes());

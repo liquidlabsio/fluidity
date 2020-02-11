@@ -1,5 +1,7 @@
 package io.precognito.search.agg;
 
-public interface EventsAggregator extends AutoCloseable {
+import java.io.IOException;
 
+public interface EventsAggregator extends AutoCloseable {
+    String[] process() throws IOException;
 }
