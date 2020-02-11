@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.Storage;
+import io.precognito.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -19,10 +20,9 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.*;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -65,7 +65,7 @@ public class AwsS3StorageService implements Storage {
                     objSummary.getETag(),
                     objSummary.getKey(),
                     new byte[0],
-                    objSummary.getLastModified().getTime() - (24 * 60 * 60 * 1000),
+                    objSummary.getLastModified().getTime() - (12 * 60 * 60 * 1000),
                     objSummary.getLastModified().getTime());
             fileMeta.setSize(objSummary.getSize());
             fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
@@ -102,6 +102,7 @@ public class AwsS3StorageService implements Storage {
         File file = createTempFile(upload.fileContent);
         long contentLength = file.length();
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB.
+        byte[] fileHeaderBytes = new byte[0];
 
         try {
             AmazonS3 s3Client = getAmazonS3Client(region);
@@ -109,7 +110,7 @@ public class AwsS3StorageService implements Storage {
 
             if (!s3Client.doesBucketExistV2(bucketName)) {
                 log.info("Bucket:{} doesnt exist, creating", bucketName);
-                Bucket bucket = s3Client.createBucket(bucketName);
+                s3Client.createBucket(bucketName);
             }
 
             // Create a list of ETag objects. You retrieve ETags for each object part uploaded,
@@ -151,8 +152,14 @@ public class AwsS3StorageService implements Storage {
                     initResponse.getUploadId(), partETags);
             CompleteMultipartUploadResult completeMultipartUploadResult = s3Client.completeMultipartUpload(compRequest);
 
-//            upload.storageUrl = completeMultipartUploadResult.getLocation();
             upload.setStorageUrl(String.format("s3://%s/%s", bucketName, filePath));
+
+            try {
+                upload.fileContent = FileUtil.readFileToByteArray(file, 4096);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
 
         } catch (AmazonServiceException e) {
             // The call was transmitted successfully, but Amazon S3 couldn't process

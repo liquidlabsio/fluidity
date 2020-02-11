@@ -1,5 +1,6 @@
 package io.precognito.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.StorageResource;
@@ -16,6 +17,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;
@@ -56,7 +58,7 @@ class SearchResourceTest {
 
 
     @Test
-    public void testFileSearch() {
+    public void testFileSearch() throws com.fasterxml.jackson.core.JsonProcessingException {
 
         /**
          * Note: file url arrays dont get passed properly from RestAssured
@@ -65,16 +67,25 @@ class SearchResourceTest {
         search.origin = "123";
         search.uid = "my-uid";
         search.expression = "this is a test";
+
+        FileMeta fileMeta = new FileMeta();
+        fileMeta.storageUrl = "s3://fixtured-storage-bucket/resource/test-data/file-to-upload.txt";
+        fileMeta.toTime = System.currentTimeMillis();
+        fileMeta.filename = "yay";
+
+
+        FileMeta[] fileMetas = {fileMeta};
+        String fileMetaJson = new ObjectMapper().writeValueAsString(fileMetas);
+
         ExtractableResponse<Response> response = given()
                 .multiPart("origin", search.origin)
                 .multiPart("uid", search.uid)
                 .multiPart("expression", search.expression)
 
                 .pathParam("tenant", "tenant")
-                .pathParam("files",  "s3://fixtured-storage-bucket/resource/test-data/file-to-upload.txt")
-                .pathParam("mods", "1234")
+                .pathParam("files", URLEncoder.encode(fileMetaJson))
                 .when()
-                .post("/search/files/{tenant}/{files}/{mods}")
+                .post("/search/files/{tenant}/{files}")
                 .then()
                 .statusCode(200).extract();
         String[] as = response.body().as(String[].class);
@@ -83,7 +94,7 @@ class SearchResourceTest {
         System.out.println("Got:" + Arrays.toString(as));
     }
     @Test
-    public void testFinalize() throws JsonProcessingException, UnsupportedEncodingException {
+    public void testFinalize() throws Exception {
         // need the data to be searched for finalize to work
         testFileSearch();
         Search search = new Search();

@@ -1,5 +1,7 @@
 package io.precognito.services.search;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
@@ -11,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 /**
@@ -47,14 +51,21 @@ public class SearchResource {
     @POST
     @Path("/submit")
     public FileMeta[] submit(Search search) {
-        return searchService.submit(search, query);
+        FileMeta[] submit = searchService.submit(search, query);
+        return submit;
     }
 
     @POST
-    @Path("/files/{tenant}/{files}/{mods}")
+    @Path("/files/{tenant}/{files}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String[] file(@PathParam("tenant") String tenant, @PathParam("files") String[] fileUrl, @PathParam("mods") Long[] mods, @MultipartForm Search search) {
-        return searchService.searchFile(fileUrl, mods, search, storageService, cloudRegion, tenant);
+    public String[] file(@PathParam("tenant") String tenant, @PathParam("files") String fileMetas, @MultipartForm Search search) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas), FileMeta[].class);
+            return searchService.searchFile(fileMetas1, search, storageService, cloudRegion, tenant);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @POST

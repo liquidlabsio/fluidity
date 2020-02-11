@@ -4,6 +4,7 @@ import io.precognito.services.query.FileMeta;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 

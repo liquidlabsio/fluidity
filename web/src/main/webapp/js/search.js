@@ -103,7 +103,7 @@ class Search {
             console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
             console.log(self)
             // TODO: look at chunking them together
-            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta.storageUrl], [fileMeta.toTime])
+            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
         })
     }
 

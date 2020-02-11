@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class SimpleSearchTest {
 
     @Test
@@ -17,7 +19,8 @@ class SimpleSearchTest {
         search.expression = "* | * | * | * | CPU | *";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int process = simpleSearch.process(search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos);
+        int process = simpleSearch.process(search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024);
+        assertTrue(process > 0);
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
         System.out.println(outFileContents);

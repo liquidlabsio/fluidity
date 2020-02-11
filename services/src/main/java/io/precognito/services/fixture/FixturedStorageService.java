@@ -22,8 +22,10 @@ public class FixturedStorageService implements Storage {
     public FileMeta upload(String region, FileMeta upload) {
         log.info("uploading:" + upload);
         upload.setStorageUrl("s3://fixtured-storage-bucket/" + upload.getResource() + "/" + upload.getFilename());
-        storage.put(upload.getStorageUrl(), upload.fileContent);
-        upload.setFileContent(new byte[0]);
+
+        byte[] copy = new byte[upload.fileContent.length];
+        System.arraycopy(upload.fileContent, 0, copy, 0, copy.length);
+        storage.put(upload.getStorageUrl(), copy);
         return upload;
     }
 

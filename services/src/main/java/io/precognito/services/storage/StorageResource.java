@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,6 +58,7 @@ public class StorageResource {
             FileMeta stored = indexer.index(storedAndIndexedFile, cloudRegion);
 
             query.put(stored);
+            stored.fileContent = new byte[0];
 
             Response.ResponseBuilder responseBuilder = Response.status(200).entity("Uploaded and Indexed:" + stored);
             return responseBuilder.build();

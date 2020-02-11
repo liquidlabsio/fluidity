@@ -11,15 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FixturedSearchService implements SearchService {
     private final Logger log = LoggerFactory.getLogger(FixturedSearchService.class);
-
-    static Map<String, byte[]> storage = new HashMap<>();
 
     public FixturedSearchService() {
         log.info("Created");
@@ -32,15 +27,15 @@ public class FixturedSearchService implements SearchService {
     }
 
     @Override
-    public String[] searchFile(String[] files, Long[] lastMods, Search search, Storage storage, String region, String tenant) {
-        String searchUrl = files[0];
-        long lastMod = lastMods[0];
+    public String[] searchFile(FileMeta[] files, Search search, Storage storage, String region, String tenant) {
+        FileMeta fileMeta = files[0];
+        String searchUrl = fileMeta.getStorageUrl();
         InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
         String searchDestination = search.getSearchDestination(storage.getBucketName(tenant), searchUrl);
         OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestination);
 
         try (SimpleSearch searchProcessor = new SimpleSearch()) {
-            searchProcessor.process(search, inputStream, outputStream);
+            searchProcessor.process(search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
         } catch (Exception e) {
             e.printStackTrace();
         }

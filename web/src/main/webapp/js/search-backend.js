@@ -73,7 +73,7 @@ class SearchRest extends SearchInterface {
             }
         });
     }
-    searchFile(search, fileUrls, fileMods) {
+    searchFile(search, fileMetasArray) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
@@ -82,8 +82,7 @@ class SearchRest extends SearchInterface {
             type: 'POST',
             url: SERVICE_URL + '/search/files/'
                 + encodeURIComponent(DEFAULT_TENANT)
-                + "/"+ encodeURIComponent(fileUrls)
-                + "/"+ encodeURIComponent(fileMods),
+                + "/"+ encodeURIComponent( JSON.stringify(fileMetasArray)),
             contentType: 'multipart/form-data',
             data: self.searchToForm(search),
             processData: false,
@@ -139,8 +138,8 @@ function searchBackendBinding() {
     $.Topic(Precognito.Search.Topics.submitSearch).subscribe(function(search) {
         backend.submitSearch(search);
     })
-    $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, fileUrl, fileMod) {
-        backend.searchFile(search, fileUrl, fileMod);
+    $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, files) {
+        backend.searchFile(search, files);
     })
     $.Topic(Precognito.Search.Topics.getFinalResult).subscribe(function(search, eventFiles, histoFiles) {
         backend.getFinalResult(search, eventFiles, histoFiles);

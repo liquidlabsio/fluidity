@@ -1,5 +1,7 @@
 package io.precognito.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.search.SearchResource;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.io.FileInputStream;
+import java.net.URLEncoder;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,8 +92,11 @@ class SearchFixturedIntegrationTest {
     }
 
 
-    private List<String> searchFile(FileMeta file, Search search) {
-        return Arrays.asList(searchResource.file("TENANT", new String[] { file.getStorageUrl()}, new Long[] { file.getToTime() }, search));
+    private List<String> searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
+        FileMeta[] fileMetas = {fileMeta};
+        String fileMetaJson = new ObjectMapper().writeValueAsString(fileMetas);
+
+        return Arrays.asList(searchResource.file("TENANT", URLEncoder.encode(fileMetaJson), search));
     }
 
     private List<FileMeta> search(Search search) {

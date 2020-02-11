@@ -13,14 +13,13 @@ public interface SearchService {
     /**
      *
      * @param files - set of files to search
-     * @param lastMods - last modified times for each file
      * @param search
      * @param storage
      * @param region
      * @param tenant
      * @return
      */
-    String[] searchFile(String[] files, Long[] lastMods, Search search, Storage storage, String region, String tenant);
+    String[] searchFile(FileMeta[] files, Search search, Storage storage, String region, String tenant);
 
     /**
      * Returns [ numEvents, Histo, rawEvents ]
