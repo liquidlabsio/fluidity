@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Captured relevant file meta data: name, location, source, size, tags etc
@@ -15,7 +16,8 @@ import java.util.Date;
 @RegisterForReflection
 public class FileMeta {
 
-        public long getFromTime() {
+
+    public long getFromTime() {
             return fromTime;
         }
 
@@ -98,15 +100,9 @@ public class FileMeta {
             this.toTime = toTime;
         }
 
-        public String getTenantWithDate() {
-            Date today = Calendar.getInstance().getTime();
-            SimpleDateFormat sdf = new SimpleDateFormat("ddMMMyy");
-            return tenant + "-" + sdf.format(today).toLowerCase();
-        }
-
         @Override
         public String toString() {
-            return "UploadMeta{" +
+            return "FileMeta{" +
                     "tenant='" + tenant + '\'' +
                     ", resource='" + resource + '\'' +
                     ", tags='" + tags + '\'' +
@@ -182,4 +178,4 @@ public class FileMeta {
         public long getSize() {
             return size;
         }
-    }
+}

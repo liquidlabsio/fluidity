@@ -35,7 +35,7 @@ public class QueryResource implements FileMetaDataQueryService {
         return QueryResource.class.getCanonicalName();
     }
 
-    @PUT
+    @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public void put(@MultipartForm FileMeta fileMeta) {
         fileMeta.setFileContent(new byte[0]);

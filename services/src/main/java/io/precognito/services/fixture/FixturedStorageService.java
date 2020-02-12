@@ -5,12 +5,9 @@ import io.precognito.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class FixturedStorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(FixturedStorageService.class);
@@ -24,9 +21,11 @@ public class FixturedStorageService implements Storage {
     @Override
     public FileMeta upload(String region, FileMeta upload) {
         log.info("uploading:" + upload);
-        upload.setStorageUrl("s3://somebucket/"+region + "/" + upload.getFilename() + "-to-time=" + upload.getToTime());
-        storage.put(upload.getStorageUrl(), upload.fileContent);
-        upload.setFileContent(new byte[0]);
+        upload.setStorageUrl("s3://fixtured-storage-bucket/" + upload.getResource() + "/" + upload.getFilename());
+
+        byte[] copy = new byte[upload.fileContent.length];
+        System.arraycopy(upload.fileContent, 0, copy, 0, copy.length);
+        storage.put(upload.getStorageUrl(), copy);
         return upload;
     }
 
@@ -52,12 +51,29 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
-        return null;
+        byte[] content = this.get(region, storageUrl);
+        if (content == null) throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
+        return new ByteArrayInputStream(content);
+    }
+
+    @Override
+    public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
+        // Note: Using linked hashmap to to match the urls list indexing
+        LinkedHashMap<String, InputStream> results = new LinkedHashMap<>();
+        urls.stream().forEach(url -> results.put(url, getInputStream(region, tenant, url)));
+        return results;
     }
 
     @Override
     public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
-        return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream() {
+            @Override
+            public void close() throws IOException {
+                storage.put(stagingFileResults, this.buf);
+            }
+        };
+
+        return baos;
     }
 
     @Override

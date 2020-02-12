@@ -225,20 +225,19 @@
                     </div>
 
                     <div class="input-group mb-3">
-                        <input id="searchInput" type="text" class="form-control" placeholder="bucket | resource | Filenames filter | line-filter | analytic " aria-label="" aria-describedby="basic-addon2">
+                        <input id="searchInput" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">
                         <div class="input-group-append">
                             <button id="submitSearch" class="btn btn-primary">
-                                <span class="spinner spinner-border spinner-border-sm"></span>
                                 <span data-feather="search"></span>
                             </button>
                         </div>
                     </div>
 
-                    <h5 id="Search Results">Filename: []</h5>
-                    <a class="zoomExplorer" data-zoom="in" href="#">
+                    <h6 id="searchStats">Stats []</h6>
+                    <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
                     </a>
-                    <a class="zoomExplorer" data-zoom="out" href="#">
+                    <a class="searchZoom" data-zoom="out" href="#">
                         <span data-feather="zoom-out"></span>
                     </a>
                     <div id="searchResultsChart" class="searchChart"></div>

@@ -34,16 +34,21 @@ jobs:
       - store_test_results:
           path: test-results
 
+      - run:
+          name: Setup maven
+          commnd: mvn -N io.takari:maven:wrapper
+          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+
+      - run:
+          name: Install module deps download to work
+          command: ./mvnw package install -Dmaven.test.skip=true
+
       # Download maven dependencies so that we can cache them
       # ########################
       - run:
           name: Download Dependencies
-          command: mvn dependency:go-offline
+          command: ./mvnw dependency:go-offline
 
-      - run:
-          name: Setup maven
-          commnd: mvn -N io.takari:maven:wrapper
-          command: mvn -N io.takari:maven:wrapper -Dmaven=3.5.3
 
 
       # Standard maven build and test phases - does not perform a native build (or verify)
@@ -52,9 +57,11 @@ jobs:
           name: Build (Standard)
           command: ./mvnw clean package -DskipTests -Dmaven.test.skip=true
       - run:
-          name: Verify (Standard)
+          name: Unit Test
           command: ./mvnw -Daws.region=eu-west-2 test
-
+      - run:
+          name: Integration Test
+          command: ./mvnw -Daws.region=eu-west-2 test -P integration
 
 #      - run: mvn package install -Dmaven.test.skip=true
       #- run: mvn integration-test

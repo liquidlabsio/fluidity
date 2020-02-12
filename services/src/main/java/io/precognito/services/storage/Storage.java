@@ -4,7 +4,9 @@ import io.precognito.services.query.FileMeta;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 
 public interface Storage {
     /**
@@ -28,4 +30,6 @@ public interface Storage {
     InputStream getInputStream(String region, String tenant, String storageUrl);
 
     OutputStream getOutputStream(String region, String tenant, String stagingFileResults);
+
+    Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 }
