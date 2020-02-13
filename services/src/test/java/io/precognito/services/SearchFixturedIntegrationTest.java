@@ -7,6 +7,7 @@ import io.precognito.services.query.FileMeta;
 import io.precognito.services.search.SearchResource;
 import io.precognito.services.storage.StorageResource;
 import io.precognito.test.IntegrationTest;
+import io.precognito.util.DateUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -79,7 +80,7 @@ class SearchFixturedIntegrationTest {
         search.origin = "123";
         search.uid = "UID-"+ System.currentTimeMillis();
         search.expression = "*";
-        search.from = 0;
+        search.from =  System.currentTimeMillis() - DateUtil.DAY;
         search.to = System.currentTimeMillis() + 1000;
         return search;
     }
