@@ -10,7 +10,7 @@ Precognito.Search.Topics = {
 
 $(document).ready(function () {
 
-    let searcher = new Search();
+    searcher = new Search();
 
     searcher.bind();
 
@@ -26,19 +26,10 @@ class Search {
         this.searchEditor.setTheme("ace/theme/monokai");
         this.searchEditor.session.setMode("ace/mode/javascript");
         this.searchEditor.session.setUseWrapMode(true);
+        this.duration = 60;
     }
     bind() {
         let self = this;
-        $('#submitSearch').click(function(){
-                console.log("Submit Search")
-                self.submitSearch({
-                    origin: 'username',
-                    uid: new Date().getTime(),
-                    expression: $('#searchInput').val(),
-                    from: new Date().getTime() - 1000,
-                    to: new Date().getTime()
-                })
-            });
 
         $.Topic(Precognito.Search.Topics.setSearchFiles).subscribe(function(returnedFileUrls) {
             console.log("Got SearchFile URLS:" + returnedFileUrls)
@@ -84,6 +75,11 @@ class Search {
                 return false;
         })
 
+        $(".search-duration-dropdown").click(function(event) {
+            self.duration = $(event.currentTarget).data().duration;
+            $("#searchDurationSelector").html(event.currentTarget.text);
+        })
+
     }
 
 
@@ -91,6 +87,7 @@ class Search {
         console.log("Setting Search:"+ search)
         this.searchRequest = search;
         this.startTime =  new Date();
+        searchChart.series = [];
         $.Topic(Precognito.Search.Topics.submitSearch).publish(this.searchRequest);
     }
     setFileUrls(fileMetas) {
@@ -109,24 +106,21 @@ class Search {
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-        console.log("Got Result, total: " + this.searchedHistos.length + " of :" + this.searchFileMetas.length )
-        this.searchEditor.setValue("Got Result, total: " + this.searchedHistos.length + " of:" + this.searchFileMetas.length)
+         searchStats.stats = "Got Result, total: " + this.searchedHistos.length + " of :" + this.searchFileMetas.length
 
         this.searchedEvents.push(eventsUrl)
         this.searchedHistos.push(histoUrl)
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
-            this.searchEditor.setValue("Got all results! Requesting aggregation:" + this.searchFileMetas.length)
+            searchStats.stats = "Got all results! Requesting aggregation:" + this.searchFileMetas.length
             $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedHistos, self.searchedEvents);
         }
     }
 
     setFinalResult(results) {
-//        console.log("Result")
-//        console.log(results)
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        $("#searchStats").text("Events: " + Precognito.formatNumber(results[0]) + " Elapsed: " + Precognito.formatNumber(elapsed))
+        searchStats.stats = "Events: " + Precognito.formatNumber(results[1]) + " Elapsed: " + Precognito.formatNumber(elapsed)
         this.searchEditor.setValue(results[2]);
-        console.log("Finished:" + this.searchRequest)
+        searchChart.series = searchChart.series = JSON.parse(results[0]);
     }
 }

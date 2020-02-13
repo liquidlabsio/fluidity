@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
  * }
  * Where FileIndex is the 'index' into the steams LinkedHashMap
  */
-public class SimpleRawFileAggregator implements EventsAggregator {
+public class SimpleLineByLineAggregator implements EventsAggregator {
     private final Map<String, BufferedReader> streams;
     private final Map<String, Integer> fileLut;
     private final Search search;
     private boolean splitLine = false;
 
-    public SimpleRawFileAggregator(Map<String, InputStream> streams, Search search) {
+    public SimpleLineByLineAggregator(Map<String, InputStream> streams, Search search) {
         this.streams = streams.entrySet().stream()
                 .collect(Collectors.toMap(
                         entry -> entry.getKey()
@@ -56,22 +56,15 @@ public class SimpleRawFileAggregator implements EventsAggregator {
     private Map.Entry<Long, String> split(String nextLine) {
         int i = nextLine.indexOf(":");
         if (i == -1) return null;
-        try {
             Long time = Long.valueOf(nextLine.substring(0, i));
-
             String line = splitLine ? nextLine.substring(i + 1, nextLine.length()) : nextLine;
             return new AbstractMap.SimpleEntry(time, line);
-        } catch (Exception ne) {
-            ne.printStackTrace();
-            System.out.println("NFE");
-            return null;
-        }
     }
 
     @Override
     public String[] process() throws IOException {
         StringBuilder results = new StringBuilder();
-        String[] streamNameAndLine = new String[0];
+        String[] streamNameAndLine;
         int totalEvents = 0;
         while ((streamNameAndLine = getNextLine(streams)) != null) {
             results.append(fileLut.get(streamNameAndLine[0]));
@@ -80,15 +73,30 @@ public class SimpleRawFileAggregator implements EventsAggregator {
             totalEvents++;
         }
 
-        return new String[] { Integer.toString(totalEvents),  "no-histogram-available", results.toString() };
+        return new String[] { Integer.toString(totalEvents),  results.toString() };
     }
 
     Map<String, Map.Entry<Long, String>> nextLines = new HashMap<>();
+
+    /**
+     * Searched lines are stored using: timestamp:filepos:data
+     * @param streams
+     * @return
+     * @throws IOException
+     */
     private String[] getNextLine(Map<String, BufferedReader> streams) throws IOException {
         Map.Entry<String, Map.Entry<Long, String >> nextLine = findNextLine(nextLines);
         if (nextLine == null) {
             return null;
         }
+        if (nextLine.getValue() == null) {
+            String streamUrl = nextLine.getKey();
+            streams.remove(streamUrl).close();
+            nextLines.remove(streamUrl);
+            return null;
+        }
+
+
         // Note: 'nextLine' points to a hashmap entry that can be mutated by updates below.
         String result = nextLine.getValue().getValue();
         String streamUrl = nextLine.getKey();

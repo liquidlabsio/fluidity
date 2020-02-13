@@ -7,20 +7,22 @@ import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SimpleSearchTest {
+class SimpleSearchProcessorTest {
 
     @Test
     public void testSearchGrep() throws Exception {
 
         StringBuilder fileContentAsString = makeFileContent();
 
-        SimpleSearch simpleSearch = new SimpleSearch();
+        SimpleSearchProcessor simpleSearchProcessor = new SimpleSearchProcessor();
         Search search = new Search();
         search.expression = "* | * | * | * | CPU | *";
+        search.from = 0;
+        search.to = System.currentTimeMillis();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int process = simpleSearch.process(search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024);
-        assertTrue(process > 0);
+        int process = simpleSearchProcessor.process(new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024);
+        assertTrue(process > 0, "didnt process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
         System.out.println(outFileContents);

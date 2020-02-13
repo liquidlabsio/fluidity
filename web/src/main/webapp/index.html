@@ -25,6 +25,8 @@
 <!--      <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.3.0/frappe-charts.min.css" crossorigin="anonymous">
+
 
       <!-- Favicons -->
       <link rel="icon" href="img/favicon.ico">
@@ -217,30 +219,43 @@
                                 <button id="refreshFilesSearch" type="button" class="btn btn-sm btn-outline-secondary">Refresh</button>
                                 <button  type="button" class="btn btn-sm btn-outline-secondary">Share</button>
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                            <button id="searchDurationSelector" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span data-feather="calendar"></span>
-                                This week
+                                Last hour
                             </button>
+                            <div class="dropdown-menu" aria-labelledby="searchDurationSelector">
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="60">Last hour</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="120">2 hours</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="720">12 hours</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="1440">1 day</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2880">2 days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="10080">7 days</a>
+                            </div>
                         </div>
                     </div>
 
                     <div class="input-group mb-3">
-                        <input id="searchInput" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">
+                        <input id="searchInput" v-model="searchExpression" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatch | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">
                         <div class="input-group-append">
-                            <button id="submitSearch" class="btn btn-primary">
+                            <button id="searchSubmit" class="btn btn-primary" v-on:click="searchSubmit">
                                 <span data-feather="search"></span>
                             </button>
                         </div>
                     </div>
 
-                    <h6 id="searchStats">Stats []</h6>
+                    <div id="searchResultsChart" class="searchChart">
+                        {{ stats }}
+                        <line-chart height="100"></line-chart>
+                    </div>
+                    <div id="chart">
+                        <apexchart type="bar" height="350" :options="chartOptions" :series="series" v-on:click="doit"></apexchart>
+                    </div>
                     <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
                     </a>
                     <a class="searchZoom" data-zoom="out" href="#">
                         <span data-feather="zoom-out"></span>
                     </a>
-                    <div id="searchResultsChart" class="searchChart"></div>
                     <div id="searchResultsEditor" class="normalSizeEditor"></div>
                 </div>
 
@@ -429,25 +444,44 @@
 
     <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
+
     <!-- ace ui text editor CDN from https://pagecdn.com/lib/ace -->
-    <script src="https://pagecdn.io/lib/ace/1.4.7/ace.js" crossorigin="anonymous"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.7/ace.js" crossorigin="anonymous"
             integrity="sha256-C7DTYRJLG+B/VEzHGeoPMw699nsTQYPAXHKXZb+q04E="></script>
     <script src="https://pagecdn.io/lib/ace/1.4.7/theme-monokai.js" crossorigin="anonymous"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.7/theme-twilight.js" crossorigin="anonymous"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.7/worker-javascript.js" crossorigin="anonymous"></script>
     <script src="https://pagecdn.io/lib/ace/1.4.7/worker-json.js" crossorigin="anonymous"></script>
 
+
+    <!-- gzip decompression -->
     <script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" crossorigin="anonymous"></script>
+
     <!-- file upload ui -->
     <script src="js/vendor/jquery.ui.widget.js"></script>
     <script src="js/vendor/jquery.iframe-transport.js"></script>
     <script src="js/vendor/jquery.fileupload.js"></script>
 
+    <!-- https://cdnjs.com/libraries/vue -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+    <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+
     <!-- precognito files -->
+
+
     <script src="js/pubsub.js"></script>
     <script src="js/precognito.js"></script>
     <script src="js/backend.js"></script>
+
     <script src="js/explorer.js"></script>
+
+    <script src="js/search-vue.js"></script>
     <script src="js/search.js"></script>
     <script src="js/search-backend.js"></script>
     <script src="js/dashboard.js"></script>

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,19 +12,19 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
-class SimpleRawFileAggregatorTest {
+class SimpleLineByLineAggregatorTest {
 
     @Test
     void process() throws Exception {
 
         Map<String, InputStream> streams = createSteams(asList( "file1.txt", "file2.txt"));
         Search search = null;
-        SimpleRawFileAggregator aggregator = new SimpleRawFileAggregator(streams, null);
+        SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, null);
         String[] processed = aggregator.process();
         int totalEvents = Integer.parseInt(processed[0]);
 
         assertEquals(20, totalEvents);
-        String eventsData = processed[2];
+        String eventsData = processed[1];
         System.out.println(eventsData);
         assertTrue(eventsData != null);
         assertTrue(eventsData.contains("file1.txt,1"));
