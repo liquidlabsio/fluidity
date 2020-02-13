@@ -44,7 +44,7 @@ class SearchRest extends SearchInterface {
 
     searchToForm(search) {
         var formData = new FormData();
-//        formData.append("origin", JSON.stringify(search.origin));
+        formData.append("origin", JSON.stringify(search.origin));
         formData.append("uid", search.uid);
         formData.append("expression", JSON.stringify(search.expression));
         formData.append("from", search.from);

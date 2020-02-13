@@ -29,11 +29,11 @@ public class Search {
     @PartType(MediaType.TEXT_PLAIN)
     public String expression;
 
-    @FormParam("origin")
+    @FormParam("from")
     @PartType(MediaType.TEXT_PLAIN)
     public long from;
 
-    @FormParam("origin")
+    @FormParam("to")
     @PartType(MediaType.TEXT_PLAIN)
     public long to;
 
@@ -48,6 +48,10 @@ public class Search {
             throw new RuntimeException(e);
         }
     }
+    public String getHistoDestination(String bucketName, String searchUrl) {
+        return getSearchDestination(bucketName, searchUrl) + ".histo";
+    }
+
 
     transient PMatcher matcher;
     public boolean matches(String nextLine) {

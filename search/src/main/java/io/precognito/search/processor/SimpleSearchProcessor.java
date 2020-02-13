@@ -5,6 +5,8 @@ import io.precognito.search.Search;
 import java.io.*;
 
 /**
+ * Note: lines must be written in following format: timestamp:filepos:data
+ *
  * Grep or Filter lines according to the search expression.
  * TODO: look at native TruffleRegEx in Graalvm & Quarkus
  * https://www.graalvm.org/docs/reference-manual/native-image/
@@ -14,12 +16,12 @@ import java.io.*;
  *
  * --language:regex to make Truffle Regular Expression engine available that exposes regular expression functionality in GraalVM supported languages
  */
-public class SimpleSearch implements Processor {
+public class SimpleSearchProcessor implements Processor {
     private InputStream input;
     private OutputStream output;
 
     @Override
-    public int process(Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException {
+    public int process(HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException {
         this.input = input;
         this.output = output;
 
@@ -29,22 +31,23 @@ public class SimpleSearch implements Processor {
         BufferedInputStream bis = new BufferedInputStream(input);
         BufferedReader scanner = new BufferedReader(new InputStreamReader(bis));
         long position = 0;
-        long startingTime = fromTime;
+        long currentTime = fromTime;
         long guessTimeInterval = guessTimeInterval(fromTime, toTime, length);
         String nextLine = "";
         while ((nextLine = scanner.readLine()) != null) {
 
-            if (search.matches(nextLine)) {
-                bos.write(Long.toString(startingTime).getBytes());
+            if (currentTime > search.from && currentTime < search.to && search.matches(nextLine)) {
+                bos.write(Long.toString(currentTime).getBytes());
                 bos.write(':');
                 bos.write(Long.toString(position).getBytes());
                 bos.write(':');
                 bos.write(nextLine.getBytes());
                 bos.write('\n');
+                histoCollector.add(currentTime, position, nextLine);
                 read++;
                 read++;// NL
             }
-            startingTime += guessTimeInterval;
+            currentTime += guessTimeInterval;
             position += nextLine.length();
         }
         bos.flush();

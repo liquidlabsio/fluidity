@@ -54,7 +54,7 @@ $(document).ready(function () {
         return false;
       }
       data.context = $('<p class="file">')
-        .append($('<a target="_blank">').text(data.files[0].name + " bytes:" + data.files[0].size))
+        .append($('<a target="_blank">').text(data.files[0].name + " bytes:" + Precognito.formatNumber(data.files[0].size)))
         .appendTo($("#files-list"));
       data.submit();
     },
