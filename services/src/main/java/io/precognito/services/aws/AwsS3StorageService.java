@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.Storage;
-import io.precognito.util.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -20,9 +19,10 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.*;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -65,7 +65,7 @@ public class AwsS3StorageService implements Storage {
                     objSummary.getETag(),
                     objSummary.getKey(),
                     new byte[0],
-                    objSummary.getLastModified().getTime() - (12 * 60 * 60 * 1000),
+                    objSummary.getLastModified().getTime() - (24 * 60 * 60 * 1000),
                     objSummary.getLastModified().getTime());
             fileMeta.setSize(objSummary.getSize());
             fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
@@ -94,15 +94,23 @@ public class AwsS3StorageService implements Storage {
         log.info("uploading:" + upload + " bucket:" + upload.getTenant());
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.addUserMetadata("tags", upload.getTags().toString());
+        objectMetadata.addUserMetadata("tags", upload.getTags());
         objectMetadata.addUserMetadata("tenant", upload.tenant);
         objectMetadata.addUserMetadata("length", "" + upload.fileContent.length);
 
+        upload.setStorageUrl(writeToS3(region, upload.fileContent, bucketName, filePath, objectMetadata));
 
-        File file = createTempFile(upload.fileContent);
+        return upload;
+    }
+
+    private String writeToS3(String region, byte[] fileContent, String bucketName, String filePath, ObjectMetadata objectMetadata) {
+        File file = createTempFile(fileContent);
+        return writeFileToS3(region, file, bucketName, filePath, objectMetadata);
+    }
+
+    private String writeFileToS3(String region, File file, String bucketName, String filePath, ObjectMetadata objectMetadata) {
         long contentLength = file.length();
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB.
-        byte[] fileHeaderBytes = new byte[0];
 
         try {
             AmazonS3 s3Client = getAmazonS3Client(region);
@@ -125,7 +133,7 @@ public class AwsS3StorageService implements Storage {
 
             // Upload the file parts.
             long filePosition = 0;
-            for (int i = 1; filePosition < upload.fileContent.length; i++) {
+            for (int i = 1; filePosition < file.length(); i++) {
                 // Because the last part could be less than 5 MB, adjust the part size as needed.
                 partSize = Math.min(partSize, (contentLength - filePosition));
 
@@ -152,28 +160,21 @@ public class AwsS3StorageService implements Storage {
                     initResponse.getUploadId(), partETags);
             CompleteMultipartUploadResult completeMultipartUploadResult = s3Client.completeMultipartUpload(compRequest);
 
-            upload.setStorageUrl(String.format("s3://%s/%s", bucketName, filePath));
-
-            try {
-                upload.fileContent = FileUtil.readFileToByteArray(file, 4096);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+//            upload.storageUrl = completeMultipartUploadResult.getLocation();
 
 
         } catch (AmazonServiceException e) {
             // The call was transmitted successfully, but Amazon S3 couldn't process
             // it, so it returned an error response.
-            log.error("AmazonServiceException S3 Upload failed to process:{}", upload, e);
+            log.error("AmazonServiceException S3 Upload failed to process:{}", filePath, e);
         } catch (SdkClientException e) {
             // Amazon S3 couldn't be contacted for a response, or the client
             // couldn't parse the response from Amazon S3.
-            log.error("SdkClientException S3 not responding:{}", upload, e);
+            log.error("SdkClientException S3 not responding:{}", filePath, e);
         } finally {
             file.delete();
         }
-
-        return upload;
+        return String.format("s3://%s/%s", bucketName, filePath);
     }
 
     public String getBucketName(String tenant) {
@@ -214,7 +215,6 @@ public class AwsS3StorageService implements Storage {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
             IOUtils.copyLarge(inputStream, baos, 0, LIMIT);
-            inputStream.close();
             return baos.toByteArray();
 
         } catch (Exception e) {
@@ -247,8 +247,26 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
-        throw new RuntimeException("Not implemented yet");
+    public OutputStream getOutputStream(String region, String tenant, String filename) {
+        try {
+            File toS3 = File.createTempFile("S3OutStream", "tmp");
+            return new FileOutputStream(toS3) {
+                @Override
+                public void close() throws IOException {
+                    try {
+                        super.close();
+                        ObjectMetadata objectMetadata = new ObjectMetadata();
+                        objectMetadata.addUserMetadata("tenant", tenant);
+                        objectMetadata.addUserMetadata("length", "" + toS3.length());
+                        writeFileToS3(region, toS3, tenant, filename, objectMetadata);
+                    } finally {
+                        toS3.delete();
+                    }
+                }
+            };
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
