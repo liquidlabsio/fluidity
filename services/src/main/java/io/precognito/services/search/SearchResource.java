@@ -32,13 +32,13 @@ public class SearchResource {
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
 
-    @ConfigProperty(name = "precognito.query")
+    @ConfigProperty(name = "precognito.services.query")
     FileMetaDataQueryService query;
 
-    @ConfigProperty(name = "precognito.search")
+    @ConfigProperty(name = "precognito.services.search")
     SearchService searchService;
 
-    @ConfigProperty(name = "precognito.storage")
+    @ConfigProperty(name = "precognito.services.storage")
     Storage storageService;
 
     @GET

@@ -81,7 +81,7 @@ class SearchFixturedIntegrationTest {
         Search search = new Search();
         search.origin = "123";
         search.uid = "UID-"+ System.currentTimeMillis();
-        search.expression = "*";
+        search.expression = "*|*|*|*|*";
         search.from =  System.currentTimeMillis() - DateUtil.DAY;
         search.to = System.currentTimeMillis() + 1000;
         return search;
