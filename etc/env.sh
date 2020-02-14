@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Configured before any deployment
+# Create and configured this bucket with CORS and Policy files before any deployment. Note edit the policy-S3 arn
 ## application code
 export S3_BUCKET=precongnito-runtime
 export STACK_NAME=precongnito-faas-runtime

@@ -8,12 +8,12 @@
         - "*/*"
 
   Resources:
-    LogscapeFunction:
+    ServicesFunction:
       Type: AWS::Serverless::Function
       Properties:
         Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
         Runtime: java8
-        CodeUri: target/precognito-0.1-SNAPSHOT-runner.jar
+        CodeUri: target/precognito-services-0.1-SNAPSHOT-runner.jar
         MemorySize: 512
         Policies: AWSLambdaFullAccess
         Timeout: 15
@@ -25,8 +25,8 @@
               Method: any
 
   Outputs:
-    LogscapeApi:
+    PrecognitoApi:
       Description: The REST API for the web-frontend
       Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
       Export:
-        Name: LogscapeApi
+        Name: PrecognitoApi
