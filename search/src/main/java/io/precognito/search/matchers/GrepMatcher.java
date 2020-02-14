@@ -1,10 +1,11 @@
 package io.precognito.search.matchers;
 
 public class GrepMatcher implements PMatcher {
+    public static final String PREFIX = "record.contains(";
     private final String expr;
 
-    public GrepMatcher(String expr) {
-        this.expr = expr;
+    public GrepMatcher(String expression) {
+        this.expr = expression.substring(PREFIX.length(), expression.length()-1);
     }
 
     public GrepMatcher() {
@@ -13,7 +14,7 @@ public class GrepMatcher implements PMatcher {
 
     @Override
     public boolean isForMe(String expression) {
-        return !expression.contains("*") && expression.length() > 0;
+        return expression.startsWith(PREFIX);
     }
 
     @Override

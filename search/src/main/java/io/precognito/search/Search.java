@@ -7,14 +7,14 @@ import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 
 /**
  *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
  */
 @RegisterForReflection
 public class Search {
+
+    enum EXPRESSION_PARTS { bucket, filename, record, field, analytic };
 
     @FormParam("origin")
     @PartType(MediaType.TEXT_PLAIN)
@@ -57,11 +57,20 @@ public class Search {
     public boolean matches(String nextLine) {
         if (matcher == null){
             String[] split = expression.split("\\|");
-            final String lineMatcherExpression = split.length > 4 ? split[4].trim() : "";
-            matcher = MatcherFactory.getMatcher(lineMatcherExpression);
+            final String lineMatcherExpression = split.length > EXPRESSION_PARTS.record.ordinal() ? split[EXPRESSION_PARTS.record.ordinal()].trim() : "";
+            matcher = RecordMatcherFactory.getMatcher(lineMatcherExpression);
         }
         return matcher.matches(nextLine);
     }
+
+    transient FilenameMatcher filenameMatcher;
+    public boolean fileMatches(String filename, long from, long to) {
+        if (filenameMatcher == null) {
+            filenameMatcher = new FilenameMatcher(this.expression, this.from, this.to);
+        }
+        return filenameMatcher.matches(filename, from, to);
+    }
+
 
     @Override
     public String toString() {

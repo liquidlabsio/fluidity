@@ -4,9 +4,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PPatternMatcher implements PMatcher {
+    public static final String PREFIX = "record.matches(";
     private Pattern pattern;
 
-    public PPatternMatcher(String expr) {
+    public PPatternMatcher(String expression) {
+        String expr = expression.substring(PREFIX.length(), expression.length()-1);
         pattern = Pattern.compile(expr);
     }
 

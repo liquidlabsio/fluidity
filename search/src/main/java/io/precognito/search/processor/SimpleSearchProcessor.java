@@ -21,7 +21,7 @@ public class SimpleSearchProcessor implements Processor {
     private OutputStream output;
 
     @Override
-    public int process(HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException {
+    public int process(HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long length) throws IOException {
         this.input = input;
         this.output = output;
 
@@ -29,12 +29,12 @@ public class SimpleSearchProcessor implements Processor {
 
         BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
-        BufferedReader scanner = new BufferedReader(new InputStreamReader(bis));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
         long position = 0;
-        long currentTime = fromTime;
-        long guessTimeInterval = guessTimeInterval(fromTime, toTime, length);
+        long currentTime = fileFromTime;
+        long guessTimeInterval = guessTimeInterval(fileFromTime, fileToTime, length);
         String nextLine = "";
-        while ((nextLine = scanner.readLine()) != null) {
+        while ((nextLine = reader.readLine()) != null) {
 
             if (currentTime > search.from && currentTime < search.to && search.matches(nextLine)) {
                 bos.write(Long.toString(currentTime).getBytes());

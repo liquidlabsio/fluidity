@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FixturedSearchService implements SearchService {
     private final Logger log = LoggerFactory.getLogger(FixturedSearchService.class);
@@ -25,8 +26,8 @@ public class FixturedSearchService implements SearchService {
 
     @Override
     public FileMeta[] submit(Search search, FileMetaDataQueryService query) {
-        // TODO: filter filenames etc
-        return query.list().toArray(new FileMeta[0]);
+        List<FileMeta> files = query.list().stream().filter(file -> search.fileMatches(file.filename, file.fromTime, file.toTime)).collect(Collectors.toList());
+        return files.toArray(new FileMeta[0]);
     }
 
     @Override

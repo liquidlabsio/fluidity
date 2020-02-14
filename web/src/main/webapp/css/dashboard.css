@@ -171,6 +171,8 @@ File upload UI
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
 }
-.search22Chart {
-height: 100px;
+#wrapper {
+  padding-top: 50px;
+  width: 400px;
+  margin: 0 auto 0 auto;
 }
