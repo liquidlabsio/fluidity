@@ -37,7 +37,7 @@ echo "Step 2 - Configuring REST API in js/backend.js"
 echo "========================"
 
 mv precognito.js precognito.js.BAK
-echo "SERVICES_URL = '$SERVICES_API'" > precognito.js
+echo "SERVICE_URL = '$SERVICE_API'" > precognito.js
 sed '1d' precognito.js.BAK >> precognito.js
 
 
@@ -48,6 +48,8 @@ mv precognito.js precognito.js.BAK.2
 sed "s/DEFAULT_TENANT=.*/"DEFAULT_TENANT=\"${S3_TENANT_BUCKET}"\"/" precognito.js.BAK.2 > precognito.js
 
 
+cd ..
+
 echo "Step 4 - Publishing to S3 Bucket:" + $S3_BUCKET
 echo "========================"
 aws2 s3 cp . s3://$S3_BUCKET --recursive
@@ -55,5 +57,5 @@ aws2 s3 cp . s3://$S3_BUCKET --recursive
 export REGION=`aws2 configure get region`
 
 echo "====================================="
-echo "Point your browser to http://"$S3_BUCKET".s3-website."$REGION".amazonaws.com/index.html"
+echo "Point your browser to http://"$S3_BUCKET".s3."$REGION".amazonaws.com/index.html"
 echo "DONE!"

@@ -17,6 +17,7 @@ import java.util.Date;
 @Consumes(MediaType.APPLICATION_JSON)
 public class SecurityResource {
 
+    // the hash of 'secret'
     @ConfigProperty(name = "user.hashes", defaultValue = "-906277200")
     String userHashes;
 

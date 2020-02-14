@@ -71,7 +71,9 @@ class SearchFixturedIntegrationTest {
 
         String[] fileResults = finalizeSearchResults(search, histoEventsPair.get(0), histoEventsPair.get(1));
 
-        System.out.println(fileResults[0]);
+        assertNotNull(fileResults[0]);
+        // contains histo data
+        assertTrue(fileResults[0].contains("file-to-upload"));
     }
 
     @NotNull
