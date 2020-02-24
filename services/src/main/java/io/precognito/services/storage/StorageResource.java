@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,20 +70,22 @@ public class StorageResource {
     @GET
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<FileMeta> importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
-                                                                                @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags) {
+    public int importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
+                                 @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags) {
         List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
         imported.stream().forEach(fileMeta -> query.put(indexer.index(fileMeta, cloudRegion)));
-        return imported;
+        log.info("Imported from Bucket:{} Amount:{}", storageId, imported.size());
+        return imported.size();
     }
+
     @GET
     @Path("/removeImported")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<FileMeta> removeByStorageId(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
-                                                                                @QueryParam("includeFileMask") String includeFileMask) {
+    public int removeByStorageId(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
+                                 @QueryParam("includeFileMask") String includeFileMask) {
         List<FileMeta> removed = storage.removeByStorageId(cloudRegion, tenant, storageId, includeFileMask);
         removed.stream().forEach(fileMeta -> query.delete(fileMeta.getTenant(), fileMeta.getFilename()));
-        return removed;
+        return removed.size();
     }
 
 }

@@ -13,7 +13,9 @@ public class FilenameMatcher {
 
         String passedFilenameExpression= split.length > Search.EXPRESSION_PARTS.filename.ordinal() ? split[Search.EXPRESSION_PARTS.filename.ordinal()].trim() : "";
         if (passedFilenameExpression.startsWith(PREFIX)) {
-            this.expressionPart = expression.substring(PREFIX.length(), expression.length()-1);
+            int startsFrom = expression.indexOf(PREFIX);
+            int endsAt = expression.indexOf(")", startsFrom);
+            this.expressionPart = expression.substring(startsFrom + PREFIX.length(), endsAt);
         } else if (passedFilenameExpression.equals("*")) {
             this.expressionPart = "*";
         } else {

@@ -2,6 +2,7 @@ package io.precognito.services.fixture;
 
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.StorageIndexer;
+import io.precognito.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +31,17 @@ public class FixturedIndexerService implements StorageIndexer {
      */
     @Override
     public FileMeta index(FileMeta fileMeta, String cloudRegion) {
+        if (fileMeta.getToTime() == 0) {
+            fileMeta.setToTime(System.currentTimeMillis());
+            fileMeta.setFromTime(fileMeta.getToTime() - DateUtil.HOUR);
+        }
+
         if (fileMeta.fileContent != null && fileMeta.fileContent.length > 0) {
             getStartTimeFromLengthAndLastMod(fileMeta);
         } else {
-            fileMeta.setFromTime(System.currentTimeMillis() - 10000);
-            fileMeta.setToTime(System.currentTimeMillis());
+            fileMeta.setFromTime(fileMeta.getToTime() - DateUtil.HOUR);
         }
 
-        if (fileMeta.getFromTime() == 0) {
-            fileMeta.setFromTime(fileMeta.getToTime() - (15 * 60 * 1000));
-        }
         return fileMeta;
     }
 
@@ -56,7 +58,6 @@ public class FixturedIndexerService implements StorageIndexer {
         int estimateLines = (int) (fileMeta.size/avgLineLength);
         if (estimateLines == 0) estimateLines = 10;
         long lineInterval = 100;
-        if (fileMeta.getToTime() == 0) fileMeta.setToTime(System.currentTimeMillis());
         fileMeta.setFromTime(fileMeta.toTime - estimateLines * lineInterval);
     }
 }

@@ -1,6 +1,7 @@
 package io.precognito.search;
 
-import io.precognito.search.matchers.*;
+import io.precognito.search.matchers.PMatcher;
+import io.precognito.search.matchers.RecordMatcherFactory;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
@@ -9,12 +10,12 @@ import javax.ws.rs.core.MediaType;
 import java.net.URI;
 
 /**
- *   Expression-Parts: bucket | host | tags | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
+ * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
  */
 @RegisterForReflection
 public class Search {
 
-    enum EXPRESSION_PARTS { bucket, filename, record, field, analytic };
+    enum EXPRESSION_PARTS {bucket, filename, record, field, analytic}
 
     @FormParam("origin")
     @PartType(MediaType.TEXT_PLAIN)
@@ -37,25 +38,27 @@ public class Search {
     @PartType(MediaType.TEXT_PLAIN)
     public long to;
 
-    public String getSearchDestination(String bucketName, String searchUrl) {
+    public String getSearchDestinationURI(String bucketName, String searchUrl) {
         try {
             URI uri = new URI(searchUrl.replace(" ", "%20"));
             String bucket = uri.getHost();
             String filename = uri.getPath().substring(1);
-            return new URI(bucketName + "/" + "search-staging/" + this.uid + "/" + filename).toString();
+            return new URI("s3://" + bucketName + "/" + "search-staging/" + this.uid + "/" + filename).toString();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    public String getHistoDestination(String bucketName, String searchUrl) {
-        return getSearchDestination(bucketName, searchUrl) + ".histo";
+
+    public String getHistoDestinationURI(String bucketName, String searchUrl) {
+        return getSearchDestinationURI(bucketName, searchUrl) + ".histo";
     }
 
 
     transient PMatcher matcher;
+
     public boolean matches(String nextLine) {
-        if (matcher == null){
+        if (matcher == null) {
             String[] split = expression.split("\\|");
             final String lineMatcherExpression = split.length > EXPRESSION_PARTS.record.ordinal() ? split[EXPRESSION_PARTS.record.ordinal()].trim() : "";
             matcher = RecordMatcherFactory.getMatcher(lineMatcherExpression);

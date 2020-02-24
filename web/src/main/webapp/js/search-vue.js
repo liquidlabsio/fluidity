@@ -26,7 +26,7 @@ searchInputFilename = new Vue({
       query: '*',
       completes: [
         '*',
-        'file.contains(TEXT)',
+        'filename.contains(TEXT)',
         'filename.equals(TEXT)'
       ]
     }

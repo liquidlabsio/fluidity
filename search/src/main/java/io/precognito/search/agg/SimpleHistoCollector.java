@@ -6,11 +6,8 @@ import io.precognito.search.processor.HistoCollector;
 import io.precognito.search.processor.HistoFunction;
 import io.precognito.search.processor.Series;
 import io.precognito.util.DateUtil;
-import javafx.scene.chart.XYChart;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *   [

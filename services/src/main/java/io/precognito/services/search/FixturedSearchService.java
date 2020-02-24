@@ -3,8 +3,8 @@ package io.precognito.services.search;
 import io.precognito.search.Search;
 import io.precognito.search.agg.HistoAggregator;
 import io.precognito.search.agg.SimpleHistoAggregator;
-import io.precognito.search.agg.SimpleLineByLineAggregator;
 import io.precognito.search.agg.SimpleHistoCollector;
+import io.precognito.search.agg.SimpleLineByLineAggregator;
 import io.precognito.search.processor.SimpleSearchProcessor;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
@@ -32,24 +32,29 @@ public class FixturedSearchService implements SearchService {
 
     @Override
     public String[] searchFile(FileMeta[] files, Search search, Storage storage, String region, String tenant) {
-        FileMeta fileMeta = files[0];
-        String searchUrl = fileMeta.getStorageUrl();
-        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
-        String searchDestination = search.getSearchDestination(storage.getBucketName(tenant), searchUrl);
-        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestination);
+        try {
+            FileMeta fileMeta = files[0];
+            String searchUrl = fileMeta.getStorageUrl();
+            InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
+            String searchDestinationUrl = search.getSearchDestinationURI(storage.getBucketName(tenant), searchUrl);
+            OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl);
 
-        String histoDestination = search.getHistoDestination(storage.getBucketName(tenant), searchUrl);
-        OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestination);
+            String histoDestinationUrl = search.getHistoDestinationURI(storage.getBucketName(tenant), searchUrl);
+            OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl);
 
-        try (
-                SimpleSearchProcessor searchProcessor = new SimpleSearchProcessor();
-                SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to);
-        ) {
-            searchProcessor.process(histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
+            try (
+                    SimpleSearchProcessor searchProcessor = new SimpleSearchProcessor();
+                    SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to)
+            ) {
+                searchProcessor.process(histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return new String[]{histoDestinationUrl, searchDestinationUrl};
         } catch (Exception e) {
             e.printStackTrace();
+            return new String[0];
         }
-        return new String[] { histoDestination, searchDestination };
     }
 
     @Override

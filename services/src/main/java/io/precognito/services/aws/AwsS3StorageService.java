@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,13 +53,34 @@ public class AwsS3StorageService implements Storage {
         return importFromStorage(region, tenant, storageId, includeFileMask, "");
     }
 
+    /**
+     * TODO: should be using callback to prevent OOM
+     *
+     * @param region
+     * @param tenant
+     * @param storageId
+     * @param includeFileMask
+     * @param tags
+     * @return
+     */
     @Override
     public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String includeFileMask, String tags) {
         String bucketName = storageId;
         AmazonS3 s3Client = getAmazonS3Client(region);
 
         ObjectListing objectListing = s3Client.listObjects(bucketName, "");
-        List<FileMeta> fileMetas = objectListing.getObjectSummaries().stream().filter(item -> item.getKey().contains(includeFileMask) || includeFileMask.equals("*")).map(objSummary ->
+        ArrayList<FileMeta> results = new ArrayList<>();
+        addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
+        while (objectListing.isTruncated() && results.size() < 100000) {
+            objectListing = s3Client.listNextBatchOfObjects(objectListing);
+            addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
+        }
+
+        return results;
+    }
+
+    private void addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ObjectListing objectListing, ArrayList<FileMeta> results) {
+        results.addAll(objectListing.getObjectSummaries().stream().filter(item -> item.getKey().contains(includeFileMask) || includeFileMask.equals("*")).map(objSummary ->
         {
             FileMeta fileMeta = new FileMeta(tenant,
                     objSummary.getBucketName(),
@@ -72,8 +94,7 @@ public class AwsS3StorageService implements Storage {
             fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));
             return fileMeta;
         })
-                .collect(Collectors.toList());
-        return fileMetas;
+                .collect(Collectors.toList()));
     }
 
     private String getExtensions(String filename) {
@@ -91,7 +112,7 @@ public class AwsS3StorageService implements Storage {
         String bucketName = getBucketName(upload.getTenant());
         String filePath = upload.resource + "/" + upload.filename;
 
-        log.info("uploading:" + upload + " bucket:" + upload.getTenant());
+        log.info("uploading:" + upload + " bucket:" + bucketName);
 
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.addUserMetadata("tags", upload.getTags());
@@ -111,6 +132,13 @@ public class AwsS3StorageService implements Storage {
     private String writeFileToS3(String region, File file, String bucketName, String filePath, ObjectMetadata objectMetadata) {
         long contentLength = file.length();
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB.
+
+        /**
+         * Cannot write to S3 with '/' header
+         */
+        if (filePath.startsWith("/")) {
+            filePath = filePath.substring(1);
+        }
 
         try {
             AmazonS3 s3Client = getAmazonS3Client(region);
@@ -247,7 +275,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String filename) {
+    public OutputStream getOutputStream(String region, String tenant, String filenameURL) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
             return new FileOutputStream(toS3) {
@@ -258,7 +286,9 @@ public class AwsS3StorageService implements Storage {
                         ObjectMetadata objectMetadata = new ObjectMetadata();
                         objectMetadata.addUserMetadata("tenant", tenant);
                         objectMetadata.addUserMetadata("length", "" + toS3.length());
-                        writeFileToS3(region, toS3, tenant, filename, objectMetadata);
+                        writeFileToS3(region, toS3, getBucketName(tenant), new URI(filenameURL).getPath(), objectMetadata);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
                     } finally {
                         toS3.delete();
                     }

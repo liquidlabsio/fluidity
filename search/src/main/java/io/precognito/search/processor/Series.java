@@ -39,8 +39,12 @@ public class Series {
         long duration = to - from;
         delta = duration > ONE_HOUR ? TEN_MINS : ONE_MINS;
         if (duration > ONE_DAY) delta = ONE_HOUR;
-        for (long time = from; time<=to; time+= delta) {
-            data.add(new Long[] { time, 0l});
+        if (duration > ONE_DAY * 7) delta = ONE_HOUR * 2;
+        if (duration > ONE_DAY * 30) delta = ONE_DAY;
+        if (duration > ONE_DAY * 60) delta = ONE_DAY * 2;
+        if (duration > ONE_DAY * 120) delta = ONE_DAY * 7;
+        for (long time = from; time <= to; time += delta) {
+            data.add(new Long[]{time, 0l});
         }
     }
     public long get(long time) {

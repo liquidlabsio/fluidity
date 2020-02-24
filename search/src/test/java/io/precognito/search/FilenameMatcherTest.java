@@ -3,20 +3,29 @@ package io.precognito.search;
 import io.precognito.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FilenameMatcherTest {
 
     @Test
     void matchesStar() {
         FilenameMatcher filenameMatcher = new FilenameMatcher("*", 0, System.currentTimeMillis());
-        assertTrue(filenameMatcher.matches("anything", System.currentTimeMillis()-1000, System.currentTimeMillis()));
+        assertTrue(filenameMatcher.matches("anything", System.currentTimeMillis() - 1000, System.currentTimeMillis()));
     }
+
+
+    @Test
+    void matchesTextInContext() {
+        FilenameMatcher filenameMatcher = new FilenameMatcher("*|filename.contains(myfile)|*|*|*", 0, System.currentTimeMillis());
+        assertTrue(filenameMatcher.matches("this_is_myfile", System.currentTimeMillis() - 1000, System.currentTimeMillis()));
+    }
+
 
     @Test
     void matchesText() {
         FilenameMatcher filenameMatcher = new FilenameMatcher("filename.contains(myfile)", 0, System.currentTimeMillis());
-        assertTrue(filenameMatcher.matches("this_is_myfile", System.currentTimeMillis()-1000, System.currentTimeMillis()));
+        assertTrue(filenameMatcher.matches("this_is_myfile", System.currentTimeMillis() - 1000, System.currentTimeMillis()));
     }
 
     @Test
