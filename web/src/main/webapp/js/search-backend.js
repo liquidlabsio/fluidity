@@ -108,8 +108,8 @@ class SearchRest extends SearchInterface {
             type: 'POST',
             url: SERVICE_URL + '/search/finalize/'
                     + encodeURIComponent(DEFAULT_TENANT)
-                    + "/" + encodeURIComponent(histoFiles)
-                    + "/" + encodeURIComponent(eventFiles),
+                    + "/histos/events"
+                   ,
             contentType: 'multipart/form-data',
             data: self.searchToForm(search),
             processData: false,

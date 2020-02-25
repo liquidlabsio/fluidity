@@ -5,9 +5,8 @@ import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
 import io.precognito.services.storage.Storage;
 
-import java.util.List;
-
 public interface SearchService {
+
     FileMeta[] submit(Search search, FileMetaDataQueryService query);
 
     /**
@@ -23,6 +22,7 @@ public interface SearchService {
 
     /**
      * Returns [ numEvents, Histo, rawEvents ]
+     *
      * @param histos
      * @param events
      * @param search
@@ -31,5 +31,5 @@ public interface SearchService {
      * @param storage
      * @return
      */
-    String[] finalizeResults(List<String> histos, List<String> events, Search search, String tenant, String region, Storage storage);
+    String[] finalizeResults(String histos, String events, Search search, String tenant, String region, Storage storage);
 }

@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.Arrays;
 
 /**
  *     submitSearch(search)
@@ -60,6 +58,8 @@ public class SearchResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public String[] file(@PathParam("tenant") String tenant, @PathParam("files") String fileMetas, @MultipartForm Search search) {
         try {
+            search.decodeJsonFields();
+
             ObjectMapper objectMapper = new ObjectMapper();
             FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas), FileMeta[].class);
             return searchService.searchFile(fileMetas1, search, storageService, cloudRegion, tenant);
@@ -73,15 +73,14 @@ public class SearchResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public String[] finaliseResults(@PathParam("tenant") String tenant, @PathParam("histos") String histos, @PathParam("events") String events,  @MultipartForm Search search) {
 
+        search.decodeJsonFields();
+
         long start = System.currentTimeMillis();
         try {
 
-            String[] histoArray = histos.split(",");
-            String[] eventsArray = events.split(",");
-
-            return searchService.finalizeResults(Arrays.asList(histoArray), Arrays.asList(eventsArray), search, tenant, cloudRegion, storageService);
+            return searchService.finalizeResults(histos, events, search, tenant, cloudRegion, storageService);
         } finally {
-            log.info("Finalize Elapsed:{}",(System.currentTimeMillis() - start));
+            log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
         }
     }
 }

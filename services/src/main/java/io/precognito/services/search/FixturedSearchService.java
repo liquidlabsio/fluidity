@@ -2,7 +2,6 @@ package io.precognito.services.search;
 
 import io.precognito.search.Search;
 import io.precognito.search.agg.HistoAggregator;
-import io.precognito.search.agg.SimpleHistoAggregator;
 import io.precognito.search.agg.SimpleHistoCollector;
 import io.precognito.search.agg.SimpleLineByLineAggregator;
 import io.precognito.search.processor.SimpleSearchProcessor;
@@ -36,7 +35,7 @@ public class FixturedSearchService implements SearchService {
             FileMeta fileMeta = files[0];
             String searchUrl = fileMeta.getStorageUrl();
             InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
-            String searchDestinationUrl = search.getSearchDestinationURI(storage.getBucketName(tenant), searchUrl);
+            String searchDestinationUrl = search.getEventsDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl);
 
             String histoDestinationUrl = search.getHistoDestinationURI(storage.getBucketName(tenant), searchUrl);
@@ -58,18 +57,18 @@ public class FixturedSearchService implements SearchService {
     }
 
     @Override
-    public String[] finalizeResults(List<String> histoSourceUrls, List<String> eventSourceUrls, Search search, String tenant, String region, Storage storage) {
+    public String[] finalizeResults(String histoSourceUrls, String eventSourceUrls, Search search, String tenant, String region, Storage storage) {
         String histoAggJsonData = "";
-        try (HistoAggregator histoAgg = new SimpleHistoAggregator(storage.getInputStreams(region, tenant, histoSourceUrls), search)) {
+        try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.getStagingPrefix(), Search.histoSuffix), search)) {
             histoAggJsonData = histoAgg.process();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        String[] eventAggs = new String[] { "", "" };
+        String[] eventAggs = new String[]{"", ""};
 
-        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(storage.getInputStreams(region, tenant, eventSourceUrls), search)){
+        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(storage.getInputStreams(region, tenant, search.getStagingPrefix(), Search.eventsSuffix), search)) {
             eventAggs = eventAggregator.process();
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -31,4 +31,6 @@ public interface Storage {
     OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
+
+    Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix);
 }

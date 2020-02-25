@@ -20,10 +20,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -71,7 +68,7 @@ public class AwsS3StorageService implements Storage {
         ObjectListing objectListing = s3Client.listObjects(bucketName, "");
         ArrayList<FileMeta> results = new ArrayList<>();
         addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
-        while (objectListing.isTruncated() && results.size() < 100000) {
+        while (objectListing.isTruncated() && results.size() < 200000) {
             objectListing = s3Client.listNextBatchOfObjects(objectListing);
             addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
         }
@@ -212,7 +209,6 @@ public class AwsS3StorageService implements Storage {
     private static AmazonS3 getAmazonS3Client(String region) {
         return AmazonS3ClientBuilder.standard()
                 .withRegion(region)
-//                .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                 .build();
     }
 
@@ -272,6 +268,32 @@ public class AwsS3StorageService implements Storage {
     @Override
     public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
         return urls.stream().collect(Collectors.toMap(item -> item, item -> getInputStream(region, tenant, item)));
+    }
+
+    @Override
+    public Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension) {
+        String bucketName = getBucketName(tenant);
+        AmazonS3 s3Client = getAmazonS3Client(region);
+
+        ObjectListing objectListing = s3Client.listObjects(bucketName, filePathPrefix);
+        Map<String, InputStream> results = new HashMap<>();
+        results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
+        while (objectListing.isTruncated() && results.size() < 100000) {
+            objectListing = s3Client.listNextBatchOfObjects(objectListing);
+            results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
+        }
+        return results;
+    }
+
+    private Map<String, InputStream> getInputStreamsFromS3(AmazonS3 s3Client, String filenameExtension, ObjectListing objectListing) {
+        Map<String, InputStream> inputStreamMap = objectListing.getObjectSummaries().stream()
+                .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension))
+                .collect(Collectors.toMap(
+                        objSummary -> objSummary.getKey(),
+                        objSummary -> s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
+                                .getObjectContent()));
+
+        return inputStreamMap;
     }
 
     @Override

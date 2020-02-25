@@ -65,6 +65,12 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
+    public Map<String, InputStream> getInputStreams(String region, String tenant, String uid, String filenameExtension) {
+        List<String> fileUrls = storage.keySet().stream().filter(entry -> entry.contains(uid) && entry.endsWith(filenameExtension)).collect(Collectors.toList());
+        return getInputStreams(region, tenant, fileUrls);
+    }
+
+    @Override
     public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream() {
             @Override

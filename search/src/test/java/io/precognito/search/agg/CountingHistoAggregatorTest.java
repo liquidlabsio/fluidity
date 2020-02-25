@@ -1,8 +1,6 @@
 package io.precognito.search.agg;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
-import io.precognito.search.processor.Series;
 import io.precognito.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
@@ -12,9 +10,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SimpleHistoAggregatorTest {
+class CountingHistoAggregatorTest {
 
     @Test
     void process() throws Exception {
@@ -31,15 +30,17 @@ class SimpleHistoAggregatorTest {
         generateSeriesData(search, inputStreams, to, from, "someFile111");
         generateSeriesData(search, inputStreams, to, from, "someFile222");
 
+        search.from = from;
+        search.to = to;
+
 
         /**
          * Reduce/Merge them together
          */
-        SimpleHistoAggregator aggregator = new SimpleHistoAggregator(inputStreams, search);
+        CountingHistoAggregator aggregator = new CountingHistoAggregator(inputStreams, search);
         String histogram = aggregator.process();
         assertNotNull(histogram);
-        assertTrue(histogram.contains("someFile111"));
-        assertTrue(histogram.contains("someFile222"));
+        assertTrue(histogram.contains("count"));
 
         System.out.printf("Got: \n%s", histogram);
     }
