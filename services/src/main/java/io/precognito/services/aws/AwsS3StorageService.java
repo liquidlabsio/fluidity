@@ -1,6 +1,7 @@
 package io.precognito.services.aws;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
@@ -9,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.Storage;
+import io.precognito.util.UriUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -18,9 +20,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -62,21 +66,26 @@ public class AwsS3StorageService implements Storage {
      */
     @Override
     public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String includeFileMask, String tags) {
+
+        log.info("Importing from:{} mask:{}", storageId, includeFileMask);
         String bucketName = storageId;
         AmazonS3 s3Client = getAmazonS3Client(region);
 
-        ObjectListing objectListing = s3Client.listObjects(bucketName, "");
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, "");
         ArrayList<FileMeta> results = new ArrayList<>();
         addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
         while (objectListing.isTruncated() && results.size() < 200000) {
-            objectListing = s3Client.listNextBatchOfObjects(objectListing);
+            objectListing = s3Client.listObjectsV2(req);
             addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
+            req.setContinuationToken(objectListing.getContinuationToken());
         }
+        log.info("Import finished, total:{}", results.size());
 
         return results;
     }
 
-    private void addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ObjectListing objectListing, ArrayList<FileMeta> results) {
+    private void addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ListObjectsV2Result objectListing, ArrayList<FileMeta> results) {
         results.addAll(objectListing.getObjectSummaries().stream().filter(item -> item.getKey().contains(includeFileMask) || includeFileMask.equals("*")).map(objSummary ->
         {
             FileMeta fileMeta = new FileMeta(tenant,
@@ -92,6 +101,7 @@ public class AwsS3StorageService implements Storage {
             return fileMeta;
         })
                 .collect(Collectors.toList()));
+        log.info("Import progress:{}", results.size());
     }
 
     private String getExtensions(String filename) {
@@ -127,6 +137,12 @@ public class AwsS3StorageService implements Storage {
     }
 
     private String writeFileToS3(String region, File file, String bucketName, String filePath, ObjectMetadata objectMetadata) {
+
+        log.debug("Write:{} {} length:{}", bucketName, filePath, file.length());
+        if (file.length() == 0) {
+            log.warn("Attempted to write empty file to S3:{}", filePath);
+            return "empty-file";
+        }
         long contentLength = file.length();
         long partSize = 5 * 1024 * 1024; // Set part size to 5 MB.
 
@@ -172,6 +188,9 @@ public class AwsS3StorageService implements Storage {
                         .withFile(file)
                         .withPartSize(partSize);
 
+
+                log.debug("UploadPart:{} {} {}", filePath, i, filePosition);
+
                 // Upload the part and add the response's ETag to our list.
                 UploadPartResult uploadResult = s3Client.uploadPart(uploadRequest);
                 partETags.add(uploadResult.getPartETag());
@@ -179,7 +198,7 @@ public class AwsS3StorageService implements Storage {
                 filePosition += partSize;
             }
 
-            log.debug("ETags:" + partETags);
+            log.debug("Complete - ETags:{} File.length:{}", partETags, file.length());
             // Complete the multipart upload.
             CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, filePath,
                     initResponse.getUploadId(), partETags);
@@ -207,8 +226,11 @@ public class AwsS3StorageService implements Storage {
     }
 
     private static AmazonS3 getAmazonS3Client(String region) {
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setMaxConnections(1000);
         return AmazonS3ClientBuilder.standard()
                 .withRegion(region)
+                .withClientConfiguration(clientConfiguration)
                 .build();
     }
 
@@ -228,9 +250,9 @@ public class AwsS3StorageService implements Storage {
     public byte[] get(String region, String storageUrl) {
         bind();
         try {
-            URI uri = new URI(storageUrl);
-            String bucket = uri.getHost();
-            String filename = uri.getPath().substring(1);
+            String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
+            String bucket = hostnameAndPath[0];
+            String filename = hostnameAndPath[1];
 
             AmazonS3 s3Client = getAmazonS3Client(region);
             S3Object s3object = s3Client.getObject(bucket, filename);
@@ -251,9 +273,9 @@ public class AwsS3StorageService implements Storage {
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
         bind();
         try {
-            URI uri = new URI(storageUrl);
-            String bucket = uri.getHost();
-            String filename = uri.getPath().substring(1);
+            String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
+            String bucket = hostnameAndPath[0];
+            String filename = hostnameAndPath[1];
 
             AmazonS3 s3Client = getAmazonS3Client(region);
             S3Object s3object = s3Client.getObject(bucket, filename);
@@ -275,25 +297,45 @@ public class AwsS3StorageService implements Storage {
         String bucketName = getBucketName(tenant);
         AmazonS3 s3Client = getAmazonS3Client(region);
 
-        ObjectListing objectListing = s3Client.listObjects(bucketName, filePathPrefix);
+        long start = System.currentTimeMillis();
+
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(filePathPrefix).withMaxKeys(100000);
+
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(req);
         Map<String, InputStream> results = new HashMap<>();
         results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
-        while (objectListing.isTruncated() && results.size() < 100000) {
-            objectListing = s3Client.listNextBatchOfObjects(objectListing);
+        while (objectListing.isTruncated()) {
+            objectListing = s3Client.listObjectsV2(req);
             results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
+            req.setContinuationToken(objectListing.getNextContinuationToken());
         }
+        log.info("getInputStreams Elapsed:{}", (System.currentTimeMillis() - start));
         return results;
     }
 
-    private Map<String, InputStream> getInputStreamsFromS3(AmazonS3 s3Client, String filenameExtension, ObjectListing objectListing) {
-        Map<String, InputStream> inputStreamMap = objectListing.getObjectSummaries().stream()
-                .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension))
-                .collect(Collectors.toMap(
-                        objSummary -> objSummary.getKey(),
-                        objSummary -> s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
-                                .getObjectContent()));
+    private Map<String, InputStream> getInputStreamsFromS3(AmazonS3 s3Client, String filenameExtension, ListObjectsV2Result objectListing) {
 
-        return inputStreamMap;
+        Map<String, InputStream> results = new ConcurrentHashMap<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(20);
+
+        objectListing.getObjectSummaries().stream()
+                .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension))
+                .forEach(
+                        objSummary -> executorService.submit(() -> {
+                            results.put(objSummary.getKey(), s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
+                                    .getObjectContent());
+                        })
+                );
+
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(1, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log.info("getInputStreamsFromS3 Count:" + results.size());
+
+        return results;
     }
 
     @Override
@@ -305,11 +347,13 @@ public class AwsS3StorageService implements Storage {
                 public void close() throws IOException {
                     try {
                         super.close();
-                        ObjectMetadata objectMetadata = new ObjectMetadata();
-                        objectMetadata.addUserMetadata("tenant", tenant);
-                        objectMetadata.addUserMetadata("length", "" + toS3.length());
-                        writeFileToS3(region, toS3, getBucketName(tenant), new URI(filenameURL).getPath(), objectMetadata);
-                    } catch (URISyntaxException e) {
+                        if (toS3.length() > 0) {
+                            ObjectMetadata objectMetadata = new ObjectMetadata();
+                            objectMetadata.addUserMetadata("tenant", tenant);
+                            objectMetadata.addUserMetadata("length", "" + toS3.length());
+                            writeFileToS3(region, toS3, getBucketName(tenant), UriUtil.getHostnameAndPath(filenameURL)[1], objectMetadata);
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
                         toS3.delete();
@@ -326,9 +370,9 @@ public class AwsS3StorageService implements Storage {
         bind();
 
         try {
-            URI uri = new URI(storageUrl);
-            String bucket = uri.getHost();
-            String filename = uri.getPath().substring(1);
+            String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
+            String bucket = hostnameAndPath[0];
+            String filename = hostnameAndPath[1];
 
             AmazonS3 s3Client = getAmazonS3Client(region);
 

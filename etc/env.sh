@@ -10,4 +10,5 @@ export S3_TENANT_BUCKET=tenant-userstore
 
 
 # 2. Configure after the backend is deployed and the REST API is known
-export SERVICE_API=https://e27pw2tg19.execute-api.eu-west-2.amazonaws.com/Prod
+export SERVICE_API=https://ha1dtq0so3.execute-api.eu-west-2.amazonaws.com/Prod/
+

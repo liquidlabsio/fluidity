@@ -2,12 +2,12 @@ package io.precognito.search;
 
 import io.precognito.search.matchers.PMatcher;
 import io.precognito.search.matchers.RecordMatcherFactory;
+import io.precognito.util.UriUtil;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
-import java.net.URI;
 
 /**
  * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
@@ -88,9 +88,9 @@ public class Search {
 
     private String getStagingLocation(String bucketName, String searchUrl) {
         try {
-            URI uri = new URI(searchUrl.replace(" ", "%20"));
-            String filename = uri.getPath().substring(1);
-            return new URI("s3://" + bucketName + "/" + searchStagingName + "/" + this.uid + "/" + filename).toString();
+            searchUrl = searchUrl.replace(" ", "%20");
+            String[] hostnameAndPath = UriUtil.getHostnameAndPath(searchUrl);
+            return "s3://" + bucketName + "/" + searchStagingName + "/" + this.uid + "/" + hostnameAndPath[1];
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

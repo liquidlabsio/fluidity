@@ -16,7 +16,7 @@
         CodeUri: target/precognito-services-0.1-SNAPSHOT-runner.jar
         MemorySize: 512
         Policies: AWSLambdaFullAccess
-        Timeout: 15
+        Timeout: 900
         Events:
           GetResource:
             Type: Api

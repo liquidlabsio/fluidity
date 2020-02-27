@@ -1,12 +1,32 @@
 {
-  "Version":"2012-10-17",
-  "Statement":[{
-    "Sid":"PublicReadGetObject",
-    "Effect":"Allow",
-    "Principal": "*",
-    "Action":["s3:GetObject"],
-    "Resource":["arn:aws:s3:::EXAMPLE-BUCKET/**"
-    ]
-  }
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::EXAMPLE-BUCKET/**"
+      ]
+    },
+    {
+      "Action": "s3:GetBucketAcl",
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::precognito-prod-tenant-userstore",
+      "Principal": {
+        "Service": "logs.eu-west-2.amazonaws.com"
+      }
+    },
+    {
+      "Action": "s3:PutObject",
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::precognito-prod-tenant-userstore/*",
+      "Principal": {
+        "Service": "logs.eu-west-2.amazonaws.com"
+      }
+    }
   ]
 }

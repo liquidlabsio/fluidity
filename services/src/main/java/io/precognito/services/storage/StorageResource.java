@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -72,10 +73,23 @@ public class StorageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public int importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
                                  @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags) {
-        List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
-        imported.stream().forEach(fileMeta -> query.put(indexer.index(fileMeta, cloudRegion)));
-        log.info("Imported from Bucket:{} Amount:{}", storageId, imported.size());
-        return imported.size();
+
+        log.info("Import requested");
+        try {
+            List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
+
+
+            // newest first
+            Collections.sort(imported, (o1, o2) -> Long.compare(o2.toTime, o1.toTime));
+
+            query.putList(imported);
+
+            log.info("Imported from Bucket:{} Amount:{}", storageId, imported.size());
+            return imported.size();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return 0;
     }
 
     @GET
@@ -83,8 +97,13 @@ public class StorageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public int removeByStorageId(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
                                  @QueryParam("includeFileMask") String includeFileMask) {
+
+        log.info("Un-Import requested");
+
         List<FileMeta> removed = storage.removeByStorageId(cloudRegion, tenant, storageId, includeFileMask);
-        removed.stream().forEach(fileMeta -> query.delete(fileMeta.getTenant(), fileMeta.getFilename()));
+        log.info("Un-Imported from Bucket:{} Amount:{}", storageId, removed.size());
+        query.deleteList(removed);
+        log.info("Removed:{}", removed.size());
         return removed.size();
     }
 

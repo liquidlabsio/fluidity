@@ -41,7 +41,7 @@ precognito:
           type: default
   precognito:
     prefix: precognito-prod
-    storage:
+    services:
       storage: AWS
       indexer: AWS
       query: AWS

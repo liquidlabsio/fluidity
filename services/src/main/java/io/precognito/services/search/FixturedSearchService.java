@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 public class FixturedSearchService implements SearchService {
     private final Logger log = LoggerFactory.getLogger(FixturedSearchService.class);
@@ -35,6 +36,9 @@ public class FixturedSearchService implements SearchService {
             FileMeta fileMeta = files[0];
             String searchUrl = fileMeta.getStorageUrl();
             InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
+            if (searchUrl.endsWith(".gz")) {
+                inputStream = new GZIPInputStream(inputStream);
+            }
             String searchDestinationUrl = search.getEventsDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl);
 
@@ -49,7 +53,7 @@ public class FixturedSearchService implements SearchService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new String[]{histoDestinationUrl, searchDestinationUrl};
+            return new String[]{"histo", "search"};
         } catch (Exception e) {
             e.printStackTrace();
             return new String[0];
@@ -58,13 +62,17 @@ public class FixturedSearchService implements SearchService {
 
     @Override
     public String[] finalizeResults(String histoSourceUrls, String eventSourceUrls, Search search, String tenant, String region, Storage storage) {
+
+        long start = System.currentTimeMillis();
         String histoAggJsonData = "";
         try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.getStagingPrefix(), Search.histoSuffix), search)) {
             histoAggJsonData = histoAgg.process();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+        log.info("HistoElapsed:{}", (System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
 
         String[] eventAggs = new String[]{"", ""};
 
@@ -73,6 +81,8 @@ public class FixturedSearchService implements SearchService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return  new String[] { histoAggJsonData, eventAggs[0], eventAggs[1]};
+        log.info("EventsElapsed:{}", (System.currentTimeMillis() - start));
+
+        return new String[]{histoAggJsonData, eventAggs[0], eventAggs[1]};
     }
 }

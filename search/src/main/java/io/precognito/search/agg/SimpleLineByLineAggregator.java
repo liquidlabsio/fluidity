@@ -43,7 +43,7 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
     }
 
     private void populateLineMap(Map<String, BufferedReader> streams) {
-        streams.entrySet().stream()//.filter(entry -> entry.getValue().hasNextLine())
+        streams.entrySet().stream()
                 .forEach(entry -> {
                     try {
                         nextLines.put(entry.getKey(), split(entry.getValue().readLine()) );
@@ -56,8 +56,8 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
     private Map.Entry<Long, String> split(String nextLine) {
         int i = nextLine.indexOf(":");
         if (i == -1) return null;
-            Long time = Long.valueOf(nextLine.substring(0, i));
-            String line = splitLine ? nextLine.substring(i + 1, nextLine.length()) : nextLine;
+        Long time = Long.valueOf(nextLine.substring(0, i));
+        String line = splitLine ? nextLine.substring(i + 1) : nextLine;
             return new AbstractMap.SimpleEntry(time, line);
     }
 

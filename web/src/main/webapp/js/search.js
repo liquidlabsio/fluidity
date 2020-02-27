@@ -98,7 +98,6 @@ class Search {
         this.searchedHistos = []
         this.searchFileMetas.forEach(function(fileMeta, index, arr){
             console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
-            console.log(self)
             // TODO: look at chunking them together
             $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
         })

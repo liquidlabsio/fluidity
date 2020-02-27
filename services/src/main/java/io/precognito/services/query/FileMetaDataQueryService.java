@@ -4,6 +4,8 @@ import java.util.List;
 
 public interface FileMetaDataQueryService {
 
+    void putList(List<FileMeta> fileMetas);
+
     void put(FileMeta fileMeta);
 
     FileMeta find(String tenant, String filename);
@@ -17,4 +19,5 @@ public interface FileMetaDataQueryService {
 
     List<FileMeta> list();
 
+    void deleteList(List<FileMeta> removed);
 }

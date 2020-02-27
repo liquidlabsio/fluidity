@@ -9,13 +9,15 @@ import java.util.stream.Collectors;
 
 public class SeriesHistoAggregator extends AbstractHistoAggregator {
 
+    public static final int LIMIT = 10;
+
     public SeriesHistoAggregator(Map<String, InputStream> inputStreams, Search search) {
         super(inputStreams, search);
     }
 
     @Override
     List<Series> processSeries(List<Series> collectedSeries) {
-        final List<String> topSeries = getTopSeriesNames(collectedSeries, 20);
+        final List<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
         List<Series> results = new ArrayList<>();
         Series other = new Series("other", search.from, search.to);
