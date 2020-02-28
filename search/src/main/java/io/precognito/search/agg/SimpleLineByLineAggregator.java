@@ -22,6 +22,8 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
     private final Map<String, BufferedReader> streams;
     private final Map<String, Integer> fileLut;
     private final Search search;
+    private long fromTime;
+    private int limit;
     private boolean splitLine = false;
 
     public SimpleLineByLineAggregator(Map<String, InputStream> streams, Search search) {
@@ -36,9 +38,9 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
         populateLineMap(this.streams);
     }
 
-    private Map<String, Integer> populateLut(Set<String> keySet) {
+    private Map<String, Integer> populateLut(Set<String> dataSourceLut) {
         HashMap<String, Integer> results = new HashMap<>();
-        keySet.stream().forEach(key -> results.put(key, results.size()));
+        dataSourceLut.stream().forEach(key -> results.put(key, results.size()));
         return results;
     }
 
@@ -46,46 +48,49 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
         streams.entrySet().stream()
                 .forEach(entry -> {
                     try {
-                        nextLines.put(entry.getKey(), split(entry.getValue().readLine()) );
-                    } catch (IOException e) {
+                        nextLines.put(entry.getKey(), split(entry.getKey(), entry.getValue().readLine()));
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 });
     }
 
-    private Map.Entry<Long, String> split(String nextLine) {
+    private Map.Entry<Long, RecordEntry> split(String streamName, String nextLine) {
         int i = nextLine.indexOf(":");
         if (i == -1) return null;
         Long time = Long.valueOf(nextLine.substring(0, i));
         String line = splitLine ? nextLine.substring(i + 1) : nextLine;
-            return new AbstractMap.SimpleEntry(time, line);
+        return new AbstractMap.SimpleEntry(time, new RecordEntry(streamName, time, line));
     }
 
     @Override
-    public String[] process() throws IOException {
+    public String[] process(long fromTime, int limit) throws IOException {
         StringBuilder results = new StringBuilder();
-        String[] streamNameAndLine;
+        RecordEntry nextRecord;
         int totalEvents = 0;
-        while ((streamNameAndLine = getNextLine(streams)) != null) {
-            results.append(fileLut.get(streamNameAndLine[0]));
-            results.append(":");
-            results.append(streamNameAndLine[1]).append("\n");
-            totalEvents++;
+        while ((nextRecord = getNextLine(streams)) != null && totalEvents < limit) {
+            if (nextRecord.getTime() > fromTime) {
+                results.append(fileLut.get(nextRecord.getStreamName()));
+                results.append(":");
+                results.append(nextRecord.getTime()).append(":").append(nextRecord.getLine()).append("\n");
+                totalEvents++;
+            }
         }
 
-        return new String[] { Integer.toString(totalEvents),  results.toString() };
+        return new String[]{Integer.toString(totalEvents), results.toString()};
     }
 
-    Map<String, Map.Entry<Long, String>> nextLines = new HashMap<>();
+    Map<String, Map.Entry<Long, RecordEntry>> nextLines = new HashMap<>();
 
     /**
      * Searched lines are stored using: timestamp:filepos:data
+     *
      * @param streams
      * @return
      * @throws IOException
      */
-    private String[] getNextLine(Map<String, BufferedReader> streams) throws IOException {
-        Map.Entry<String, Map.Entry<Long, String >> nextLine = findNextLine(nextLines);
+    private RecordEntry getNextLine(Map<String, BufferedReader> streams) throws IOException {
+        Map.Entry<String, Map.Entry<Long, RecordEntry>> nextLine = findNextLine(nextLines);
         if (nextLine == null) {
             return null;
         }
@@ -98,29 +103,29 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
 
 
         // Note: 'nextLine' points to a hashmap entry that can be mutated by updates below.
-        String result = nextLine.getValue().getValue();
+        RecordEntry result = nextLine.getValue().getValue();
         String streamUrl = nextLine.getKey();
-        Map.Entry<Long, String> newStreamLineValue = readNewStreamLine(streams.get(streamUrl));
-        if (newStreamLineValue == null){
+        Map.Entry<Long, RecordEntry> newStreamLineValue = readNewStreamLine(streamUrl, streams.get(streamUrl));
+        if (newStreamLineValue == null) {
             streams.remove(streamUrl).close();
             nextLines.remove(streamUrl);
         } else {
             nextLines.put(streamUrl, newStreamLineValue);
         }
-        return new String[] { streamUrl , result };
+        return result;
     }
 
-    private Map.Entry<String, Map.Entry<Long, String>> findNextLine(Map<String, Map.Entry<Long, String>> nextLines) {
-        Map.Entry<String, Map.Entry<Long, String>> found = null;
-        List<Map.Entry<String, Map.Entry<Long, String>>> collect = nextLines.entrySet().stream().filter(entry -> found == null || entry.getValue().getKey() < found.getValue().getKey()).collect(Collectors.toList());
+    private Map.Entry<String, Map.Entry<Long, RecordEntry>> findNextLine(Map<String, Map.Entry<Long, RecordEntry>> nextLines) {
+        Map.Entry<String, Map.Entry<Long, RecordEntry>> found = null;
+        List<Map.Entry<String, Map.Entry<Long, RecordEntry>>> collect = nextLines.entrySet().stream().filter(entry -> found == null || entry.getValue().getKey() < found.getValue().getKey()).collect(Collectors.toList());
         if (collect.size() == 0) return null;
         else return collect.iterator().next();
     }
 
-    private Map.Entry<Long, String> readNewStreamLine(BufferedReader reader) throws IOException {
+    private Map.Entry<Long, RecordEntry> readNewStreamLine(String streamName, BufferedReader reader) throws IOException {
         String line = reader.readLine();
         if (line != null) {
-            return split(line);
+            return split(streamName, line);
         }
         return null;
     }

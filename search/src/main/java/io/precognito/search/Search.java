@@ -29,7 +29,6 @@ public class Search {
     @PartType(MediaType.TEXT_PLAIN)
     public String uid;
 
-    // Parts: bucket | host | tags | filename | lineMatcher | fieldExtractor
     @FormParam("expression")
     @PartType(MediaType.TEXT_PLAIN)
     public String expression;
@@ -64,7 +63,7 @@ public class Search {
         return filenameMatcher.matches(filename, from, to);
     }
 
-    public String getAnalytic() {
+    public String analyticValue() {
         String[] split = expression.split("\\|");
         return split.length > EXPRESSION_PARTS.analytic.ordinal() ? split[EXPRESSION_PARTS.analytic.ordinal()].trim() : "";
     }
@@ -82,11 +81,11 @@ public class Search {
                 '}';
     }
 
-    public String getEventsDestinationURI(String bucketName, String searchUrl) {
-        return getStagingLocation(bucketName, searchUrl) + eventsSuffix;
+    public String eventsDestinationURI(String bucketName, String searchUrl) {
+        return stagingLocation(bucketName, searchUrl) + eventsSuffix;
     }
 
-    private String getStagingLocation(String bucketName, String searchUrl) {
+    private String stagingLocation(String bucketName, String searchUrl) {
         try {
             searchUrl = searchUrl.replace(" ", "%20");
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(searchUrl);
@@ -96,11 +95,11 @@ public class Search {
         }
     }
 
-    public String getHistoDestinationURI(String bucketName, String searchUrl) {
-        return getStagingLocation(bucketName, searchUrl) + histoSuffix;
+    public String histoDestinationURI(String bucketName, String searchUrl) {
+        return stagingLocation(bucketName, searchUrl) + histoSuffix;
     }
 
-    public String getStagingPrefix() {
+    public String stagingPrefix() {
         return searchStagingName + "/" + this.uid;
     }
 

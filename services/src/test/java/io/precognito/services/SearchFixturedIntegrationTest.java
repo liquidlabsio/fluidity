@@ -9,8 +9,6 @@ import io.precognito.services.storage.StorageResource;
 import io.precognito.test.IntegrationTest;
 import io.precognito.util.DateUtil;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -20,17 +18,9 @@ import org.junit.jupiter.api.Test;
 import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.net.URLEncoder;
-import java.rmi.server.UID;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @QuarkusTest
 @IntegrationTest
 class SearchFixturedIntegrationTest {
+
+    public static final String TENANT = "TENANT";
 
     @BeforeEach
     void setUp() {
@@ -69,11 +61,16 @@ class SearchFixturedIntegrationTest {
 
         System.out.printf("Search results available here:%s%n", histoEventsPair);
 
-        String[] fileResults = finalizeSearchResults(search, histoEventsPair.get(0), histoEventsPair.get(1));
+        String[] eventResults = finalizeEvents(search, histoEventsPair.get(0), histoEventsPair.get(1));
 
-        assertNotNull(fileResults[0]);
+        assertNotNull(eventResults[0]);
         // contains histo data
-        assertTrue(fileResults[0].contains("file-to-upload"));
+        assertTrue(eventResults[1].contains("this is some file 1"), "Contents of events not found");
+
+        String histoResults = finalizeHisto(search, histoEventsPair.get(0), histoEventsPair.get(1));
+
+        assertNotNull(histoResults);
+        assertTrue(histoResults.contains("count"), "didnt perform default count analytic");
     }
 
     @NotNull
@@ -87,19 +84,22 @@ class SearchFixturedIntegrationTest {
         return search;
     }
 
-    private String[] finalizeSearchResults(Search search, String histo, String events) {
+    private String[] finalizeEvents(Search search, String histo, String events) {
 
-        String[] results = searchResource.finaliseResults("TENANT", histo, events, search);
+        String[] results = searchResource.finaliseEvents(TENANT, search, 0);
         assertTrue(results.length > 0);
         return results;
     }
 
+    private String finalizeHisto(Search search, String histo, String events) {
+        return searchResource.finaliseHisto(TENANT, search);
+    }
 
     private List<String> searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
         FileMeta[] fileMetas = {fileMeta};
         String fileMetaJson = new ObjectMapper().writeValueAsString(fileMetas);
 
-        return Arrays.asList(searchResource.file("TENANT", URLEncoder.encode(fileMetaJson), search));
+        return Arrays.asList(searchResource.file(TENANT, URLEncoder.encode(fileMetaJson), search));
     }
 
     private List<FileMeta> search(Search search) {

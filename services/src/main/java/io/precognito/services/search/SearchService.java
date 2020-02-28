@@ -7,6 +7,7 @@ import io.precognito.services.storage.Storage;
 
 public interface SearchService {
 
+
     FileMeta[] submit(Search search, FileMetaDataQueryService query);
 
     /**
@@ -20,16 +21,16 @@ public interface SearchService {
      */
     String[] searchFile(FileMeta[] files, Search search, Storage storage, String region, String tenant);
 
+    String finalizeHisto(Search search, String tenant, String region, Storage storage);
+
     /**
      * Returns [ numEvents, Histo, rawEvents ]
      *
-     * @param histos
-     * @param events
      * @param search
      * @param tenant
      * @param region
      * @param storage
      * @return
      */
-    String[] finalizeResults(String histos, String events, Search search, String tenant, String region, Storage storage);
+    String[] finalizeEvents(Search search, long from, int limit, String tenant, String region, Storage storage);
 }

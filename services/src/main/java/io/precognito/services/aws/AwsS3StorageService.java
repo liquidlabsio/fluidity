@@ -293,7 +293,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension) {
+    public Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension, long fromTime) {
         String bucketName = getBucketName(tenant);
         AmazonS3 s3Client = getAmazonS3Client(region);
 
@@ -303,23 +303,23 @@ public class AwsS3StorageService implements Storage {
 
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(req);
         Map<String, InputStream> results = new HashMap<>();
-        results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
+        results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing, fromTime));
         while (objectListing.isTruncated()) {
             objectListing = s3Client.listObjectsV2(req);
-            results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing));
+            results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing, fromTime));
             req.setContinuationToken(objectListing.getNextContinuationToken());
         }
         log.info("getInputStreams Elapsed:{}", (System.currentTimeMillis() - start));
         return results;
     }
 
-    private Map<String, InputStream> getInputStreamsFromS3(AmazonS3 s3Client, String filenameExtension, ListObjectsV2Result objectListing) {
+    private Map<String, InputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
 
         Map<String, InputStream> results = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(20);
 
         objectListing.getObjectSummaries().stream()
-                .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension))
+                .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension) && objSummary.getLastModified().getTime() > fromTime)
                 .forEach(
                         objSummary -> executorService.submit(() -> {
                             results.put(objSummary.getKey(), s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())

@@ -39,10 +39,10 @@ public class FixturedSearchService implements SearchService {
             if (searchUrl.endsWith(".gz")) {
                 inputStream = new GZIPInputStream(inputStream);
             }
-            String searchDestinationUrl = search.getEventsDestinationURI(storage.getBucketName(tenant), searchUrl);
+            String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl);
 
-            String histoDestinationUrl = search.getHistoDestinationURI(storage.getBucketName(tenant), searchUrl);
+            String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl);
 
             try (
@@ -61,28 +61,35 @@ public class FixturedSearchService implements SearchService {
     }
 
     @Override
-    public String[] finalizeResults(String histoSourceUrls, String eventSourceUrls, Search search, String tenant, String region, Storage storage) {
+    public String finalizeHisto(Search search, String tenant, String region, Storage storage) {
 
         long start = System.currentTimeMillis();
         String histoAggJsonData = "";
-        try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.getStagingPrefix(), Search.histoSuffix), search)) {
+        try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.histoSuffix, 0), search)) {
             histoAggJsonData = histoAgg.process();
         } catch (Exception e) {
             e.printStackTrace();
         }
         log.info("HistoElapsed:{}", (System.currentTimeMillis() - start));
 
-        start = System.currentTimeMillis();
+        return histoAggJsonData;
+    }
 
-        String[] eventAggs = new String[]{"", ""};
+    @Override
+    public String[] finalizeEvents(Search search, long fromTime, int limit, String tenant, String region, Storage storage) {
 
-        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(storage.getInputStreams(region, tenant, search.getStagingPrefix(), Search.eventsSuffix), search)) {
-            eventAggs = eventAggregator.process();
+        long start = System.currentTimeMillis();
+
+        String[] eventAggs;
+
+        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime), search)) {
+            eventAggs = eventAggregator.process(fromTime, limit);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         log.info("EventsElapsed:{}", (System.currentTimeMillis() - start));
 
-        return new String[]{histoAggJsonData, eventAggs[0], eventAggs[1]};
+        return new String[]{eventAggs[0], eventAggs[1]};
     }
+
 }

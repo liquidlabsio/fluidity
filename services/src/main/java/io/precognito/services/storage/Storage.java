@@ -32,5 +32,5 @@ public interface Storage {
 
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 
-    Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix);
+    Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix, long fromTime);
 }

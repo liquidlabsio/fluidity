@@ -104,6 +104,9 @@ searchInputAnalytic = new Vue({
                 console.log("series:" + searchChart.series[config.seriesIndex].name)
                 console.log("time:" + point[0])
                 console.log("value:" + point[1])
+                 searchStats.stats = "Getting events from:" + new Date(point[0])
+                $.Topic(Precognito.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
+
               }
         },
         data: {
@@ -134,14 +137,19 @@ searchInputAnalytic = new Vue({
                   }
                 },
                 xaxis: {
-              type: 'datetime',
-              categories: [
-              ],
-              labels: {
-                rotate: -90
-              }
+                  type: 'datetime',
+                  categories: [
+                  ],
+                  labels: {
+                    rotate: -90
+                  }
+                },
+                tooltip: {
+                    x: {
+                    format: "HH:MM dd-MMM"
+                    }
+                }
             }
-            },
         }
 })
 

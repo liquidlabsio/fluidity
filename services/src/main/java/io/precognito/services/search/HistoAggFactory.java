@@ -17,7 +17,7 @@ public class HistoAggFactory {
 
 
     public HistoAggregator get(Map<String, InputStream> inputStreams, Search search) {
-        String analytic = search.getAnalytic();
+        String analytic = search.analyticValue();
         List<HistoAggregator> histoAggregators = aggs.stream().filter(item -> item.isForMe(analytic)).collect(Collectors.toList());
         if (histoAggregators.isEmpty()) {
             return new CountingHistoAggregator(inputStreams, search);

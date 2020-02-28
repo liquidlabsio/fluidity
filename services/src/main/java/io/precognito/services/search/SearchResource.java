@@ -1,6 +1,5 @@
 package io.precognito.services.search;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.services.query.FileMeta;
@@ -49,8 +48,8 @@ public class SearchResource {
     @POST
     @Path("/submit")
     public FileMeta[] submit(Search search) {
-        FileMeta[] submit = searchService.submit(search, query);
-        return submit;
+        log.info("/search/submit:{}", search);
+        return searchService.submit(search, query);
     }
 
     @POST
@@ -61,24 +60,49 @@ public class SearchResource {
             search.decodeJsonFields();
 
             ObjectMapper objectMapper = new ObjectMapper();
-            FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas), FileMeta[].class);
+            FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas, "UTF-8"), FileMeta[].class);
             return searchService.searchFile(fileMetas1, search, storageService, cloudRegion, tenant);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
+            log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             throw new RuntimeException(e);
         }
     }
 
     @POST
-    @Path("/finalize/{tenant}/{histos}/{events}")
+    @Path("/finalizeEvents/{tenant}/{fromTime}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String[] finaliseResults(@PathParam("tenant") String tenant, @PathParam("histos") String histos, @PathParam("events") String events,  @MultipartForm Search search) {
+    public String[] finaliseEvents(@PathParam("tenant") String tenant, @MultipartForm Search search, @PathParam("fromTime") long from) {
 
+        try {
+
+            log.info("/search/finalizeEvents:{}", search);
+            search.decodeJsonFields();
+
+            long start = System.currentTimeMillis();
+            try {
+                return searchService.finalizeEvents(search, from, 10000, tenant, cloudRegion, storageService);
+            } finally {
+                log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+            log.error("finalizeEventsFailed", t);
+            return new String[]{"0", "0"};
+        }
+    }
+
+    @POST
+    @Path("/finalizeHisto/{tenant}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public String finaliseHisto(@PathParam("tenant") String tenant, @MultipartForm Search search) {
+
+        log.info("/search/finalizeHisto:{}", search);
         search.decodeJsonFields();
 
         long start = System.currentTimeMillis();
         try {
 
-            return searchService.finalizeResults(histos, events, search, tenant, cloudRegion, storageService);
+            return searchService.finalizeHisto(search, tenant, cloudRegion, storageService);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
         }
