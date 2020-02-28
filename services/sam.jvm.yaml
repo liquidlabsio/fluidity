@@ -26,7 +26,7 @@
 
   Outputs:
     PrecognitoApi:
-      Description: The REST API for the web-frontend
+      Description: REST API for the Precog Lambda Service
       Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
       Export:
         Name: PrecognitoApi

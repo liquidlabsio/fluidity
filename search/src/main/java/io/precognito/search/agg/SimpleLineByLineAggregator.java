@@ -22,8 +22,6 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
     private final Map<String, BufferedReader> streams;
     private final Map<String, Integer> fileLut;
     private final Search search;
-    private long fromTime;
-    private int limit;
     private boolean splitLine = false;
 
     public SimpleLineByLineAggregator(Map<String, InputStream> streams, Search search) {
@@ -132,7 +130,7 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
 
     @Override
     public void close() throws Exception {
-        this.streams.values().stream().forEach(reader -> {
+        this.streams.values().forEach(reader -> {
             try {
                 reader.close();
             } catch (IOException e) {

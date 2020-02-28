@@ -58,7 +58,14 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        this.inputStreams.values().forEach(stream -> {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
     }
 }

@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.Storage;
+import io.precognito.util.DateUtil;
 import io.precognito.util.UriUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -71,12 +72,14 @@ public class AwsS3StorageService implements Storage {
     @Override
     public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String includeFileMask, String tags) {
 
+        String filePrefix = "";
+
         log.info("Importing from:{} mask:{}", storageId, includeFileMask);
         String bucketName = storageId;
         AmazonS3 s3Client = getAmazonS3Client(region);
 
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
-        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, "");
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, filePrefix);
         ArrayList<FileMeta> results = new ArrayList<>();
         addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
         while (objectListing.isTruncated() && results.size() < 200000) {
@@ -97,7 +100,7 @@ public class AwsS3StorageService implements Storage {
                     objSummary.getETag(),
                     objSummary.getKey(),
                     new byte[0],
-                    objSummary.getLastModified().getTime() - (24 * 60 * 60 * 1000),
+                    inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
                     objSummary.getLastModified().getTime());
             fileMeta.setSize(objSummary.getSize());
             fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
@@ -108,12 +111,20 @@ public class AwsS3StorageService implements Storage {
         log.info("Import progress:{}", results.size());
     }
 
+    private long inferFakeStartTimeFromSize(long size, long lastModified) {
+        if (size < 4096) return lastModified - DateUtil.HOUR;
+        int fudgeLineLength = 256;
+        int fudgeLineCount = (int) (size / fudgeLineLength);
+        long fudgedTimeIntervalPerLineMs = 1000;
+        long startTimeOffset = fudgedTimeIntervalPerLineMs * fudgeLineCount;
+        if (startTimeOffset < DateUtil.HOUR) startTimeOffset = DateUtil.HOUR;
+        return lastModified - startTimeOffset;
+    }
+
     private String getExtensions(String filename) {
         if (filename.contains(".")) return Arrays.toString(filename.split("."));
         return "";
     }
-
-
 
 
     @Override
@@ -283,7 +294,7 @@ public class AwsS3StorageService implements Storage {
 
             AmazonS3 s3Client = getAmazonS3Client(region);
             S3Object s3object = s3Client.getObject(bucket, filename);
-            return s3object.getObjectContent();
+            return copyToLocalTempFs(s3object.getObjectContent());
 
         } catch (Exception e) {
             log.error("Failed to retrieve {}", storageUrl, e);
@@ -326,8 +337,8 @@ public class AwsS3StorageService implements Storage {
                 .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension) && objSummary.getLastModified().getTime() > fromTime)
                 .forEach(
                         objSummary -> executorService.submit(() -> {
-                            results.put(objSummary.getKey(), s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
-                                    .getObjectContent());
+                            results.put(objSummary.getKey(), copyToLocalTempFs(s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
+                                    .getObjectContent()));
                         })
                 );
 
@@ -340,6 +351,34 @@ public class AwsS3StorageService implements Storage {
         log.info("getInputStreamsFromS3 Count:" + results.size());
 
         return results;
+    }
+
+    /**
+     * AWS Recommend grabbing the content as quickly as possible
+     *
+     * @param objectContent
+     * @return
+     */
+    private InputStream copyToLocalTempFs(S3ObjectInputStream objectContent) {
+        try {
+            File temp = File.createTempFile("precog", "s3");
+
+            FileOutputStream fos = new FileOutputStream(temp);
+            IOUtils.copyLarge(objectContent, fos);
+            fos.flush();
+            fos.close();
+            objectContent.close();
+
+            return new BufferedInputStream(new FileInputStream(temp)) {
+                @Override
+                public void close() {
+                    temp.delete();
+                }
+            };
+        } catch (Exception e) {
+            log.error(e.toString(), e);
+        }
+        throw new RuntimeException("Failed to localise S3 data");
     }
 
     @Override

@@ -54,6 +54,17 @@ public class Search {
         return matcher.matches(nextLine);
     }
 
+    transient TagMatcher tagMatcher;
+
+    public boolean tagMatches(String tags) {
+        if (tagMatcher == null) {
+            tagMatcher = new TagMatcher(this.expression);
+        }
+        return tagMatcher.matches(tags);
+
+    }
+
+
     transient FilenameMatcher filenameMatcher;
 
     public boolean fileMatches(String filename, long from, long to) {

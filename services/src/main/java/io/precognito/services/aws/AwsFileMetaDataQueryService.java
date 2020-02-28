@@ -31,6 +31,8 @@ import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.Que
 public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     public static final int BATCH_PAUSE_MS = 10;
+    public static final long READ_CAPACITY = 30L;
+    public static final long WRITE_CAPACITY = 15L;
     private final Logger log = LoggerFactory.getLogger(AwsFileMetaDataQueryService.class);
 
     @Inject
@@ -57,7 +59,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
             log.info("Creating table:" + getTableName());
 
             fileMetaTable.createTable(CreateTableEnhancedRequest.builder().provisionedThroughput(
-                    ProvisionedThroughput.builder().readCapacityUnits(30L).writeCapacityUnits(15L).build()).build());
+                    ProvisionedThroughput.builder().readCapacityUnits(READ_CAPACITY).writeCapacityUnits(WRITE_CAPACITY).build()).build());
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -94,13 +96,16 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     private void putListBatch(List<FileMeta> fileMeta) {
 
-        WriteBatch.Builder<FileMeta> fileMetaBuilder = WriteBatch.builder(FileMeta.class)
-                .mappedTableResource(getTable());
-        fileMeta.forEach(item -> fileMetaBuilder.addPutItem(PutItemEnhancedRequest.builder(FileMeta.class).item(item).build()));
+        if (fileMeta.size() > 0) {
 
-        enhancedClient.batchWriteItem(
-                BatchWriteItemEnhancedRequest.builder()
-                        .addWriteBatch(fileMetaBuilder.build()).build());
+            WriteBatch.Builder<FileMeta> fileMetaBuilder = WriteBatch.builder(FileMeta.class)
+                    .mappedTableResource(getTable());
+            fileMeta.forEach(item -> fileMetaBuilder.addPutItem(PutItemEnhancedRequest.builder(FileMeta.class).item(item).build()));
+
+            enhancedClient.batchWriteItem(
+                    BatchWriteItemEnhancedRequest.builder()
+                            .addWriteBatch(fileMetaBuilder.build()).build());
+        }
     }
 
     @Override
@@ -133,20 +138,22 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
 
     private void deleteListBatch(List<FileMeta> removed) {
+        if (removed.size() > 0) {
 
-        log.info("Deleting:{}", removed.size());
+            log.info("Deleting:{}", removed.size());
 
-        WriteBatch.Builder<FileMeta> writeBatchBuilder = WriteBatch.builder(FileMeta.class)
-                .mappedTableResource(getTable());
-        removed.forEach(item -> writeBatchBuilder.addDeleteItem(
-                DeleteItemEnhancedRequest.builder().key(Model.getKey(item.tenant, item.filename)).build()
-        ));
+            WriteBatch.Builder<FileMeta> writeBatchBuilder = WriteBatch.builder(FileMeta.class)
+                    .mappedTableResource(getTable());
+            removed.forEach(item -> writeBatchBuilder.addDeleteItem(
+                    DeleteItemEnhancedRequest.builder().key(Model.getKey(item.tenant, item.filename)).build()
+            ));
 
-        enhancedClient.batchWriteItem(
-                BatchWriteItemEnhancedRequest.builder()
-                        .addWriteBatch(
-                                writeBatchBuilder.build())
-                        .build());
+            enhancedClient.batchWriteItem(
+                    BatchWriteItemEnhancedRequest.builder()
+                            .addWriteBatch(
+                                    writeBatchBuilder.build())
+                            .build());
+        }
 
     }
 

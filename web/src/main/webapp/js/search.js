@@ -109,13 +109,13 @@ class Search {
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-         searchStats.stats = "Got Result, total: " + this.searchedHistos.length + " of :" + this.searchFileMetas.length
+         searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " files"
 
         this.searchedEvents.push(eventsUrl)
         this.searchedHistos.push(histoUrl)
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
-            searchStats.stats = "Got all results! Requesting aggregation:" + this.searchFileMetas.length
+            searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length
             $.Topic(Precognito.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
             $.Topic(Precognito.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }

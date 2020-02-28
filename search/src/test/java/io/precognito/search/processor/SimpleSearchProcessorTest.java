@@ -3,7 +3,8 @@ package io.precognito.search.processor;
 import io.precognito.search.Search;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,7 +22,7 @@ class SimpleSearchProcessorTest {
         search.to = System.currentTimeMillis();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int process = simpleSearchProcessor.process(new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024);
+        int process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024);
         assertTrue(process > 0, "didnt process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());

@@ -10,5 +10,5 @@ public interface Processor extends AutoCloseable {
     /**
      * Note: lines must be written to the outputstream using: timestamp:filepos:data
      */
-    int process(HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException;
+    int process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException;
 }

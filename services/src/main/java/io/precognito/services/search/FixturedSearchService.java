@@ -27,7 +27,7 @@ public class FixturedSearchService implements SearchService {
 
     @Override
     public FileMeta[] submit(Search search, FileMetaDataQueryService query) {
-        List<FileMeta> files = query.list().stream().filter(file -> search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
+        List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 
@@ -50,7 +50,7 @@ public class FixturedSearchService implements SearchService {
                     SimpleSearchProcessor searchProcessor = new SimpleSearchProcessor();
                     SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to)
             ) {
-                searchProcessor.process(histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
+                searchProcessor.process(fileMeta.filename.endsWith(".gz"), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
             } catch (Exception e) {
                 e.printStackTrace();
             }
