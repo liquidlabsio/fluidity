@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 public class FixturedSearchService implements SearchService {
+    private long limitList = 5000;
     private final Logger log = LoggerFactory.getLogger(FixturedSearchService.class);
 
     public FixturedSearchService() {
@@ -26,7 +27,7 @@ public class FixturedSearchService implements SearchService {
 
     @Override
     public FileMeta[] submit(Search search, FileMetaDataQueryService query) {
-        List<FileMeta> files = query.list().stream().filter(file -> search.fileMatches(file.filename, file.fromTime, file.toTime)).collect(Collectors.toList());
+        List<FileMeta> files = query.list().stream().filter(file -> search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 

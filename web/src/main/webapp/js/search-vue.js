@@ -101,10 +101,11 @@ searchInputAnalytic = new Vue({
          methods: {
               click: function (event, chartContext, config) {
                 let point = searchChart.series[config.seriesIndex].data[config.dataPointIndex];
-                console.log("series:" + searchChart.series[config.seriesIndex].name)
-                console.log("time:" + point[0])
-                console.log("value:" + point[1])
+//                console.log("series:" + searchChart.series[config.seriesIndex].name)
+//                console.log("time:" + point[0])
+//                console.log("value:" + point[1])
                  searchStats.stats = "Getting events from:" + new Date(point[0])
+                 searcher.startTime = new Date();
                 $.Topic(Precognito.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
 
               }

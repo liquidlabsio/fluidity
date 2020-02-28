@@ -31,13 +31,17 @@ import java.util.stream.Collectors;
 public class AwsS3StorageService implements Storage {
 
     private static final long LIMIT = (long) (FileUtils.ONE_MB * 4.5);
+    public static final int MAX_KEYS = 100000;
+    public static final int S3_REQ_THREADS = 100;
+    public static final int CONNECTION_POOL_SIZE = 200;
+
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageService.class);
 
     @ConfigProperty(name = "precognito.prefix", defaultValue = "precognito-")
     private String PREFIX;
 
 
-    public AwsS3StorageService(){
+    public AwsS3StorageService() {
         log.info("Created");
     }
 
@@ -227,7 +231,7 @@ public class AwsS3StorageService implements Storage {
 
     private static AmazonS3 getAmazonS3Client(String region) {
         ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setMaxConnections(1000);
+        clientConfiguration.setMaxConnections(CONNECTION_POOL_SIZE);
         return AmazonS3ClientBuilder.standard()
                 .withRegion(region)
                 .withClientConfiguration(clientConfiguration)
@@ -299,7 +303,7 @@ public class AwsS3StorageService implements Storage {
 
         long start = System.currentTimeMillis();
 
-        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(filePathPrefix).withMaxKeys(100000);
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(filePathPrefix).withMaxKeys(MAX_KEYS);
 
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(req);
         Map<String, InputStream> results = new HashMap<>();
@@ -316,7 +320,7 @@ public class AwsS3StorageService implements Storage {
     private Map<String, InputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
 
         Map<String, InputStream> results = new ConcurrentHashMap<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(20);
+        ExecutorService executorService = Executors.newFixedThreadPool(S3_REQ_THREADS);
 
         objectListing.getObjectSummaries().stream()
                 .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension) && objSummary.getLastModified().getTime() > fromTime)
