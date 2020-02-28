@@ -5,7 +5,7 @@ echo " 3. AWS SAM installed:  https://docs.aws.amazon.com/serverless-application
 echo " 4. Configure the S3 runtime and tenant buckets in env.sh (it must be created already)"
 . ./env.sh
 
-cd ../uploader
+cd ../services
 
 echo pwd
 echo ""

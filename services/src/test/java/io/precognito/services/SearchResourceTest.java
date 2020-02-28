@@ -91,8 +91,9 @@ class SearchResourceTest {
         Assert.assertTrue(as.length > 0);
         System.out.println("Got:" + Arrays.toString(as));
     }
+
     @Test
-    public void testFinalize() throws Exception {
+    public void testFinalizeEvents() throws Exception {
         // need the data to be searched for finalize to work
         testFileSearch();
         Search search = new Search();
@@ -104,10 +105,9 @@ class SearchResourceTest {
                 .multiPart("origin", search.origin)
                 .multiPart("expression", search.expression)
                 .when()
-                .pathParam("histos", "[]")
-                .pathParam("events",  "s3://tenant/search-staging/my-uid/resource/test-data/file-to-upload.txt")
                 .pathParam("tenant", "tenant")
-                .post("/search/finalize/{tenant}/{histos}/{events}")
+                .pathParam("fromTime", "0")
+                .post("/search/finalizeEvents/{tenant}/{fromTime}")
                 .then()
                 .statusCode(200).extract();
         String[] as = response.body().as(String[].class);

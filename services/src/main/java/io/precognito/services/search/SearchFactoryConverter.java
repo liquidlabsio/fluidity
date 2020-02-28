@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class SearchFactoryConverter implements Converter<SearchService> {
     private final Logger log = LoggerFactory.getLogger(SearchFactoryConverter.class);
+
     @Override
     public SearchService convert(String mode) {
         log.info("Mode:" + mode);

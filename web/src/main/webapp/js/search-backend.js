@@ -99,17 +99,16 @@ class SearchRest extends SearchInterface {
             }
         });
     }
-    getFinalResult(search, histoFiles, eventFiles) {
+    getFinalEvents(search, fromTime) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
 
         jQuery.ajax({
             type: 'POST',
-            url: SERVICE_URL + '/search/finalize/'
+            url: SERVICE_URL + '/search/finalizeEvents/'
                     + encodeURIComponent(DEFAULT_TENANT)
-                    + "/" + encodeURIComponent(histoFiles)
-                    + "/" + encodeURIComponent(eventFiles),
+                    + "/"+ fromTime,
             contentType: 'multipart/form-data',
             data: self.searchToForm(search),
             processData: false,
@@ -117,7 +116,7 @@ class SearchRest extends SearchInterface {
             cache : false,
             success: function(response) {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Search.Topics.setFinalResult).publish(response);
+                $.Topic(Precognito.Search.Topics.setFinalEvents).publish(response);
             },
             fail: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
@@ -126,6 +125,32 @@ class SearchRest extends SearchInterface {
             }
         });
     }
+    getFinalHisto(search) {
+        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        let self = this;
+        let formData = this.searchToForm(search);
+
+        jQuery.ajax({
+            type: 'POST',
+            url: SERVICE_URL + '/search/finalizeHisto/'
+                    + encodeURIComponent(DEFAULT_TENANT),
+            contentType: 'multipart/form-data',
+            data: self.searchToForm(search),
+            processData: false,
+            contentType: false,
+            cache : false,
+            success: function(response) {
+                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Precognito.Search.Topics.setFinalHisto).publish(response);
+            },
+            fail: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr.status);
+                console.log(thrownError);
+                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+            }
+        });
+    }
+
 
 }
 
@@ -141,9 +166,13 @@ function searchBackendBinding() {
     $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, files) {
         backend.searchFile(search, files);
     })
-    $.Topic(Precognito.Search.Topics.getFinalResult).subscribe(function(search, eventFiles, histoFiles) {
-        backend.getFinalResult(search, eventFiles, histoFiles);
+    $.Topic(Precognito.Search.Topics.getFinalEvents).subscribe(function(search, fromTime) {
+        backend.getFinalEvents(search, fromTime);
     })
+    $.Topic(Precognito.Search.Topics.getFinalHisto).subscribe(function(search) {
+        backend.getFinalHisto(search);
+    })
+
 
 }
 

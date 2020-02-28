@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -18,10 +19,9 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * For TestContainers to work check docker auth is disabled - in ~/.docker/config.json / remove line:   "credsStore" : "osxkeychain"
- *
  */
 @QuarkusTest
-public class DynamoIndexingTest {
+public class FileMetaLocalDynamoTest {
 
     private static LocalDynamoDbContainer dynamoDB;
     private static DynamoDbClient dynamoTestClient;
@@ -51,24 +51,28 @@ public class DynamoIndexingTest {
     AwsFileMetaDataQueryService metaDataService;
 
     @Test
-    public void ormTest() throws InterruptedException, IOException {
+    public void ormTest() throws IOException {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("precognito-ng-test", "IoTDevice",
                 "tag1, tag2", filename, bytes
-                , System.currentTimeMillis()-1000, System.currentTimeMillis());
+                , System.currentTimeMillis() - 1000, System.currentTimeMillis());
 
         fileMeta.setStorageUrl("s3://somewhere");
 
+        metaDataService.bind();
         metaDataService.createTable();
         metaDataService.put(fileMeta);
-        byte[] content  = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
+
+        byte[] content = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
         assertNotNull(content);
+
+        metaDataService.putList(Arrays.asList(fileMeta));
 
         List<FileMeta> listed = metaDataService.list();
         assertEquals(1, listed.size());
 
-        List<FileMeta>  queried = metaDataService.query(fileMeta.getTenant(), fileMeta.getFilename(), "");
+        List<FileMeta> queried = metaDataService.query(fileMeta.getTenant(), fileMeta.getFilename(), "");
 
         assertEquals(1, queried.size());
         System.out.println("Query:" + queried);

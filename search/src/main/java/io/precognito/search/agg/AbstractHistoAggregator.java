@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class SimpleHistoAggregator implements HistoAggregator {
-    private final Map<String, InputStream> inputStreams;
-    private final Search search;
+abstract class AbstractHistoAggregator implements HistoAggregator {
+    protected final Map<String, InputStream> inputStreams;
+    protected final Search search;
 
-    public SimpleHistoAggregator(Map<String, InputStream> inputStreams, Search search) {
+    public AbstractHistoAggregator(Map<String, InputStream> inputStreams, Search search) {
         this.inputStreams = inputStreams;
         this.search = search;
     }
@@ -35,11 +35,14 @@ public class SimpleHistoAggregator implements HistoAggregator {
             }
             return null;
         }).filter(series -> series.hasData()).collect(Collectors.toList());
-        return objectMapper.writeValueAsString(collectedSeries);
+
+        return objectMapper.writeValueAsString(processSeries(collectedSeries));
 
     }
 
-    private String readJson(InputStream inputStream){
+    abstract List<Series> processSeries(List<Series> collectedSeries);
+
+    private String readJson(InputStream inputStream) {
         try {
             return new String(IOUtils.toByteArray(inputStream));
         } catch (IOException e) {
@@ -55,7 +58,14 @@ public class SimpleHistoAggregator implements HistoAggregator {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        this.inputStreams.values().forEach(stream -> {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
 
     }
 }

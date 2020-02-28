@@ -17,8 +17,13 @@ public class FixturedFileMetaDataQueryService implements FileMetaDataQueryServic
 
     public static final Map<String, FileMeta> storage = new HashMap<>();
 
-    public FixturedFileMetaDataQueryService(){
+    public FixturedFileMetaDataQueryService() {
         log.info("Created");
+    }
+
+    @Override
+    public void putList(List<FileMeta> fileMetas) {
+        fileMetas.forEach(item -> put(item));
     }
 
     @Override
@@ -34,6 +39,11 @@ public class FixturedFileMetaDataQueryService implements FileMetaDataQueryServic
     @Override
     public byte[] get(String tenant, String filename) {
         return storage.get(filename).getFileContent();
+    }
+
+    @Override
+    public void deleteList(List<FileMeta> removed) {
+        removed.forEach(item -> delete(item.tenant, item.filename));
     }
 
     @Override

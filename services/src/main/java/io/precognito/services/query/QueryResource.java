@@ -42,10 +42,14 @@ public class QueryResource implements FileMetaDataQueryService {
         query.put(fileMeta);
     }
 
+    @Override
+    public void putList(List<FileMeta> fileMetas) {
+    }
+
     @GET
     @Path("/find")
     @Produces(MediaType.APPLICATION_JSON)
-    public FileMeta find(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
+    public FileMeta find(@QueryParam("tenant") String tenant, @QueryParam("filename") String filename) {
         return query.find(tenant, filename);
     }
 
@@ -112,5 +116,10 @@ public class QueryResource implements FileMetaDataQueryService {
     @Produces("application/json")
     public List<FileMeta> list() {
         return query.list();
+    }
+
+    @Override
+    public void deleteList(List<FileMeta> removed) {
+
     }
 }

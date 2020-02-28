@@ -2,6 +2,7 @@ package io.precognito.services;
 
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.StorageResource;
+import io.precognito.util.UriUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -9,6 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -26,7 +30,29 @@ class StorageResourceTest {
     }
 
     @Test
-    public void testIdEndpoint() {
+    public void testIdEndpoint() throws URISyntaxException, UnsupportedEncodingException {
+
+
+        String badURL = "s3://precognito-prod-tenant-userstore/exportedlogs/e37ac5c7-0170-416c-939c-19007ec3e1af/2020-02-27-[$LATEST]0067289175a6449aa06c17778d756505/000000.gz";
+
+        String[] hostnameAndPath = UriUtil.getHostnameAndPath(badURL);
+
+        System.out.println(hostnameAndPath);
+
+        String goodUrl = badURL.replace("(", "%28").replace(")", "'%29");
+        String goodUrl2 = goodUrl.replace("[", "%5B").replace("]", "'%5D");
+        String goodUrl3 = goodUrl.replace("$", "%24");
+
+//        badURL.replace('[',)
+
+//        String encode = URLEncoder.encode(badURL, "UTF-8");
+
+
+        System.out.println("GOT:" + goodUrl3);
+
+        URI uri = new URI(goodUrl2);
+
+        System.out.println(goodUrl2);
 
         given()
                 .when().get("/storage")

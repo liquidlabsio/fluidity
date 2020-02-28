@@ -3,6 +3,8 @@ package io.precognito.search.processor;
 import io.precognito.search.Search;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Note: lines must be written in following format: timestamp:filepos:data
@@ -21,7 +23,7 @@ public class SimpleSearchProcessor implements Processor {
     private OutputStream output;
 
     @Override
-    public int process(HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fromTime, long toTime, long length) throws IOException {
+    public int process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long length) throws IOException {
         this.input = input;
         this.output = output;
 
@@ -29,12 +31,17 @@ public class SimpleSearchProcessor implements Processor {
 
         BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
-        BufferedReader scanner = new BufferedReader(new InputStreamReader(bis));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
         long position = 0;
-        long currentTime = fromTime;
-        long guessTimeInterval = guessTimeInterval(fromTime, toTime, length);
-        String nextLine = "";
-        while ((nextLine = scanner.readLine()) != null) {
+        long currentTime = fileFromTime;
+
+        ArrayList<Integer> lengths = new ArrayList<>();
+
+        String nextLine = reader.readLine();
+        lengths.add(nextLine.length());
+        long guessTimeInterval = guessTimeInterval(isCompressed, fileFromTime, fileToTime, length, lengths);
+
+        while (nextLine != null) {
 
             if (currentTime > search.from && currentTime < search.to && search.matches(nextLine)) {
                 bos.write(Long.toString(currentTime).getBytes());
@@ -49,6 +56,12 @@ public class SimpleSearchProcessor implements Processor {
             }
             currentTime += guessTimeInterval;
             position += nextLine.length();
+            // keep calibrating fake time calc based on location
+            nextLine = reader.readLine();
+            if (nextLine != null) {
+                lengths.add(nextLine.length());
+                guessTimeInterval = guessTimeInterval(isCompressed, currentTime, fileToTime, length, lengths);
+            }
         }
         bos.flush();
         return read;
@@ -57,15 +70,22 @@ public class SimpleSearchProcessor implements Processor {
     /**
      * Fudge the time interval from the time-span and the size of the file - presume avg line length is 1024 bytes.
      * Very hacky - but saves reading the file;
+     *
      * @param fromTime
      * @param toTime
      * @param length
      * @return
      */
-    private long guessTimeInterval(long fromTime, long toTime, long length) {
+    private long guessTimeInterval(boolean isCompressed, long fromTime, long toTime, long length, List<Integer> lengths) {
+        if (isCompressed) {
+            length *= 100;
+        }
         // presume average line length = 1024 bytes;
-        long guessedLineCount = length > 1024 ? length/1024 : 10;
-        return (toTime - fromTime)/guessedLineCount;
+        long currentPos = lengths.stream().mapToInt(Integer::intValue).sum();
+        int avgLength = (int) (currentPos / lengths.size());
+        long guessedLineCount = avgLength > 1024 ? (length - currentPos) / avgLength : 10;
+        if (guessedLineCount == 0) guessedLineCount = 10;
+        return (toTime - fromTime) / guessedLineCount;
     }
 
     @Override

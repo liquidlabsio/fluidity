@@ -3,8 +3,8 @@
 $(document).ready(function () {
   'use strict'
 
-    $("#dataImportForm").submit(function(event) {
-        let inputs = $(this).serializeArray();
+    $("#importFromStorageButton").click(function(event) {
+        let inputs = $("#dataImportForm").serializeArray();
 
         if (inputs[0].value.length == 0 || inputs[1].value.length == 0 || inputs[2].value.length == 0) {
             alert("Please provide values for all 3 inputs")

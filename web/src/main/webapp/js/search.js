@@ -4,8 +4,10 @@ Precognito.Search.Topics = {
     setSearchFiles: 'setSearchFiles',
     searchFile: 'searchBucket',
     setSearchFileResults: 'setSearchFileResults',
-    getFinalResult: 'getFinalResult',
-    setFinalResult: 'setFinalResult'
+    getFinalEvents: 'getFinalEvents',
+    setFinalEvents: 'setFinalEvents',
+    getFinalHisto: 'getFinalHisto',
+    setFinalHisto: 'setFinalHisto'
 }
 
 $(document).ready(function () {
@@ -39,9 +41,11 @@ class Search {
             console.log("Set Bucket Results histo & raw:" + fileResults)
             self.setSearchFileResults(fileResults[0], fileResults[1])
         })
-        $.Topic(Precognito.Search.Topics.setFinalResult).subscribe(function(finalResult) {
-//                console.log("Set final results:" + finalResult)
-                self.setFinalResult(finalResult)
+        $.Topic(Precognito.Search.Topics.setFinalEvents).subscribe(function(events) {
+                self.setFinalEvents(events)
+        })
+        $.Topic(Precognito.Search.Topics.setFinalHisto).subscribe(function(events) {
+                self.setFinalHisto(events)
         })
         $('.searchZoom').click(function(event){
                 let zoomDirection = $(event.currentTarget).data().zoom;
@@ -98,7 +102,6 @@ class Search {
         this.searchedHistos = []
         this.searchFileMetas.forEach(function(fileMeta, index, arr){
             console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
-            console.log(self)
             // TODO: look at chunking them together
             $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
         })
@@ -106,21 +109,25 @@ class Search {
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-         searchStats.stats = "Got Result, total: " + this.searchedHistos.length + " of :" + this.searchFileMetas.length
+         searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " files"
 
         this.searchedEvents.push(eventsUrl)
         this.searchedHistos.push(histoUrl)
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
-            searchStats.stats = "Got all results! Requesting aggregation:" + this.searchFileMetas.length
-            $.Topic(Precognito.Search.Topics.getFinalResult).publish(self.searchRequest, self.searchedHistos, self.searchedEvents);
+            searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length
+            $.Topic(Precognito.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
+            $.Topic(Precognito.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }
     }
 
-    setFinalResult(results) {
+    setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        searchStats.stats = "Events: " + Precognito.formatNumber(results[1]) + " Elapsed: " + Precognito.formatNumber(elapsed)
-        this.searchEditor.setValue(results[2]);
-        searchChart.series = searchChart.series = JSON.parse(results[0]);
+        searchStats.stats = "Events: " + Precognito.formatNumber(results[0]) + " Elapsed: " + Precognito.formatNumber(elapsed)
+        this.searchEditor.setValue(results[1]);
     }
+    setFinalHisto(results) {
+        searchChart.series = results;
+    }
+
 }

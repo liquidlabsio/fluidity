@@ -27,6 +27,7 @@
 
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.3.0/frappe-charts.min.css" crossorigin="anonymous">
 
+      <link href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" rel="stylesheet">
 
       <!-- Favicons -->
       <link rel="icon" href="img/favicon.ico">
@@ -224,31 +225,98 @@
                                 Last hour
                             </button>
                             <div class="dropdown-menu" aria-labelledby="searchDurationSelector">
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="60">Last hour</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="120">2 hours</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="720">12 hours</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="1440">1 day</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2880">2 days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="10080">7 days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="60">Last
+                                    hour</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="120">2
+                                    hours</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="360">6
+                                    hours</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="720">12
+                                    hours</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="1440">1
+                                    day</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2880">2
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="10080">7
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="43200">30
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="129600">90
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="259200">180
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2259200">All
+                                    time</a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="input-group mb-3">
-                        <input id="searchInput" v-model="searchExpression" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatch | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">
-                        <div class="input-group-append">
-                            <button id="searchSubmit" class="btn btn-primary" v-on:click="searchSubmit">
+
+                    <form id="searchInputForm" class="form-row">
+                        <div class="form-group col-md-2" id="bucketFilterWrapper">
+                            <label class="control-label">Bucket | Tags</label>
+                            <vue-bootstrap-typeahead
+                                    v-model="query"
+                                    :data="completes"
+                                    placeholder="*"
+                            ></vue-bootstrap-typeahead>
+                        </div>
+                        <div class="form-group col-md-2" id="fileFilterWrapper">
+                            <label class="control-label">Filename</label>
+                            <vue-bootstrap-typeahead
+                                    v-model="query"
+                                    :data="completes"
+                                    placeholder="*"
+                            ></vue-bootstrap-typeahead>
+                        </div>
+                        <div class="form-group col-md-3" id="recordFilterWrapper">
+                            <label class="control-label">Record Match</label>
+                            <vue-bootstrap-typeahead
+                                    v-model="query"
+                                    :data="completes"
+                                    placeholder="*"
+                            ></vue-bootstrap-typeahead>
+                        </div>
+                        <div class="form-group col-md-2" id="fieldExtractWrapper">
+                            <label class="control-label">Field Extract</label>
+                            <vue-bootstrap-typeahead
+                                    v-model="query"
+                                    :data="completes"
+                                    placeholder="*"
+                            ></vue-bootstrap-typeahead>
+                        </div>
+                        <div class="form-group col-md-2"  id="analyticExtractWrapper">
+                            <label class="control-label">Analytic</label>
+                            <vue-bootstrap-typeahead
+                                    v-model="query"
+                                    :data="completes"
+                                    placeholder="*"
+                            ></vue-bootstrap-typeahead>
+                        </div>
+                        <div class="form-group col-md-1">
+                            <label class="control-label">&nbsp;</label>
+                            <button id="searchSubmit" class="btn btn-primary form-control" v-on:click="searchSubmit">
                                 <span data-feather="search"></span>
                             </button>
-                        </div>
-                    </div>
 
-                    <div id="searchResultsChart" class="searchChart">
+                        </div>
+
+
+                    </form>
+<!--                    <div class="input-group mb-3">-->
+<!--                        <input id="searchInput" v-model="searchExpression" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatch | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">-->
+<!--                        <div class="input-group-append">-->
+<!--                            <button id="searchSubmit" class="btn btn-primary" v-on:click="searchSubmit">-->
+<!--                                <span data-feather="search"></span>-->
+<!--                            </button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div id="searchResultsChart">
                         {{ stats }}
-                        <line-chart height="100"></line-chart>
                     </div>
-                    <div id="chart">
-                        <apexchart type="bar" height="350" :options="chartOptions" :series="series" v-on:click="doit"></apexchart>
+                    <div id="searchChart">
+                        <apexchart type="bar" height="350" :options="chartOptions" :series="series" v-on:click="click"></apexchart>
                     </div>
                     <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
@@ -380,9 +448,11 @@
                                                            aria-label="File include filter" aria-describedby="importFileIncludeInputPP">
                                                 </div>
 
-                                                <button id="importFromStorageButton" type="submit" class="btn btn-primary"
+                                                <button id="importFromStorageButton" class="btn btn-primary"
                                                         data-toggle="tooltip"
-                                                        title="Import making storage data accessible without copying, and  also filtered by tags" >Import</button>
+                                                        title="Import making storage data accessible without copying, and  also filtered by tags">
+                                                    Import
+                                                </button>
                                                 <button id="removeFromStorageButton"  class="btn btn-warning"
                                                         data-toggle="tooltip"
                                                         title="Removes imported data but leaves source data untouched">Un-import</button>
@@ -429,7 +499,7 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
 
     <script>
         if (typeof jQuery == 'undefined') {
@@ -439,10 +509,9 @@
     <script src="js/vendor/bootstrap.bundle.min.js"
             integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js" crossorigin="anonymous"></script>
 
-    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
 
 
     <!-- ace ui text editor CDN from https://pagecdn.com/lib/ace -->
@@ -462,23 +531,22 @@
     <script src="js/vendor/jquery.iframe-transport.js"></script>
     <script src="js/vendor/jquery.fileupload.js"></script>
 
-    <!-- https://cdnjs.com/libraries/vue -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts"></script>
+    <!-- VUE stuff -->
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
-    <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js" crossorigin="anonymous"></script>
 
-    <!-- precognito files -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts" crossorigin="anonymous"></script>
 
 
+    <script src="https://unpkg.com/vue-bootstrap-typeahead" crossorigin="anonymous"></script>
+
+
+    <!-- Precognito files -->
     <script src="js/pubsub.js"></script>
     <script src="js/precognito.js"></script>
     <script src="js/backend.js"></script>
-
     <script src="js/explorer.js"></script>
 
     <script src="js/search-vue.js"></script>

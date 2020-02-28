@@ -1,5 +1,5 @@
 SERVICE_URL = 'http://0.0.0.0:8080'
-DEFAULT_TENANT='precognito-user-data'
+DEFAULT_TENANT='tenant-data-1'
 
 function checkUserLogin(){
     if (window.location.pathname.endsWith("index.html")) {

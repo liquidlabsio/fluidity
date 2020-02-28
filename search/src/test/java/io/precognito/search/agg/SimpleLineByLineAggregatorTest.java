@@ -17,10 +17,10 @@ class SimpleLineByLineAggregatorTest {
     @Test
     void process() throws Exception {
 
-        Map<String, InputStream> streams = createSteams(asList( "file1.txt", "file2.txt"));
+        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"));
         Search search = null;
-        SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, null);
-        String[] processed = aggregator.process();
+        SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, search);
+        String[] processed = aggregator.process(0, 100);
         int totalEvents = Integer.parseInt(processed[0]);
 
         assertEquals(20, totalEvents);
@@ -33,27 +33,42 @@ class SimpleLineByLineAggregatorTest {
         assertTrue(eventsData.contains("file2.txt,9"));
     }
 
+    @Test
+    void processAccordingToTimeStamp() throws Exception {
+
+        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"));
+        Search search = null;
+        SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, null);
+        String[] processed = aggregator.process(5000, 100);
+        int totalEvents = Integer.parseInt(processed[0]);
+
+        assertTrue(totalEvents < 20);
+        String eventsData = processed[1];
+        System.out.println(eventsData);
+        assertTrue(eventsData != null);
+        assertFalse(eventsData.contains("file1.txt,1"), "Should have skipped the first events");
+        assertTrue(eventsData.contains("file1.txt,9"));
+        assertFalse(eventsData.contains("file2.txt,1"), "Should have skipped first events");
+        assertTrue(eventsData.contains("file2.txt,9"));
+    }
+
     private Map<String, InputStream> createSteams(List<String> filenames) throws Exception {
 
         HashMap<String, InputStream> results = new HashMap<>();
 
         filenames.stream().forEach(filename -> {
-            try {
-                results.put(filename, createInputStream(filename));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            results.put(filename, createInputStream(filename));
         });
 
         return results;
     }
 
-    private InputStream createInputStream(String filename) throws InterruptedException {
+    private InputStream createInputStream(String filename) {
 
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i <10; i++) {
-            sb.append(String.format("%d:%s-%s,%d\n", System.currentTimeMillis(), "this is my line of stuff",filename, i));
-            Thread.sleep(10);
+        long time = 1000;
+        for (int i = 0; i < 10; i++) {
+            sb.append(String.format("%d:%s-%s,%d\n", time += 1000, "this is my line of stuff", filename, i));
         }
         return new ByteArrayInputStream(sb.toString().getBytes());
     }

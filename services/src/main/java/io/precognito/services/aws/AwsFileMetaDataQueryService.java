@@ -6,11 +6,12 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
+import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbEnhancedClient;
+import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbTable;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Key;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.MappedDatabase;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.MappedTable;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Page;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.operations.*;
+import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
@@ -21,16 +22,17 @@ import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
-import static io.precognito.services.aws.Model.FILE_META_TABLE_SCHEMA;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.AttributeValues.stringValue;
-import static software.amazon.awssdk.extensions.dynamodb.mappingclient.operations.QueryConditional.equalTo;
+import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryConditional.equalTo;
 
 @ApplicationScoped
 public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
+    public static final int BATCH_PAUSE_MS = 10;
+    public static final long READ_CAPACITY = 30L;
+    public static final long WRITE_CAPACITY = 15L;
     private final Logger log = LoggerFactory.getLogger(AwsFileMetaDataQueryService.class);
 
     @Inject
@@ -39,8 +41,8 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     @ConfigProperty(name = "precognito.prefix", defaultValue = "precognito.")
     String PREFIX;
 
-    private MappedDatabase database;
-    private MappedTable<FileMeta> fileMetaTable;
+    private DynamoDbTable<FileMeta> fileMetaTable;
+    private DynamoDbEnhancedClient enhancedClient;
 
 
     public AwsFileMetaDataQueryService() {
@@ -48,15 +50,16 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     }
 
     private boolean created = false;
-    synchronized public void createTable(){
+
+    synchronized public void createTable() {
         if (!created && !tableExists()) {
+
+            getTable();
             created = true;
             log.info("Creating table:" + getTableName());
-            ProvisionedThroughput.Builder provisionedThroughput = ProvisionedThroughput.builder().readCapacityUnits(10L).writeCapacityUnits(10L);
-            CreateTable<FileMeta> fileMetaCreateTable = CreateTable.of(provisionedThroughput.build()).toBuilder().build();
-            MappedTable<FileMeta> table = getTable();
-            table.execute(fileMetaCreateTable);
-            // cannot use the table while it is being created - triggers errors when querying
+
+            fileMetaTable.createTable(CreateTableEnhancedRequest.builder().provisionedThroughput(
+                    ProvisionedThroughput.builder().readCapacityUnits(READ_CAPACITY).writeCapacityUnits(WRITE_CAPACITY).build()).build());
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -71,27 +74,112 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         return strings.contains(getTableName());
     }
 
-    @Override
-    public void put(FileMeta fileMeta) {
-        getTable().execute(PutItem.of(fileMeta));
+    public void putList(List<FileMeta> fileMetas) {
+
+        ArrayList<FileMeta> batch = new ArrayList<>();
+
+        // break into chunks of 25
+        fileMetas.forEach(item -> {
+            batch.add(item);
+            if (batch.size() > 24) {
+                putListBatch(batch);
+                batch.clear();
+                try {
+                    Thread.sleep(BATCH_PAUSE_MS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        putListBatch(batch);
+    }
+
+    private void putListBatch(List<FileMeta> fileMeta) {
+
+        if (fileMeta.size() > 0) {
+
+            WriteBatch.Builder<FileMeta> fileMetaBuilder = WriteBatch.builder(FileMeta.class)
+                    .mappedTableResource(getTable());
+            fileMeta.forEach(item -> fileMetaBuilder.addPutItem(PutItemEnhancedRequest.builder(FileMeta.class).item(item).build()));
+
+            enhancedClient.batchWriteItem(
+                    BatchWriteItemEnhancedRequest.builder()
+                            .addWriteBatch(fileMetaBuilder.build()).build());
+        }
     }
 
     @Override
+    public void put(FileMeta fileMeta) {
+        getTable().putItem(PutItemEnhancedRequest.builder(FileMeta.class)
+                .item(fileMeta)
+                .build());
+    }
+
+    @Override
+    public void deleteList(List<FileMeta> fileMetas) {
+        ArrayList<FileMeta> batch = new ArrayList<>();
+
+        // break into chunks of 25
+        fileMetas.forEach(item -> {
+            batch.add(item);
+            if (batch.size() > 24) {
+
+                deleteListBatch(batch);
+                batch.clear();
+                try {
+                    Thread.sleep(BATCH_PAUSE_MS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        deleteListBatch(batch);
+    }
+
+
+    private void deleteListBatch(List<FileMeta> removed) {
+        if (removed.size() > 0) {
+
+            log.info("Deleting:{}", removed.size());
+
+            WriteBatch.Builder<FileMeta> writeBatchBuilder = WriteBatch.builder(FileMeta.class)
+                    .mappedTableResource(getTable());
+            removed.forEach(item -> writeBatchBuilder.addDeleteItem(
+                    DeleteItemEnhancedRequest.builder().key(Model.getKey(item.tenant, item.filename)).build()
+            ));
+
+            enhancedClient.batchWriteItem(
+                    BatchWriteItemEnhancedRequest.builder()
+                            .addWriteBatch(
+                                    writeBatchBuilder.build())
+                            .build());
+        }
+
+    }
+
+
+    @Override
+    public FileMeta delete(String tenant, String filename) {
+        return getTable().deleteItem(DeleteItemEnhancedRequest.builder()
+                .key(Model.getKey(tenant, filename))
+                .build());
+    }
+
+
+    @Override
     public FileMeta find(String tenant, String filename) {
-        return getTable().execute(GetItem.of(Model.getKey(tenant, filename)));
+        return getTable().getItem(GetItemEnhancedRequest.builder()
+                .key(Model.getKey(tenant, filename))
+                .build());
     }
 
     @Override
     public byte[] get(String tenant, String filename) {
-        FileMeta execute = getTable().execute(GetItem.of(Model.getKey(tenant, filename)));
+        FileMeta fileMeta = find(tenant, filename);
         // TODO: fix content getting - content should be from the storage projection view - not here - it needs to be injected and delegated
-        return execute.getStorageUrl().getBytes();
+        return fileMeta.getStorageUrl().getBytes();
     }
 
-    @Override
-    public FileMeta delete(String tenant, String filename) {
-        return getTable().execute(DeleteItem.of(Model.getKey(tenant, filename)));
-    }
 
     /**
      * Efficiently query against a single-tenant and apply filter
@@ -109,20 +197,16 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     @Override
     public List<FileMeta> query(final String tenant, final String filenamePart, String tagNamePart) {
 
-        MappedTable<FileMeta> table = getTable();
-
-        Query<FileMeta> build = Query.builder()
-                .queryConditional(equalTo(Key.of(stringValue(tenant))))
-                .build();
-        Iterator<Page<FileMeta>> files = table.execute(build).iterator();
-
+        SdkIterable<Page<FileMeta>> query = getTable().query(QueryEnhancedRequest.builder()
+                .queryConditional(equalTo(Key.create(stringValue(tenant))))
+                .build());
 
         // apply filtering here
         ArrayList<FileMeta> fileMetas = new ArrayList<>();
-        files.forEachRemaining(action ->
-                    action.items().stream().filter(
-                            item -> item.isMatch(filenamePart, tagNamePart)
-                    ).forEach(item -> fileMetas.add(item)
+        query.forEach(action ->
+                action.items().stream().filter(
+                        item -> item.isMatch(filenamePart, tagNamePart)
+                ).forEach(item -> fileMetas.add(item)
                 ));
         return fileMetas;
     }
@@ -137,19 +221,22 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         bind();
         createTable();
 
-        Iterable<Page<FileMeta>> files = getTable().execute(Scan.create());
-        ArrayList<FileMeta> fileMetas = new ArrayList<>();
-        files.iterator().forEachRemaining(action -> fileMetas.addAll(action.items()));
-        return fileMetas;
+        SdkIterable<Page<FileMeta>> fileMetas = getTable().scan(ScanEnhancedRequest.builder().build());
+
+        ArrayList<FileMeta> results = new ArrayList<>();
+        fileMetas.forEach(action -> results.addAll(action.items()));
+        return results;
     }
 
     /**
      * MappedTable object is used repeatedly execute operations against a specific table
+     *
      * @return
      */
-    private MappedTable<FileMeta> getTable() {
+    private DynamoDbTable<FileMeta> getTable() {
+        bind();
         if (fileMetaTable == null) {
-            fileMetaTable = getDatabase().table(getTableName(), FILE_META_TABLE_SCHEMA);
+            fileMetaTable = enhancedClient.table(getTableName(), Model.FILE_META_TABLE_SCHEMA);
         }
         return fileMetaTable;
     }
@@ -158,15 +245,6 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         return PREFIX + "."  + FileMeta.class.getSimpleName();
     }
 
-    private MappedDatabase getDatabase() {
-
-        if (database == null) {
-            database = MappedDatabase.builder()
-                    .dynamoDbClient(bind())
-                    .build();
-        }
-        return database;
-    }
 
     /**
      * Required because the Convertor factory does not create instances using the bean-factory
@@ -182,6 +260,12 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
             }
             PREFIX = ConfigProvider.getConfig().getValue("precognito.prefix", String.class);
         }
+        if (enhancedClient == null) {
+            enhancedClient = DynamoDbEnhancedClient.builder()
+                    .dynamoDbClient(dynamoDbClient)
+                    .build();
+        }
+
         return dynamoDbClient;
     }
 

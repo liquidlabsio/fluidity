@@ -1,6 +1,9 @@
 package io.precognito.search.agg;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.precognito.search.Search;
+
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Returns timeseries histogram data that looks like this:
@@ -31,4 +34,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public interface HistoAggregator extends AutoCloseable {
     String process() throws Exception;
+
+    boolean isForMe(String analytic);
+
+    HistoAggregator clone(Map<String, InputStream> inputStreams, Search search);
 }
