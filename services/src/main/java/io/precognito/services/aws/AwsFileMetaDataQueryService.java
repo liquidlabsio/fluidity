@@ -252,7 +252,8 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
                 throw new RuntimeException("Failed to late-bind DynamoDBClient - check QueryFactoryConvertor config in application.[properties/yaml]");
             }
             PREFIX = ConfigProvider.getConfig().getValue("precognito.prefix", String.class);
-
+        }
+        if (enhancedClient == null) {
             enhancedClient = DynamoDbEnhancedClient.builder()
                     .dynamoDbClient(dynamoDbClient)
                     .build();
