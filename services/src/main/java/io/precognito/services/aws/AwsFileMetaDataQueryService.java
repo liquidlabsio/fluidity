@@ -23,14 +23,19 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.AttributeValues.stringValue;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryConditional.equalTo;
 
 @ApplicationScoped
 public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
+    public static final int BATCH_LIMIT = 24;
+    private ExecutorService executor = Executors.newCachedThreadPool();
 
-    public static final int BATCH_PAUSE_MS = 10;
+    public static final int BATCH_PAUSE_MS = 50;
     public static final long READ_CAPACITY = 30L;
     public static final long WRITE_CAPACITY = 15L;
     private final Logger log = LoggerFactory.getLogger(AwsFileMetaDataQueryService.class);
@@ -74,27 +79,36 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         return strings.contains(getTableName());
     }
 
+    @Override
     public void putList(List<FileMeta> fileMetas) {
+        executor.submit(() -> putListBackground(fileMetas));
+    }
+
+    public void putListBackground(List<FileMeta> fileMetas) {
 
         ArrayList<FileMeta> batch = new ArrayList<>();
 
         // break into chunks of 25
         fileMetas.forEach(item -> {
             batch.add(item);
-            if (batch.size() > 24) {
-                putListBatch(batch);
-                batch.clear();
+            if (batch.size() > BATCH_LIMIT) {
                 try {
+                    putListBatch(batch);
                     Thread.sleep(BATCH_PAUSE_MS);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                } finally {
+                    batch.clear();
                 }
+
             }
         });
         putListBatch(batch);
     }
 
     private void putListBatch(List<FileMeta> fileMeta) {
+
+        log.info("Write:" + fileMeta.size());
 
         if (fileMeta.size() > 0) {
 
@@ -116,13 +130,29 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     }
 
     @Override
-    public void deleteList(List<FileMeta> fileMetas) {
+    public void deleteList(final List<FileMeta> fileMetas) {
+
+        /**
+         * Filter the remove list to those items listed in our DB to prevent - noops
+         */
+        SdkIterable<Page<FileMeta>> existingFileMetasPage = getTable().scan(
+                ScanEnhancedRequest.builder().build());
+
+        ArrayList<FileMeta> existingFileMetas = new ArrayList<>();
+        existingFileMetasPage.forEach(action -> existingFileMetas.addAll(action.items()));
+
+        List<FileMeta> matchedList = existingFileMetas.stream().filter(item -> fileMetas.contains(item)).collect(Collectors.toList());
+        executor.submit(() -> deleteListBackground(matchedList));
+    }
+
+    public void deleteListBackground(List<FileMeta> fileMetas) {
+
         ArrayList<FileMeta> batch = new ArrayList<>();
 
         // break into chunks of 25
         fileMetas.forEach(item -> {
             batch.add(item);
-            if (batch.size() > 24) {
+            if (batch.size() > BATCH_LIMIT) {
 
                 deleteListBatch(batch);
                 batch.clear();

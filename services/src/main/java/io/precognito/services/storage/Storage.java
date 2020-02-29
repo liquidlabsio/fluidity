@@ -20,15 +20,13 @@ public interface Storage {
 
     String getBucketName(String tenant);
 
-    List<FileMeta> importFromStorage(String region, String tenant, String storageId, String includeFileMask, String tags);
-
-    List<FileMeta> removeByStorageId(String region, String tenant, String storageId, String includeFileMask);
+    List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags);
 
     String getSignedDownloadURL(String region, String storageUrl);
 
     InputStream getInputStream(String region, String tenant, String storageUrl);
 
-    OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl);
+    OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl, int daysRetention);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 
