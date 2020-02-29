@@ -72,12 +72,12 @@ public class StorageResource {
     @Path("/import")
     @Produces(MediaType.APPLICATION_JSON)
     public int importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
-                                 @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags) {
+                                 @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags,
+                                 @QueryParam("prefix") String prefix, @QueryParam("ageDays") int ageDays) {
 
         log.info("Import requested");
         try {
-            List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, includeFileMask, tags);
-
+            List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, prefix, ageDays, includeFileMask, tags);
 
             // newest first
             Collections.sort(imported, (o1, o2) -> Long.compare(o2.toTime, o1.toTime));
@@ -96,15 +96,16 @@ public class StorageResource {
     @Path("/removeImported")
     @Produces(MediaType.APPLICATION_JSON)
     public int removeByStorageId(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
-                                 @QueryParam("includeFileMask") String includeFileMask) {
+                                 @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags,
+                                 @QueryParam("prefix") String prefix, @QueryParam("ageDays") String ageDays) {
 
-        log.info("Un-Import requested");
+        log.info("Remove import requested");
+        if (ageDays.length() == 0) ageDays = "0";
 
-        List<FileMeta> removed = storage.removeByStorageId(cloudRegion, tenant, storageId, includeFileMask);
-        log.info("Un-Imported from Bucket:{} Amount:{}", storageId, removed.size());
-        query.deleteList(removed);
-        log.info("Removed:{}", removed.size());
-        return removed.size();
+        List<FileMeta> query = this.query.query(tenant, includeFileMask, tags);
+        this.query.deleteList(query);
+        log.info("Removed:{}", query.size());
+        return query.size();
     }
 
 }

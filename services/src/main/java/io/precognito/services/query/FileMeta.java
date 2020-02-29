@@ -5,10 +5,6 @@ import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
 
 /**
  * Captured relevant file meta data: name, location, source, size, tags etc
@@ -34,7 +30,7 @@ public class FileMeta {
         }
 
         public boolean isMatch(String filenamePart, String tagNamePart) {
-            return this.filename.contains(filenamePart) && this.getTags().contains(tagNamePart);
+            return (filenamePart.equals("*") || this.filename.contains(filenamePart)) && (tagNamePart.equals("*") || this.getTags().contains(tagNamePart));
         }
 
         // This is used to help with ORM mappings
@@ -84,23 +80,25 @@ public class FileMeta {
         @PartType(MediaType.TEXT_PLAIN)
         public String tags;
 
-        @FormParam("storageUrl")
-        @PartType(MediaType.TEXT_PLAIN)
-        public String storageUrl;
+    @FormParam("storageUrl")
+    @PartType(MediaType.TEXT_PLAIN)
+    public String storageUrl;
 
 
-        public FileMeta(){};
-        public FileMeta(String tenant, String resource, String tags, String filename, byte[] fileContent, long fromTime, long toTime) {
-            this.tenant = tenant;
-            this.resource = resource;
-            this.tags = tags;
-            this.filename = filename;
-            this.fileContent = fileContent;
-            this.fromTime = fromTime;
-            this.toTime = toTime;
-        }
+    public FileMeta() {
+    }
 
-        @Override
+    public FileMeta(String tenant, String resource, String tags, String filename, byte[] fileContent, long fromTime, long toTime) {
+        this.tenant = tenant;
+        this.resource = resource;
+        this.tags = tags;
+        this.filename = filename;
+        this.fileContent = fileContent;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+    }
+
+    @Override
         public String toString() {
             return "FileMeta{" +
                     "tenant='" + tenant + '\'' +

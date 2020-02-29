@@ -35,12 +35,7 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
-    public List<FileMeta> importFromStorage(String cloudRegion, String tenant, String storageId, String includeFileMask, String tags) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<FileMeta> removeByStorageId(String cloudRegion, String tenant, String storageId, String includeFileMask) {
+    public List<FileMeta> importFromStorage(String cloudRegion, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags) {
         return new ArrayList<>();
     }
 

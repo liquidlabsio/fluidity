@@ -436,26 +436,62 @@
                                                            aria-label="Resource Identifier" aria-describedby="importTagsInputPP">
                                                 </div>
 
+                                                <!-- file mask -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label" id="importFileIncludeInputPP">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importFileIncludeInputPP">
                                                             File includes
                                                         </span>
                                                     </div>
 
-                                                    <input name="fileIncludes"  type="text" class="form-control" id="importFileIncludesInput"
+                                                    <input name="fileIncludes" type="text" class="form-control"
+                                                           id="importFileIncludesInput"
                                                            placeholder="Partial file path or name: i.e. prod.log"
-                                                           aria-label="File include filter" aria-describedby="importFileIncludeInputPP">
+                                                           aria-label="File include filter"
+                                                           aria-describedby="importFileIncludeInputPP">
+                                                </div>
+                                                <!-- path prefix -->
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importFilePrefixInputPP">
+                                                            Prefix
+                                                        </span>
+                                                    </div>
+
+                                                    <input name="filePrefix" type="text" class="form-control"
+                                                           id="importFilePrefixInput"
+                                                           placeholder="Start of the resource Path i.e. exportedData"
+                                                           aria-label="Path prefix"
+                                                           aria-describedby="importFilePrefixInputPP">
+                                                </div>
+                                                <!-- age -->
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importFileAgeInputPP">
+                                                            Age days
+                                                        </span>
+                                                    </div>
+
+                                                    <input name="fileAge" type="text" class="form-control"
+                                                           id="importFileAgeInput"
+                                                           placeholder="Include data less than days old - 0 to ignore"
+                                                           aria-label="Age days"
+                                                           aria-describedby="importFileAgeInputPP">
                                                 </div>
 
                                                 <button id="importFromStorageButton" class="btn btn-primary"
                                                         data-toggle="tooltip"
-                                                        title="Import making storage data accessible without copying, and  also filtered by tags">
+                                                        title="Import making storage data accessible without copying and filtered by tags">
                                                     Import
                                                 </button>
-                                                <button id="removeFromStorageButton"  class="btn btn-warning"
+                                                <button id="removeFromStorageButton" class="btn btn-warning"
                                                         data-toggle="tooltip"
-                                                        title="Removes imported data but leaves source data untouched">Un-import</button>
+                                                        title="Removes references imported data leaving source data untouched">
+                                                    Remove imported
+                                                </button>
                                             </div>
                                             <br>
                                         </form>

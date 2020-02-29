@@ -35,6 +35,7 @@ public class AwsS3StorageService implements Storage {
     public static final int MAX_KEYS = 100000;
     public static final int S3_REQ_THREADS = 100;
     public static final int CONNECTION_POOL_SIZE = 200;
+    public static final int SCAN_COUNT_LIMIT_FOR_COST = 10000;
 
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageService.class);
 
@@ -44,19 +45,6 @@ public class AwsS3StorageService implements Storage {
 
     public AwsS3StorageService() {
         log.info("Created");
-    }
-
-    /**
-     * Doesnt actually removed external entities, but lists them instead
-     * @param region
-     * @param tenant
-     * @param storageId
-     * @param includeFileMask
-     * @return
-     */
-    @Override
-    public List<FileMeta> removeByStorageId(String region, String tenant, String storageId, String includeFileMask) {
-        return importFromStorage(region, tenant, storageId, includeFileMask, "");
     }
 
     /**
@@ -70,45 +58,59 @@ public class AwsS3StorageService implements Storage {
      * @return
      */
     @Override
-    public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String includeFileMask, String tags) {
+    public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags) {
 
-        String filePrefix = "";
+        String filePrefix = prefix.equals("*") ? "" : prefix;
+        long sinceTimeMs = ageDays == 0 ? 0 : System.currentTimeMillis() - ageDays * DateUtil.DAY;
 
         log.info("Importing from:{} mask:{}", storageId, includeFileMask);
         String bucketName = storageId;
         AmazonS3 s3Client = getAmazonS3Client(region);
 
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
+
+        int scanCount = 0;
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, filePrefix);
         ArrayList<FileMeta> results = new ArrayList<>();
-        addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
-        while (objectListing.isTruncated() && results.size() < 200000) {
+        results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs));
+        while (objectListing.isTruncated() && results.size() < 200000 && scanCount++ < SCAN_COUNT_LIMIT_FOR_COST) {
+            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs));
+            req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
-            addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, results);
-            req.setContinuationToken(objectListing.getContinuationToken());
         }
-        log.info("Import finished, total:{}", results.size());
 
-        return results;
+        log.info("Import finished, total:{} scanCount:{} - if scan limit is hit then specify a prefix", results.size(), scanCount);
+
+        if (scanCount >= SCAN_COUNT_LIMIT_FOR_COST) {
+            log.warn("Too many scans - specify a prefix to improve accuracy and reduce cost");
+        }
+        return results.stream().distinct().collect(Collectors.toList());
     }
 
-    private void addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ListObjectsV2Result objectListing, ArrayList<FileMeta> results) {
-        results.addAll(objectListing.getObjectSummaries().stream().filter(item -> item.getKey().contains(includeFileMask) || includeFileMask.equals("*")).map(objSummary ->
-        {
-            FileMeta fileMeta = new FileMeta(tenant,
-                    objSummary.getBucketName(),
-                    objSummary.getETag(),
-                    objSummary.getKey(),
-                    new byte[0],
-                    inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
-                    objSummary.getLastModified().getTime());
-            fileMeta.setSize(objSummary.getSize());
-            fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
-            fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));
-            return fileMeta;
-        })
-                .collect(Collectors.toList()));
-        log.info("Import progress:{}", results.size());
+    private List<FileMeta> addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ListObjectsV2Result objectListing, long sinceTimeMs) {
+
+        List<FileMeta> results = objectListing.getObjectSummaries().stream().filter(
+                item -> (item.getKey().contains(includeFileMask) || includeFileMask.equals("*")) &&
+                        item.getLastModified().getTime() > sinceTimeMs)
+                .map(objSummary ->
+                {
+                    FileMeta fileMeta = new FileMeta(tenant,
+                            objSummary.getBucketName(),
+                            objSummary.getETag(),
+                            objSummary.getKey(),
+                            new byte[0],
+                            inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
+                            objSummary.getLastModified().getTime());
+                    fileMeta.setSize(objSummary.getSize());
+                    fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
+                    fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));
+                    return fileMeta;
+                })
+                .collect(Collectors.toList());
+
+
+        if (results.size() > 0) log.info("Import progress:{}", results.size());
+        return results.stream().distinct().collect(Collectors.toList());
     }
 
     private long inferFakeStartTimeFromSize(long size, long lastModified) {

@@ -106,31 +106,29 @@ class RestVersion extends FilesInterface {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
         })
     }
-    importFromStorage(storageId, tags, includeFileMask) {
+    importFromStorage(storageId, tags, includeFileMask, prefix, ageDays) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/storage/import', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags},
+        $.get(SERVICE_URL + '/storage/import', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays},
             function(response) {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
                 $.Topic(Precognito.Explorer.Topics.importedFromStorage).publish(response);
             })
         .fail(function (xhr, ajaxOptions, thrownError) {
             $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-            alert(xhr.status);
-            alert(thrownError);
-          })
+            alert("Error status: " + xhr.status + " Msg: " + thrownError);
+        })
     }
-    removeImportFromStorage(storageId, tags, includeFileMask) {
+    removeImportFromStorage(storageId, tags, includeFileMask, prefix, ageDays) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/storage/removeImported', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags},
+        $.get(SERVICE_URL + '/storage/removeImported', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays},
             function(response) {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
                 $.Topic(Precognito.Explorer.Topics.removedImportFromStorage).publish(response);
             })
         .fail(function (xhr, ajaxOptions, thrownError) {
             $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-            alert(xhr.status);
-            alert(thrownError);
-          })
+            alert("Error status: " + xhr.status + " Msg: " + thrownError);
+        })
     }
 
 
@@ -180,8 +178,7 @@ class RestVersion extends FilesInterface {
                     $.Topic(Precognito.Explorer.Topics.setFileContent).publish(response);
                 })
             .fail(function (xhr, ajaxOptions, thrownError) {
-                        alert(xhr.status);
-                        alert(thrownError);
+                        alert("Error status:" + xhr.status + " Msg:" + thrownError);
                         $.Topic(Precognito.Explorer.Topics.setFileContent).publish("Failed to load file contents:" + thrownError + " status:" + xhr.status);
 
               })
@@ -217,11 +214,11 @@ function backendBinding () {
         backend.downloadFileContent(event);
     })
 
-    $.Topic(Precognito.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags) {
-        backend.importFromStorage(storageId, includeFileMask, tags);
+    $.Topic(Precognito.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
+        backend.importFromStorage(storageId, includeFileMask, tags, prefix, ageDays);
     })
-    $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).subscribe(function(storageId, includeFileMask, tags) {
-        backend.removeImportFromStorage(storageId, includeFileMask, tags);
+    $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
+        backend.removeImportFromStorage(storageId, includeFileMask, tags, prefix, ageDays);
     })
     $.Topic(Precognito.Explorer.Topics.startSpinner).subscribe(function() {
         $(".spinner").show()
