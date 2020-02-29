@@ -70,7 +70,7 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
             if (nextRecord.getTime() > fromTime) {
                 results.append(fileLut.get(nextRecord.getStreamName()));
                 results.append(":");
-                results.append(nextRecord.getTime()).append(":").append(nextRecord.getLine()).append("\n");
+                results.append(nextRecord.getLine()).append("\n");
                 totalEvents++;
             }
         }

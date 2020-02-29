@@ -41,10 +41,10 @@ public class FixturedSearchService implements SearchService {
                 inputStream = new GZIPInputStream(inputStream);
             }
             String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
-            OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl);
+            OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
 
             String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
-            OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl);
+            OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
 
             try (
                     SimpleSearchProcessor searchProcessor = new SimpleSearchProcessor();

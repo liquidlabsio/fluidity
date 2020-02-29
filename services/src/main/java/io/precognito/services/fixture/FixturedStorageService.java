@@ -66,7 +66,7 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults) {
+    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults, int daysRetention) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream() {
             @Override
             public void close() throws IOException {

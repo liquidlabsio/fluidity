@@ -45,6 +45,10 @@ public class AwsS3StorageService implements Storage {
 
     public AwsS3StorageService() {
         log.info("Created");
+        if (PREFIX == null) {
+            PREFIX = ConfigProvider.getConfig().getValue("precognito.prefix", String.class);
+        }
+        log.info("Created: PREFIX: {}", PREFIX);
     }
 
     /**
@@ -142,18 +146,21 @@ public class AwsS3StorageService implements Storage {
         objectMetadata.addUserMetadata("tags", upload.getTags());
         objectMetadata.addUserMetadata("tenant", upload.tenant);
         objectMetadata.addUserMetadata("length", "" + upload.fileContent.length);
-
-        upload.setStorageUrl(writeToS3(region, upload.fileContent, bucketName, filePath, objectMetadata));
+        upload.setStorageUrl(writeToS3(region, upload.fileContent, bucketName, filePath, objectMetadata, 0));
 
         return upload;
     }
 
-    private String writeToS3(String region, byte[] fileContent, String bucketName, String filePath, ObjectMetadata objectMetadata) {
+    private String writeToS3(String region, byte[] fileContent, String bucketName, String filePath, ObjectMetadata objectMetadata, int daysRetention) {
         File file = createTempFile(fileContent);
-        return writeFileToS3(region, file, bucketName, filePath, objectMetadata);
+        return writeFileToS3(region, file, bucketName, filePath, objectMetadata, daysRetention);
     }
 
-    private String writeFileToS3(String region, File file, String bucketName, String filePath, ObjectMetadata objectMetadata) {
+    private String writeFileToS3(String region, File file, String bucketName, String filePath, ObjectMetadata objectMetadata, int daysRetention) {
+
+        if (daysRetention > 0) {
+            objectMetadata.setExpirationTime(new Date(System.currentTimeMillis() - DateUtil.DAY * daysRetention));
+        }
 
         log.debug("Write:{} {} length:{}", bucketName, filePath, file.length());
         if (file.length() == 0) {
@@ -384,7 +391,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String filenameURL) {
+    public OutputStream getOutputStream(String region, String tenant, String filenameURL, int daysRetention) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
             return new FileOutputStream(toS3) {
@@ -396,7 +403,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
-                            writeFileToS3(region, toS3, getBucketName(tenant), UriUtil.getHostnameAndPath(filenameURL)[1], objectMetadata);
+                            writeFileToS3(region, toS3, getBucketName(tenant), UriUtil.getHostnameAndPath(filenameURL)[1], objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

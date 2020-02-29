@@ -26,7 +26,7 @@ public interface Storage {
 
     InputStream getInputStream(String region, String tenant, String storageUrl);
 
-    OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl);
+    OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl, int daysRetention);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 
