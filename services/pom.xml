@@ -18,8 +18,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-    <quarkus-plugin.version>1.2.0.Final</quarkus-plugin.version>
-    <quarkus.platform.version>1.2.0.Final</quarkus.platform.version>
+    <quarkus-plugin.version>1.2.1.Final</quarkus-plugin.version>
+    <quarkus.platform.version>1.2.1.Final</quarkus.platform.version>
     <surefire-plugin.version>2.22.1</surefire-plugin.version>
   </properties>
   <dependencyManagement>
@@ -188,18 +188,38 @@
       <build>
         <plugins>
           <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <version>${surefire-plugin.version}</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-maven-plugin</artifactId>
+            <version>${quarkus.platform.version}</version>
             <executions>
               <execution>
                 <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
+                  <goal>native-image</goal>
                 </goals>
                 <configuration>
-                  <systemProperties>
-                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
-                  </systemProperties>
+                  <enableHttpUrlHandler>true</enableHttpUrlHandler>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>zip-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <finalName>function</finalName>
+                  <descriptors>
+                    <descriptor>src/assembly/zip.xml</descriptor>
+                  </descriptors>
+                  <attach>false</attach>
+                  <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
               </execution>
             </executions>
@@ -210,5 +230,37 @@
         <quarkus.package.type>native</quarkus.package.type>
       </properties>
     </profile>
+    <!--    <profile>-->
+    <!--      <id>native</id>-->
+    <!--      <activation>-->
+    <!--        <property>-->
+    <!--          <name>native</name>-->
+    <!--        </property>-->
+    <!--      </activation>-->
+    <!--      <build>-->
+    <!--        <plugins>-->
+    <!--          <plugin>-->
+    <!--            <artifactId>maven-failsafe-plugin</artifactId>-->
+    <!--            <version>${surefire-plugin.version}</version>-->
+    <!--            <executions>-->
+    <!--              <execution>-->
+    <!--                <goals>-->
+    <!--                  <goal>integration-test</goal>-->
+    <!--                  <goal>verify</goal>-->
+    <!--                </goals>-->
+    <!--                <configuration>-->
+    <!--                  <systemProperties>-->
+    <!--                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>-->
+    <!--                  </systemProperties>-->
+    <!--                </configuration>-->
+    <!--              </execution>-->
+    <!--            </executions>-->
+    <!--          </plugin>-->
+    <!--        </plugins>-->
+    <!--      </build>-->
+    <!--      <properties>-->
+    <!--        <quarkus.package.type>native</quarkus.package.type>-->
+    <!--      </properties>-->
+    <!--    </profile>-->
   </profiles>
 </project>
