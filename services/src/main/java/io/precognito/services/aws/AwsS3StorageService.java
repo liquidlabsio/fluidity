@@ -266,12 +266,14 @@ public class AwsS3StorageService implements Storage {
 
     /**
      * TODO: Seek to offset/compression-handling[on-off]/direct-download etd
+     *
      * @param region
      * @param storageUrl
+     * @param offset
      * @return
      */
     @Override
-    public byte[] get(String region, String storageUrl) {
+    public byte[] get(String region, String storageUrl, int offset) {
         bind();
         try {
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
@@ -284,7 +286,7 @@ public class AwsS3StorageService implements Storage {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            IOUtils.copyLarge(inputStream, baos, 0, LIMIT);
+            IOUtils.copyLarge(inputStream, baos, offset, LIMIT);
             return baos.toByteArray();
 
         } catch (Exception e) {

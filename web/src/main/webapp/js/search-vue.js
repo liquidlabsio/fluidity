@@ -104,7 +104,7 @@ searchInputAnalytic = new Vue({
 //                console.log("series:" + searchChart.series[config.seriesIndex].name)
 //                console.log("time:" + point[0])
 //                console.log("value:" + point[1])
-                 searchStats.stats = "Getting events from:" + new Date(point[0])
+                 searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
                  searcher.startTime = new Date();
                 $.Topic(Precognito.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
 
@@ -172,8 +172,15 @@ var searchSubmit = new Vue({
 })
 
 var searchStats = new Vue({
-  el: '#searchResultsChart',
+  el: '#searchResultStats',
   data: {
     stats: 'Stats[]'
   }
 })
+var searchFileToOpenInfo = new Vue({
+  el: '#searchFileInfo',
+  data: {
+    searchFileInfo: '---'
+  }
+})
+

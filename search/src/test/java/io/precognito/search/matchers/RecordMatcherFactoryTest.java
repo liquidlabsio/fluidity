@@ -37,6 +37,13 @@ class RecordMatcherFactoryTest {
         assertEquals(AllMatcher.class.getSimpleName(), matcher.getClass().getSimpleName());
     }
 
+    @Test
+    public void testLazyMatcherReturned() throws Exception {
+        // bucket | host | tags | filename | lineMatcher | fieldExtractor
+        String expression = "error";
+        PMatcher matcher = RecordMatcherFactory.getMatcher(expression);
+        assertEquals(GrepMatcher.class.getSimpleName(), matcher.getClass().getSimpleName());
+    }
 
 
 }

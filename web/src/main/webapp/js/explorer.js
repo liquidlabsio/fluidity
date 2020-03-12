@@ -13,7 +13,8 @@ Precognito.Explorer.Topics = {
     downloadFileContent: 'explorerDownloadFileContent',
 
     startSpinner: 'startSpinner',
-    stopSpinner: 'stopSpinner'
+    stopSpinner: 'stopSpinner',
+    setExplorerToOpen: 'setExplorerToOpen'
 }
 
 $(document).ready(function () {
@@ -45,6 +46,16 @@ Precognito.Explorer.FileList = function (table) {
             $("#explorerOpenFileName").get(0).scrollIntoView();
             explorerEditor.setValue(content)
         })
+
+        $.Topic(Precognito.Explorer.Topics.setExplorerToOpen).subscribe(function(content) {
+            // show this tab
+            $(".nav-link.explorer").click()
+            $("#explorerOpenFileName").text("Filename: " + content[0]);
+            $.Topic(Precognito.Explorer.Topics.getFileContent).publish(content[0], content[1])
+
+
+        })
+
 
 
         $('#refreshFiles').click(function(){
@@ -111,12 +122,12 @@ Precognito.Explorer.FileList = function (table) {
 
             if (action == "view") {
                 $("#explorerOpenFileName").text("Filename: " + filename)
-                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename)
+                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename, 0)
             } else if (action == "download"){
                 $.Topic(Precognito.Explorer.Topics.downloadFileContent).publish(filename)
             } else {
                 $("#explorerOpenFileName").text("Filename: " + filename)
-                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename)
+                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename, 0)
             }
         } catch (err) {
             console.log(err.stack)

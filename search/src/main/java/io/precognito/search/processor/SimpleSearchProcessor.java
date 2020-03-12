@@ -44,18 +44,18 @@ public class SimpleSearchProcessor implements Processor {
         while (nextLine != null) {
 
             if (currentTime > search.from && currentTime < search.to && search.matches(nextLine)) {
-                bos.write(Long.toString(currentTime).getBytes());
-                bos.write(':');
-                bos.write(Long.toString(position).getBytes());
-                bos.write(':');
-                bos.write(nextLine.getBytes());
-                bos.write('\n');
+                byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
+                bos.write(bytes);
                 histoCollector.add(currentTime, position, nextLine);
                 read++;
                 read++;// NL
+
+                // this tracks the dest file offset - alternative below tracks source file offset
+                position += bytes.length;
             }
             currentTime += guessTimeInterval;
-            position += nextLine.length();
+            // this tracks the source file offset
+            // position += nextLine.length();
             // keep calibrating fake time calc based on location
             nextLine = reader.readLine();
             if (nextLine != null) {

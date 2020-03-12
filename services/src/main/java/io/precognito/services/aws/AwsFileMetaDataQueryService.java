@@ -196,7 +196,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     }
 
     @Override
-    public byte[] get(String tenant, String filename) {
+    public byte[] get(String tenant, String filename, int offset) {
         FileMeta fileMeta = find(tenant, filename);
         // TODO: fix content getting - content should be from the storage projection view - not here - it needs to be injected and delegated
         return fileMeta.getStorageUrl().getBytes();

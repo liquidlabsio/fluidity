@@ -64,7 +64,7 @@ public class FileMetaLocalDynamoTest {
         metaDataService.createTable();
         metaDataService.put(fileMeta);
 
-        byte[] content = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename());
+        byte[] content = metaDataService.get(fileMeta.getTenant(), fileMeta.getFilename(), 0);
         assertNotNull(content);
 
         metaDataService.putList(Arrays.asList(fileMeta));

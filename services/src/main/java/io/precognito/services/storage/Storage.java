@@ -16,7 +16,7 @@ public interface Storage {
      */
     FileMeta upload(String region, FileMeta upload);
 
-    byte[] get(String region, String storageUrl);
+    byte[] get(String region, String storageUrl, int offset);
 
     String getBucketName(String tenant);
 

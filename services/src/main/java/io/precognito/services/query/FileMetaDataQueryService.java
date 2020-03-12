@@ -11,7 +11,7 @@ public interface FileMetaDataQueryService {
     FileMeta find(String tenant, String filename);
 
     //TODO: get content needs to be removed to projection providers (i.e. delegate to appropriate projection layer)
-    byte[] get(String tenant, String filename);
+    byte[] get(String tenant, String filename, int offset);
 
     FileMeta delete(String tenant, String filename);
 

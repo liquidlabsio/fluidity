@@ -15,7 +15,8 @@ public class RecordMatcherFactory {
 
     public static PMatcher getMatcher(String recordFilter) {
         List<PMatcher> collect = matchers.stream().filter(matcher -> matcher.isForMe(recordFilter)).collect(Collectors.toList());
-        if (collect.size() == 0) return new AllMatcher();
-        else return collect.iterator().next().clone(recordFilter);
+        if (collect.size() == 0) {
+            return recordFilter.equals("*") ? new AllMatcher() : new GrepMatcher(recordFilter);
+        } else return collect.iterator().next().clone(recordFilter);
     }
 }
