@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -83,14 +84,15 @@ public class FixturedSearchService implements SearchService {
 
         String[] eventAggs;
 
-        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime), search)) {
+        Map<String, InputStream> inputStreams = storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime);
+        try (SimpleLineByLineAggregator eventAggregator = new SimpleLineByLineAggregator(inputStreams, search)) {
             eventAggs = eventAggregator.process(fromTime, limit);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         log.info("EventsElapsed:{}", (System.currentTimeMillis() - start));
 
-        return new String[]{eventAggs[0], eventAggs[1]};
+        return eventAggs;
     }
 
 }

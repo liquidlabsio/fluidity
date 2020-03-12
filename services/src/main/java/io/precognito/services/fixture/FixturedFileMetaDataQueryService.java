@@ -5,10 +5,7 @@ import io.precognito.services.query.FileMetaDataQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FixturedFileMetaDataQueryService implements FileMetaDataQueryService {
@@ -37,8 +34,9 @@ public class FixturedFileMetaDataQueryService implements FileMetaDataQueryServic
     }
 
     @Override
-    public byte[] get(String tenant, String filename) {
-        return storage.get(filename).getFileContent();
+    public byte[] get(String tenant, String filename, int offset) {
+        byte[] fileContent = storage.get(filename).getFileContent();
+        return Arrays.copyOfRange(fileContent, offset, fileContent.length);
     }
 
     @Override

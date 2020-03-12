@@ -55,29 +55,36 @@ public class QueryResource implements FileMetaDataQueryService {
 
 
     @GET
-    @Path("/get/{tenant}/{filename}")
+    @Path("/get/{tenant}/{filename}/{offset}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public byte[] get(@org.jboss.resteasy.annotations.jaxrs.PathParam("tenant") String tenant, @org.jboss.resteasy.annotations.jaxrs.PathParam("filename")  String filename) {
+    public byte[] get(@PathParam("tenant") String tenant, @PathParam("filename") String filename, @PathParam("offset") int offset) {
+
+        // requested by storage URL
+        if (filename.startsWith("s3://")) {
+            return storage.get(cloudRegion, filename, offset);
+        }
+        // requested by filename
         FileMeta fileMeta = query.find(tenant, filename);
         if (fileMeta == null) {
             return ("Failed to find FileMeta for:" + tenant + " file:" + filename).getBytes();
         }
-        return storage.get(cloudRegion, fileMeta.getStorageUrl());
+        return storage.get(cloudRegion, fileMeta.getStorageUrl(), offset);
     }
 
     @GET
-    @Path("/getDownloadUrl/{tenant}/{filename}")
+    @Path("/getDownloadUrl/{tenant}/{filename}/{offset}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public String getDownloadUrl(@org.jboss.resteasy.annotations.jaxrs.PathParam("tenant") String tenant, @org.jboss.resteasy.annotations.jaxrs.PathParam("filename")  String filename) {
+    public String getDownloadUrl(@PathParam("tenant") String tenant, @PathParam("filename") String filename, @PathParam("offset") int offset) {
         FileMeta fileMeta = query.find(tenant, filename);
         if (fileMeta == null) {
-            return "Error: Couldnt load FileMeta:" + tenant + "/"+ filename;
+            return "Error: Couldnt load FileMeta:" + tenant + "/" + filename;
         }
         return storage.getSignedDownloadURL(cloudRegion, fileMeta.getStorageUrl());
     }
 
     /**
      * Note - using pathparams to enable GET request opening/downloading in browser tab
+     *
      * @param tenant
      * @param filename
      * @return
@@ -85,9 +92,9 @@ public class QueryResource implements FileMetaDataQueryService {
     @GET
     @Path("/download/{tenant}/{filename}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response download(@org.jboss.resteasy.annotations.jaxrs.PathParam("tenant") String tenant, @org.jboss.resteasy.annotations.jaxrs.PathParam("filename")  String filename) {
+    public Response download(@PathParam("tenant") String tenant, @PathParam("filename") String filename) {
         FileMeta fileMeta = query.find(tenant, filename);
-        byte[] content = storage.get(cloudRegion, fileMeta.getStorageUrl());
+        byte[] content = storage.get(cloudRegion, fileMeta.getStorageUrl(), 0);
         return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM)
                 .header("content-disposition", "attachment; filename=\"" + filename + "\"")
                 .header("Content-Length", content.length).build();

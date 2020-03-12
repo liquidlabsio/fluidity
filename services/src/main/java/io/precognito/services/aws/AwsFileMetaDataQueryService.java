@@ -81,11 +81,6 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     @Override
     public void putList(List<FileMeta> fileMetas) {
-        executor.submit(() -> putListBackground(fileMetas));
-    }
-
-    public void putListBackground(List<FileMeta> fileMetas) {
-
         ArrayList<FileMeta> batch = new ArrayList<>();
 
         // break into chunks of 25
@@ -96,6 +91,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
                     putListBatch(batch);
                     Thread.sleep(BATCH_PAUSE_MS);
                 } catch (Exception e) {
+                    log.error("Failed to execute batch:{}", e.toString(), e);
                     e.printStackTrace();
                 } finally {
                     batch.clear();
@@ -142,23 +138,19 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
         existingFileMetasPage.forEach(action -> existingFileMetas.addAll(action.items()));
 
         List<FileMeta> matchedList = existingFileMetas.stream().filter(item -> fileMetas.contains(item)).collect(Collectors.toList());
-        executor.submit(() -> deleteListBackground(matchedList));
-    }
-
-    public void deleteListBackground(List<FileMeta> fileMetas) {
 
         ArrayList<FileMeta> batch = new ArrayList<>();
 
         // break into chunks of 25
-        fileMetas.forEach(item -> {
+        matchedList.forEach(item -> {
             batch.add(item);
             if (batch.size() > BATCH_LIMIT) {
-
-                deleteListBatch(batch);
-                batch.clear();
                 try {
+                    deleteListBatch(batch);
+                    batch.clear();
                     Thread.sleep(BATCH_PAUSE_MS);
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
+                    log.error("Failed to execute batch:{}", e.toString(), e);
                     e.printStackTrace();
                 }
             }
@@ -204,7 +196,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     }
 
     @Override
-    public byte[] get(String tenant, String filename) {
+    public byte[] get(String tenant, String filename, int offset) {
         FileMeta fileMeta = find(tenant, filename);
         // TODO: fix content getting - content should be from the storage projection view - not here - it needs to be injected and delegated
         return fileMeta.getStorageUrl().getBytes();

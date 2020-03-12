@@ -1,5 +1,7 @@
 package io.precognito.search.agg;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 
 import java.io.BufferedReader;
@@ -37,7 +39,7 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
     }
 
     private Map<String, Integer> populateLut(Set<String> dataSourceLut) {
-        HashMap<String, Integer> results = new HashMap<>();
+        HashMap<String, Integer> results = new LinkedHashMap<>();
         dataSourceLut.stream().forEach(key -> results.put(key, results.size()));
         return results;
     }
@@ -75,7 +77,12 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
             }
         }
 
-        return new String[]{Integer.toString(totalEvents), results.toString()};
+        return new String[]{Integer.toString(totalEvents), results.toString(), getLutIndexAsStringArray()};
+    }
+
+    private String getLutIndexAsStringArray() throws JsonProcessingException {
+        List<String> keySet = fileLut.keySet().stream().collect(Collectors.toList());
+        return new ObjectMapper().writeValueAsString(keySet);
     }
 
     Map<String, Map.Entry<Long, RecordEntry>> nextLines = new HashMap<>();
@@ -96,7 +103,7 @@ public class SimpleLineByLineAggregator implements EventsAggregator {
             String streamUrl = nextLine.getKey();
             streams.remove(streamUrl).close();
             nextLines.remove(streamUrl);
-            return null;
+            return getNextLine(streams);
         }
 
 

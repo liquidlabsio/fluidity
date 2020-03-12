@@ -17,7 +17,7 @@ class SimpleLineByLineAggregatorTest {
     @Test
     void process() throws Exception {
 
-        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"));
+        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"), 10);
         Search search = null;
         SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, search);
         String[] processed = aggregator.process(0, 100);
@@ -36,7 +36,7 @@ class SimpleLineByLineAggregatorTest {
     @Test
     void processAccordingToTimeStamp() throws Exception {
 
-        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"));
+        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"), 10);
         Search search = null;
         SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, null);
         String[] processed = aggregator.process(5000, 100);
@@ -52,22 +52,41 @@ class SimpleLineByLineAggregatorTest {
         assertTrue(eventsData.contains("file2.txt,9"));
     }
 
-    private Map<String, InputStream> createSteams(List<String> filenames) throws Exception {
+    @Test
+    void handlesSingLineFiles() throws Exception {
+
+        Map<String, InputStream> streams = createSteams(asList("file1.txt", "file2.txt"), 1);
+        Search search = null;
+        SimpleLineByLineAggregator aggregator = new SimpleLineByLineAggregator(streams, null);
+        String[] processed = aggregator.process(0, 100);
+        int totalEvents = Integer.parseInt(processed[0]);
+
+        assertEquals(totalEvents, 2);
+        String eventsData = processed[1];
+        System.out.println(eventsData);
+        assertTrue(eventsData != null);
+        assertTrue(eventsData.contains("file1.txt,0"), "Should have 1 line");
+        assertTrue(eventsData.contains("file2.txt,0"), "Should have 1 line");
+        assertFalse(eventsData.contains("file1.txt,1"), "Should have 1 line");
+        assertFalse(eventsData.contains("file2.txt,1"), "Should have 1 line");
+    }
+
+    private Map<String, InputStream> createSteams(List<String> filenames, int limit) throws Exception {
 
         HashMap<String, InputStream> results = new HashMap<>();
 
         filenames.stream().forEach(filename -> {
-            results.put(filename, createInputStream(filename));
+            results.put(filename, createInputStream(filename, limit));
         });
 
         return results;
     }
 
-    private InputStream createInputStream(String filename) {
+    private InputStream createInputStream(String filename, int limit) {
 
         StringBuilder sb = new StringBuilder();
         long time = 1000;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < limit; i++) {
             sb.append(String.format("%d:%s-%s,%d\n", time += 1000, "this is my line of stuff", filename, i));
         }
         return new ByteArrayInputStream(sb.toString().getBytes());

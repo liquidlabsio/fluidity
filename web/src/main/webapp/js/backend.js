@@ -135,11 +135,11 @@ class RestVersion extends FilesInterface {
     /**
     * The S3 bucket needs CORS enabled for direct downloads to work. If it fails it retried by using a faas request
     **/
-    fileContentsByURL(filename) {
+    fileContentsByURL(filename, offset) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
         let self=this;
         $.Topic(Precognito.Explorer.Topics.setFileContent).publish("loading...");
-        $.get(SERVICE_URL + '/query/getDownloadUrl/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename),{},
+        $.get(SERVICE_URL + '/query/getDownloadUrl/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset),{},
             function(urlLocation) {
                 try {
                     if (filename.endsWith(".gz")) {
@@ -154,25 +154,25 @@ class RestVersion extends FilesInterface {
                         .fail(function(xhr, ajaxOptions, thrownError) {
                             $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
                             $.Topic(Precognito.Explorer.Topics.setFileContent).publish("load by URL failed (CORS disabled) - falling back ... still loading...");
-                            self.fileContents(filename)
+                            self.fileContents(filename, offset)
                         })
                     }
                 } catch (err) {
                     console.log("Failed to load by signed URL - reverting to Lambda")
                     $.Topic(Precognito.Explorer.Topics.setFileContent).publish("load by URL failed - falling back ... still loading...");
-                    fileContents(filename)
+                    fileContents(filename, offset)
                 }
             })
     }
-    fileContents(filename) {
+    fileContents(filename, offset) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
         let self=this;
         $.Topic(Precognito.Explorer.Topics.setFileContent).publish("loading...");
         if (filename.endsWith(".gz")) {
-            let url = SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename)
+            let url = SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset)
             self.downloadBinaryDataFromURL(url, filename);
         } else {
-            $.get(SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename),{},
+            $.get(SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset),{},
                 function(response) {
                     $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
                     $.Topic(Precognito.Explorer.Topics.setFileContent).publish(response);
@@ -205,9 +205,9 @@ function backendBinding () {
     $.Topic(Precognito.Explorer.Topics.getListFiles).subscribe(function(event) {
         backend.listFiles();
     })
-    $.Topic(Precognito.Explorer.Topics.getFileContent).subscribe(function(event) {
+    $.Topic(Precognito.Explorer.Topics.getFileContent).subscribe(function(event, offset) {
 //        backend.fileContents(event);
-        backend.fileContentsByURL(event);
+        backend.fileContentsByURL(event, offset);
     })
 
     $.Topic(Precognito.Explorer.Topics.downloadFileContent).subscribe(function(event) {

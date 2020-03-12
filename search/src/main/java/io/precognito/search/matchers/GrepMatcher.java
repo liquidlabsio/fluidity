@@ -5,7 +5,9 @@ public class GrepMatcher implements PMatcher {
     private final String expr;
 
     public GrepMatcher(String expression) {
-        this.expr = expression.substring(PREFIX.length(), expression.length()-1);
+        // check if lazy expression being used, i.e. !start with record.contains( - user just applied explicit text i.e. 'error'
+        if (!isForMe(expression)) this.expr = expression;
+        else this.expr = expression.substring(PREFIX.length(), expression.length() - 1);
     }
 
     public GrepMatcher() {

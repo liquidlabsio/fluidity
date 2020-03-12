@@ -51,8 +51,8 @@ Precognito.Navigation = function () {
             // make main panel expand to full width
             $("#mainPanel").removeClass("col-lg-10");
             $("#mainPanel").removeClass("col-md-10");
-            $("#mainPanel").addClass("col-lg-11");
-            $("#mainPanel").addClass("col-md-11");
+            $("#mainPanel").addClass("col-lg-12");
+            $("#mainPanel").addClass("col-md-12");
 
         })
         $("#expandNav").click(function(event){
@@ -65,8 +65,8 @@ Precognito.Navigation = function () {
             $("#mainPanel").addClass("ml-sm-auto");
 
             // make main panel expand to full width
-            $("#mainPanel").removeClass("col-lg-11");
-            $("#mainPanel").removeClass("col-md-11");
+            $("#mainPanel").removeClass("col-lg-12");
+            $("#mainPanel").removeClass("col-md-12");
             $("#mainPanel").addClass("col-lg-10");
             $("#mainPanel").addClass("col-md-10");
         })

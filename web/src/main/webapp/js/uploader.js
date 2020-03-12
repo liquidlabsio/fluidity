@@ -31,10 +31,10 @@ $(document).ready(function () {
     })
 
    $.Topic(Precognito.Explorer.Topics.importedFromStorage).subscribe(function(event) {
-        alert("Data is being imported in background:" + event)
+        alert("Data is imported:" + event)
    })
       $.Topic(Precognito.Explorer.Topics.removedImportFromStorage).subscribe(function(event) {
-           alert("Data is being removed in background:" + event)
+           alert("Data is removed:" + event)
       })
 
 

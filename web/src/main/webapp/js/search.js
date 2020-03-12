@@ -7,7 +7,9 @@ Precognito.Search.Topics = {
     getFinalEvents: 'getFinalEvents',
     setFinalEvents: 'setFinalEvents',
     getFinalHisto: 'getFinalHisto',
-    setFinalHisto: 'setFinalHisto'
+    setFinalHisto: 'setFinalHisto',
+    setHoverInfo: 'setHoverInfo',
+    prepareExplorerToOpen: 'prepareExplorerToOpen'
 }
 
 $(document).ready(function () {
@@ -21,6 +23,8 @@ $(document).ready(function () {
 class Search {
 
     constructor() {
+
+    try {
         this.searchId = 0;
         this.searchFileUrls = [];
         this.searchedFileUrls = [];
@@ -29,6 +33,11 @@ class Search {
         this.searchEditor.session.setMode("ace/mode/javascript");
         this.searchEditor.session.setUseWrapMode(true);
         this.duration = 60;
+
+        this.hoverLink = new HoverLink(this.searchEditor);
+        } catch (error) {
+            console.log(error)
+        }
     }
     bind() {
         let self = this;
@@ -47,6 +56,24 @@ class Search {
         $.Topic(Precognito.Search.Topics.setFinalHisto).subscribe(function(events) {
                 self.setFinalHisto(events)
         })
+        $.Topic(Precognito.Search.Topics.setHoverInfo).subscribe(function(event) {
+            // expecting event '3:1581603492991:19216:'
+           let parts = event.split(":");
+           let filename = self.fileLut[parseInt(parts[0])]
+           let time = parseInt(parts[1]);
+           let offset = parts[2];
+           searchFileToOpenInfo.searchFileInfo = filename + " @" + new Date(time).toLocaleString() + " - " + offset
+        })
+        $.Topic(Precognito.Search.Topics.prepareExplorerToOpen).subscribe(function(event) {
+            // expecting; 3:1581603492991:19216:
+           let parts = event.split(":");
+           let filename = self.fileLut[parseInt(parts[0])]
+           let time = parseInt(parts[1]);
+           let offset = parts[2];
+           $.Topic(Precognito.Explorer.Topics.setExplorerToOpen).publish([ filename, offset, time ])
+        })
+
+
         $('.searchZoom').click(function(event){
                 let zoomDirection = $(event.currentTarget).data().zoom;
                 let normalClass = "normalSizeEditor";
@@ -93,6 +120,7 @@ class Search {
         this.startTime =  new Date();
         searchChart.series = [];
         $.Topic(Precognito.Search.Topics.submitSearch).publish(this.searchRequest);
+        searchFileToOpenInfo.searchFileInfo = ""
     }
     setFileUrls(fileMetas) {
         console.log("Got Files:" + fileMetas)
@@ -124,6 +152,7 @@ class Search {
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
         searchStats.stats = "Events: " + Precognito.formatNumber(results[0]) + " Elapsed: " + Precognito.formatNumber(elapsed)
+        this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }
     setFinalHisto(results) {

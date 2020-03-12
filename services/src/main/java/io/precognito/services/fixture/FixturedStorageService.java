@@ -30,8 +30,9 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
-    public byte[] get(String region, String storageUrl) {
-        return storage.get(storageUrl);
+    public byte[] get(String region, String storageUrl, int offset) {
+        byte[] bytes = storage.get(storageUrl);
+        return Arrays.copyOfRange(bytes, offset, bytes.length);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
-        byte[] content = this.get(region, storageUrl);
+        byte[] content = this.get(region, storageUrl, 0);
         if (content == null) throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
         return new ByteArrayInputStream(content);
     }
