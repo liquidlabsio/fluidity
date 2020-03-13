@@ -64,7 +64,6 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        // get the sourceName from the search - default it to sourcename (i.e. _filename) - otherwise extract the
         AbstractMap.SimpleEntry<String, Long> seriesNameandValue = search.getSeriesNameAndValue(sourceName, nextLine);
         if (seriesNameandValue != null) {
             Series series = getSeriesItem(seriesNameandValue.getKey());
