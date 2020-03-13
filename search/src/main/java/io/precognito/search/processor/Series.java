@@ -48,17 +48,18 @@ public class Series {
         }
     }
     public long get(long time) {
-        int index = getTimeBucket(time);
+        int index = index(time);
         if (index < 0 || index > data.size()) return 0;
         return data.get(index)[1];
     }
 
     public void update(long time, long value) {
-        int index = getTimeBucket(time);
+        int index = index(time);
         if (index < 0 || index > data.size()) return;
         data.get(index)[1] = value;
     }
-    private int getTimeBucket(long time) {
+
+    public int index(long time) {
         long timeFromStart = time - data.get(0)[0];
         return (int) (timeFromStart / delta);
     }

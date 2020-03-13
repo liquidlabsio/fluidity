@@ -1,6 +1,7 @@
-package io.precognito.search.agg;
+package io.precognito.search.agg.histo;
 
 import io.precognito.search.Search;
+import io.precognito.search.processor.HistoFunction;
 import io.precognito.search.processor.Series;
 
 import java.io.InputStream;
@@ -31,5 +32,10 @@ public class CountingHistoAggregator extends AbstractHistoAggregator {
     @Override
     public HistoAggregator clone(Map<String, InputStream> inputStreams, Search search) {
         return new CountingHistoAggregator(inputStreams, search);
+    }
+
+    @Override
+    public HistoFunction function() {
+        return (currentValue, newValue, nextLine, position, time, expression) -> currentValue + 1;
     }
 }

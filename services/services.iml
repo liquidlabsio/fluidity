@@ -12,6 +12,31 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-resteasy:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-vertx-http:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-vertx-core:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-resteasy-server-common:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-resteasy-common:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-config-yaml:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-core:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-junit5:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-bootstrap-core:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-test-common:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-core-deployment:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus.gizmo:gizmo:1.0.2.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.ow2.asm:asm-util:7.3.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-builder:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-jsonp-deployment:1.2.1.Final" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.quarkus:quarkus-jsonp:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-smallrye-openapi:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-arc:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus.arc:arc:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-swagger-ui:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-amazon-lambda-http:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-amazon-lambda:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-jackson:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-amazon-dynamodb:1.2.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: io.quarkus:quarkus-netty:1.2.1.Final" level="project" />
     <orderEntry type="module" module-name="search" />
     <orderEntry type="library" name="Maven: io.quarkus:quarkus-resteasy:1.2.1.Final" level="project" />
     <orderEntry type="library" name="Maven: io.quarkus:quarkus-vertx-http:1.2.1.Final" level="project" />
