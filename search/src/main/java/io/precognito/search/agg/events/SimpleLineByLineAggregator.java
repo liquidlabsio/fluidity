@@ -1,8 +1,9 @@
-package io.precognito.search.agg;
+package io.precognito.search.agg.events;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
+import io.precognito.search.agg.RecordEntry;
 
 import java.io.BufferedReader;
 import java.io.IOException;

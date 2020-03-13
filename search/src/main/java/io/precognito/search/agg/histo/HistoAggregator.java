@@ -1,6 +1,7 @@
-package io.precognito.search.agg;
+package io.precognito.search.agg.histo;
 
 import io.precognito.search.Search;
+import io.precognito.search.processor.HistoFunction;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -38,4 +39,6 @@ public interface HistoAggregator extends AutoCloseable {
     boolean isForMe(String analytic);
 
     HistoAggregator clone(Map<String, InputStream> inputStreams, Search search);
+
+    HistoFunction function();
 }

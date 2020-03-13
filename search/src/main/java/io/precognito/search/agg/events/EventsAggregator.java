@@ -1,4 +1,4 @@
-package io.precognito.search.agg;
+package io.precognito.search.agg.events;
 
 import java.io.IOException;
 

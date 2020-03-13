@@ -1,6 +1,7 @@
-package io.precognito.search.agg;
+package io.precognito.search.agg.histo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
 import io.precognito.search.processor.Series;
@@ -27,14 +28,18 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
 
         // TODO: implement reduce functionality between each of the series, i.e. avg/stats/min/max etc
         ObjectMapper objectMapper = new ObjectMapper();
-        List<Series> collectedSeries = collectedJson.stream().map(json -> {
-            try {
-                return objectMapper.readValue(json, Series.class);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }).filter(series -> series.hasData()).collect(Collectors.toList());
+        List<List> collectedSeriesList =
+                collectedJson.stream().map(json -> {
+                    try {
+                        return objectMapper.readValue(json, new TypeReference<List<Series>>() {
+                        });
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+
+        List<Series> collectedSeries = (List<Series>) collectedSeriesList.stream().flatMap(list -> list.stream()).collect(Collectors.toList());
 
         return objectMapper.writeValueAsString(processSeries(collectedSeries));
 
