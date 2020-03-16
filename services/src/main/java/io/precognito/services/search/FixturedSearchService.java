@@ -1,9 +1,10 @@
 package io.precognito.services.search;
 
 import io.precognito.search.Search;
-import io.precognito.search.agg.HistoAggregator;
-import io.precognito.search.agg.SimpleHistoCollector;
-import io.precognito.search.agg.SimpleLineByLineAggregator;
+import io.precognito.search.agg.HistoAggFactory;
+import io.precognito.search.agg.events.SimpleLineByLineAggregator;
+import io.precognito.search.agg.histo.HistoAggregator;
+import io.precognito.search.agg.histo.SimpleHistoCollector;
 import io.precognito.search.processor.SimpleSearchProcessor;
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.query.FileMetaDataQueryService;
@@ -49,7 +50,7 @@ public class FixturedSearchService implements SearchService {
 
             try (
                     SimpleSearchProcessor searchProcessor = new SimpleSearchProcessor();
-                    SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to)
+                    SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))
             ) {
                 searchProcessor.process(fileMeta.filename.endsWith(".gz"), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size);
             } catch (Exception e) {

@@ -8,6 +8,7 @@ import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
+import java.util.AbstractMap;
 
 /**
  * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
@@ -31,7 +32,7 @@ public class Search {
 
     @FormParam("expression")
     @PartType(MediaType.TEXT_PLAIN)
-    public String expression;
+    public String expression = "*|*|*|*|*|*";
 
     @FormParam("from")
     @PartType(MediaType.TEXT_PLAIN)
@@ -65,7 +66,7 @@ public class Search {
     }
 
 
-    transient FilenameMatcher filenameMatcher;
+    private transient FilenameMatcher filenameMatcher;
 
     public boolean fileMatches(String filename, long from, long to) {
         if (filenameMatcher == null) {
@@ -77,6 +78,15 @@ public class Search {
     public String analyticValue() {
         String[] split = expression.split("\\|");
         return split.length > EXPRESSION_PARTS.analytic.ordinal() ? split[EXPRESSION_PARTS.analytic.ordinal()].trim() : "";
+    }
+
+    private transient FieldExtractor fieldExtractor;
+
+    public AbstractMap.SimpleEntry<String, Long> getSeriesNameAndValue(String sourceName, String nextLine) {
+        if (fieldExtractor == null) {
+            fieldExtractor = new FieldExtractor(expression);
+        }
+        return fieldExtractor.getSeriesNameAndValue(sourceName, nextLine);
     }
 
 
@@ -122,5 +132,4 @@ public class Search {
             this.expression = this.expression.substring(1, this.expression.length() - 1);
         }
     }
-
 }

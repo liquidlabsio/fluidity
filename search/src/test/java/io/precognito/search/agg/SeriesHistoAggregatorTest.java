@@ -1,6 +1,8 @@
 package io.precognito.search.agg;
 
 import io.precognito.search.Search;
+import io.precognito.search.agg.histo.SeriesHistoAggregator;
+import io.precognito.search.agg.histo.SimpleHistoCollector;
 import io.precognito.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +47,7 @@ class SeriesHistoAggregatorTest {
 
     private void generateSeriesData(Search search, Map<String, InputStream> inputStreams, long to, long from, String seriesName) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "tags", "s3://blah", search, from, to);
+        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "tags", "s3://blah", search, from, to, HistoAggFactory.Count);
         histoCollector.add(from, 1000, "someLine");
         histoCollector.close();
 

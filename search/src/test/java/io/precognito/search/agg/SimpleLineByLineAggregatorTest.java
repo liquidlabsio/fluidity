@@ -1,6 +1,7 @@
 package io.precognito.search.agg;
 
 import io.precognito.search.Search;
+import io.precognito.search.agg.events.SimpleLineByLineAggregator;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

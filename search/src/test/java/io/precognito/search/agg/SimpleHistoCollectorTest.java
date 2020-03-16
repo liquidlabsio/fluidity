@@ -1,6 +1,7 @@
 package io.precognito.search.agg;
 
 import io.precognito.search.Search;
+import io.precognito.search.agg.histo.SimpleHistoCollector;
 import io.precognito.search.processor.Series;
 import io.precognito.util.DateUtil;
 import org.junit.jupiter.api.Test;
@@ -18,12 +19,12 @@ class SimpleHistoCollectorTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         long to = System.currentTimeMillis();
         long from = to - DateUtil.HOUR;
-        SimpleHistoCollector collector = new SimpleHistoCollector(baos, "someFile", "tags", "s3://stuff", new Search(), from, to);
+        SimpleHistoCollector collector = new SimpleHistoCollector(baos, "someFile", "tags", "s3://stuff", new Search(), from, to, HistoAggFactory.Count);
         collector.add(from, 100, "Line");
         collector.add(from, 100, "Line");
         collector.add(from, 100, "Line");
         collector.close();
-        Series series = collector.series;
+        Series series = collector.series().values().iterator().next();
         long lineCountWithDefaultFunction = series.get(from);
         assertEquals(3, lineCountWithDefaultFunction);
 
