@@ -183,6 +183,7 @@ public class FileMeta {
     }
 
     public String getTimeFormat() {
+        if (timeFormat == "") timeFormat = "*";
         return timeFormat;
     }
 

@@ -79,7 +79,7 @@ public class SearchEventCollector implements EventCollector {
     transient DateTimeFormatter dateTimeFormatter;
 
     private long getTimeMaybe(String timeFormat, long currentTime, long guessTimeInterval, String line) {
-        if (timeFormat == null || timeFormat.length() == 0 || invalidFormat) {
+        if (timeFormat == null || timeFormat.length() == 0 || timeFormat.equals("*") || invalidFormat) {
             return currentTime + guessTimeInterval;
         }
 
