@@ -32,6 +32,7 @@ public class Model {
                             , longNumberAttribute(Fields.fromTime.name(), FileMeta::getFromTime, FileMeta::setFromTime)
                             , longNumberAttribute(Fields.size.name(), FileMeta::getSize, FileMeta::setSize)
                             , stringAttribute(Fields.tags.name(), FileMeta::getTags, FileMeta::setTags)
+                            , stringAttribute(Fields.timeFormat.name(), FileMeta::getTimeFormat, FileMeta::setTimeFormat)
                     )
                     .build();
 

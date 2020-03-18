@@ -73,11 +73,11 @@ public class StorageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public int importFromStorage(@QueryParam("tenant") String tenant, @QueryParam("storageId") String storageId,
                                  @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags,
-                                 @QueryParam("prefix") String prefix, @QueryParam("ageDays") int ageDays) {
+                                 @QueryParam("prefix") String prefix, @QueryParam("ageDays") int ageDays, @QueryParam("timeFormat") String timeFormat) {
 
         log.info("Import requested");
         try {
-            List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, prefix, ageDays, includeFileMask, tags);
+            List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, prefix, ageDays, includeFileMask, tags, timeFormat);
 
             // newest first
             Collections.sort(imported, (o1, o2) -> Long.compare(o2.toTime, o1.toTime));

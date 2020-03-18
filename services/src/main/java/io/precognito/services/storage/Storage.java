@@ -20,7 +20,7 @@ public interface Storage {
 
     String getBucketName(String tenant);
 
-    List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags);
+    List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags, String timeFormat);
 
     String getSignedDownloadURL(String region, String storageUrl);
 

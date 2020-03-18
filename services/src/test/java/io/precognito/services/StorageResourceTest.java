@@ -43,11 +43,6 @@ class StorageResourceTest {
         String goodUrl2 = goodUrl.replace("[", "%5B").replace("]", "'%5D");
         String goodUrl3 = goodUrl.replace("$", "%24");
 
-//        badURL.replace('[',)
-
-//        String encode = URLEncoder.encode(badURL, "UTF-8");
-
-
         System.out.println("GOT:" + goodUrl3);
 
         URI uri = new URI(goodUrl2);
@@ -67,7 +62,7 @@ class StorageResourceTest {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("precog-ng-test", "IoTDevice",
-                "tag1, tag2", filename, bytes, System.currentTimeMillis()-1000, System.currentTimeMillis());
+                "tag1, tag2", filename, bytes, System.currentTimeMillis() - 1000, System.currentTimeMillis(), "");
         given()
                 .multiPart("fileContent", fileMeta.filename, fileMeta.fileContent)
                 .formParam("filename", fileMeta.filename)

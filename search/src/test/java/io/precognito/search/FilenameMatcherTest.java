@@ -1,5 +1,6 @@
 package io.precognito.search;
 
+import io.precognito.search.field.FilenameMatcher;
 import io.precognito.util.DateUtil;
 import org.junit.jupiter.api.Test;
 

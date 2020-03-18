@@ -1,13 +1,8 @@
 package io.precognito.search.agg.histo;
 
-import io.precognito.search.Search;
-
-import java.io.InputStream;
-import java.util.Map;
-
 /**
- * Returns timeseries histogram data that looks like this:
- *  series: [
+ * Collect data in the form:
+ series: [
  *     {
  *       name: "Series 1",
  *       data: [
@@ -32,12 +27,6 @@ import java.util.Map;
  *     }
  *   ]
  */
-public interface HistoAggregator extends AutoCloseable {
-    String process() throws Exception;
-
-    boolean isForMe(String analytic);
-
-    HistoAggregator clone(Map<String, InputStream> inputStreams, Search search);
-
-    HistoFunction function();
+public interface HistoCollector extends AutoCloseable {
+    void add(long currentTime, long position, String nextLine);
 }

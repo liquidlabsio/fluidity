@@ -113,7 +113,7 @@ class SearchFixturedIntegrationTest {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("ng-test", "IoTDevice",
-                "tag1, tag2", filename, bytes, System.currentTimeMillis()-10000, System.currentTimeMillis());
+                "tag1, tag2", filename, bytes, System.currentTimeMillis() - 10000, System.currentTimeMillis(), "");
 
         storageResource.uploadFile(fileMeta);
     }

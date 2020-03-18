@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
-import io.precognito.search.processor.Series;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;

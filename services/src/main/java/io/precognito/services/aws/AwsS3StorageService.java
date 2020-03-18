@@ -62,7 +62,7 @@ public class AwsS3StorageService implements Storage {
      * @return
      */
     @Override
-    public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags) {
+    public List<FileMeta> importFromStorage(String region, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags, String timeFormat) {
 
         String filePrefix = prefix.equals("*") ? "" : prefix;
         long sinceTimeMs = ageDays == 0 ? 0 : System.currentTimeMillis() - ageDays * DateUtil.DAY;
@@ -76,9 +76,9 @@ public class AwsS3StorageService implements Storage {
         int scanCount = 0;
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, filePrefix);
         ArrayList<FileMeta> results = new ArrayList<>();
-        results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs));
+        results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
         while (objectListing.isTruncated() && results.size() < 200000 && scanCount++ < SCAN_COUNT_LIMIT_FOR_COST) {
-            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs));
+            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
         }
@@ -91,7 +91,7 @@ public class AwsS3StorageService implements Storage {
         return results.stream().distinct().collect(Collectors.toList());
     }
 
-    private List<FileMeta> addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ListObjectsV2Result objectListing, long sinceTimeMs) {
+    private List<FileMeta> addSummaries(String tenant, String includeFileMask, String tags, String bucketName, ListObjectsV2Result objectListing, long sinceTimeMs, String timeFormat) {
 
         List<FileMeta> results = objectListing.getObjectSummaries().stream().filter(
                 item -> (item.getKey().contains(includeFileMask) || includeFileMask.equals("*")) &&
@@ -104,7 +104,7 @@ public class AwsS3StorageService implements Storage {
                             objSummary.getKey(),
                             new byte[0],
                             inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
-                            objSummary.getLastModified().getTime());
+                            objSummary.getLastModified().getTime(), timeFormat);
                     fileMeta.setSize(objSummary.getSize());
                     fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
                     fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));

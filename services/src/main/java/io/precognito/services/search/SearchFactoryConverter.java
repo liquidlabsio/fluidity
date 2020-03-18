@@ -13,10 +13,10 @@ public class SearchFactoryConverter implements Converter<SearchService> {
     public SearchService convert(String mode) {
         log.info("Mode:" + mode);
         if (mode.equalsIgnoreCase(LaunchMode.TEST.name())) {
-            return new FixturedSearchService();
+            return new StandardSearchService();
         } else if (mode.equalsIgnoreCase(AWS.CONFIG)) {
 //            return new AwsS3StorageService();
         }
-        return new FixturedSearchService();
+        return new StandardSearchService();
     }
 }

@@ -81,12 +81,9 @@ searchInputAnalytic = new Vue({
         'analytic.count()',
         'analytic.countEach()',
         'analytic.countBy(tag)',
-        'analytic.avg()',
-        'analytic.avgEach()',
-        'analytic.avgBy(tag)',
         'analytic.stats()',
-        'analytic.statsEach()',
-        'analytic.statsBy(tag)'
+        'analytic.statsBy(tag)',
+        'analytic.statsBy(field1)'
       ]
     }
   }
@@ -210,7 +207,7 @@ searchInputAnalytic = new Vue({
                 },
                 tooltip: {
                     x: {
-                    format: "HH:MM dd-MMM"
+                    format: "HH:mm dd-MMM"
                     }
                 },
 

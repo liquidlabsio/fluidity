@@ -1,5 +1,6 @@
 package io.precognito.search;
 
+import io.precognito.search.field.extractor.FieldExtractor;
 import org.junit.jupiter.api.Test;
 
 import java.util.AbstractMap;
