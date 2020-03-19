@@ -37,7 +37,7 @@ public class Series {
     }
     private void buildHistogram(long from, long to) {
         long duration = to - from;
-        delta = ONE_MINS / 2;
+        delta = ONE_MINS;
         if (duration > ONE_HOUR) delta = TEN_MINS;
         if (duration > ONE_DAY) delta = ONE_HOUR / 2;
         if (duration > ONE_DAY * 2) delta = ONE_HOUR;
@@ -51,13 +51,13 @@ public class Series {
     }
     public long get(long time) {
         int index = index(time);
-        if (index < 0 || index > data.size()) return 0;
+        if (index < 0 || index >= data.size()) return 0;
         return data.get(index)[1];
     }
 
     public void update(long time, long value) {
         int index = index(time);
-        if (index < 0 || index > data.size()) return;
+        if (index < 0 || index >= data.size()) return;
         data.get(index)[1] = value;
     }
 

@@ -74,7 +74,6 @@ public class SearchEventCollector implements EventCollector {
         return read;
     }
 
-
     boolean invalidFormat = false;
     transient DateTimeFormatter dateTimeFormatter;
 
