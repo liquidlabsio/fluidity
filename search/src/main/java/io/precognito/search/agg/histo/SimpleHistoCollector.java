@@ -2,9 +2,6 @@ package io.precognito.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
-import io.precognito.search.processor.HistoCollector;
-import io.precognito.search.processor.HistoFunction;
-import io.precognito.search.processor.Series;
 import io.precognito.util.DateUtil;
 
 import java.io.OutputStream;
@@ -14,6 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ *
+ * Generic collection of data and points into series and timeseries mapping
+ *
  *   [
  *     {
  *       name: "Series 1",
@@ -64,10 +64,10 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        AbstractMap.SimpleEntry<String, Long> seriesNameandValue = search.getSeriesNameAndValue(sourceName, nextLine);
-        if (seriesNameandValue != null) {
-            Series series = getSeriesItem(seriesNameandValue.getKey());
-            series.update(currentTime, function.calculate(series.get(currentTime), seriesNameandValue.getValue(), nextLine, position, currentTime, search.expression));
+        AbstractMap.SimpleEntry<String, Long> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
+        if (seriesNameAndValue != null) {
+            Series series = getSeriesItem(seriesNameAndValue.getKey());
+            series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getValue(), nextLine, position, currentTime, search.expression));
         }
     }
 

@@ -56,7 +56,7 @@ public class FileMetaLocalDynamoTest {
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("precognito-ng-test", "IoTDevice",
                 "tag1, tag2", filename, bytes
-                , System.currentTimeMillis() - 1000, System.currentTimeMillis());
+                , System.currentTimeMillis() - 1000, System.currentTimeMillis(), "");
 
         fileMeta.setStorageUrl("s3://somewhere");
 

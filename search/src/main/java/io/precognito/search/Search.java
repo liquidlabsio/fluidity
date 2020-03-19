@@ -1,7 +1,10 @@
 package io.precognito.search;
 
-import io.precognito.search.matchers.PMatcher;
-import io.precognito.search.matchers.RecordMatcherFactory;
+import io.precognito.search.field.FilenameMatcher;
+import io.precognito.search.field.TagMatcher;
+import io.precognito.search.field.extractor.FieldExtractor;
+import io.precognito.search.field.matchers.PMatcher;
+import io.precognito.search.field.matchers.RecordMatcherFactory;
 import io.precognito.util.UriUtil;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
@@ -20,7 +23,7 @@ public class Search {
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 
-    enum EXPRESSION_PARTS {bucket, filename, record, field, analytic}
+    public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic}
 
     @FormParam("origin")
     @PartType(MediaType.TEXT_PLAIN)
@@ -41,8 +44,6 @@ public class Search {
     @FormParam("to")
     @PartType(MediaType.TEXT_PLAIN)
     public long to;
-
-
 
     transient PMatcher matcher;
 
@@ -110,7 +111,7 @@ public class Search {
         try {
             searchUrl = searchUrl.replace(" ", "%20");
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(searchUrl);
-            return "s3://" + bucketName + "/" + searchStagingName + "/" + this.uid + "/" + hostnameAndPath[1];
+            return "s3://" + bucketName + "/" + stagingPrefix() + "/" + hostnameAndPath[1];
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -121,7 +122,7 @@ public class Search {
     }
 
     public String stagingPrefix() {
-        return searchStagingName + "/" + this.uid;
+        return searchStagingName + this.uid;
     }
 
     public void decodeJsonFields() {

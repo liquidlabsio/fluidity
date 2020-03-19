@@ -120,7 +120,7 @@ class SearchResourceTest {
 
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("tenant", "resource",
-                "tag1, tag2", filename, bytes, System.currentTimeMillis()-10000, System.currentTimeMillis());
+                "tag1, tag2", filename, bytes, System.currentTimeMillis() - 10000, System.currentTimeMillis(), "");
 
         storageResource.uploadFile(fileMeta);
     }

@@ -106,9 +106,9 @@ class RestVersion extends FilesInterface {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
         })
     }
-    importFromStorage(storageId, tags, includeFileMask, prefix, ageDays) {
+    importFromStorage(storageId, tags, includeFileMask, prefix, ageDays, timeFormat) {
         $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
-        $.get(SERVICE_URL + '/storage/import', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays},
+        $.get(SERVICE_URL + '/storage/import', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays, timeFormat: timeFormat},
             function(response) {
                 $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
                 $.Topic(Precognito.Explorer.Topics.importedFromStorage).publish(response);
@@ -214,8 +214,8 @@ function backendBinding () {
         backend.downloadFileContent(event);
     })
 
-    $.Topic(Precognito.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
-        backend.importFromStorage(storageId, includeFileMask, tags, prefix, ageDays);
+    $.Topic(Precognito.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays, timeFormat) {
+        backend.importFromStorage(storageId, includeFileMask, tags, prefix, ageDays, timeFormat);
     })
     $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
         backend.removeImportFromStorage(storageId, includeFileMask, tags, prefix, ageDays);

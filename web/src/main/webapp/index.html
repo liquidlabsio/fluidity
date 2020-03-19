@@ -358,6 +358,7 @@
                                         >
                                             <div class="col-lg-12" >
 
+                                                <!-- host/path prefix -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label" id="uploadResourceInputPP">
@@ -369,33 +370,55 @@
                                                             aria-label="Resource Identifier" aria-describedby="uploadResourceInputPP">
                                                 </div>
 
+                                                <!-- tags -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label" id="uploadTagsInputPP">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="uploadTagsInputPP">
                                                             Tags
                                                         </span>
                                                     </div>
 
-                                                    <input name="tags"  type="text" class="form-control" id="uploadTagsInput"
+                                                    <input name="tags" type="text" class="form-control"
+                                                           id="uploadTagsInput"
                                                            placeholder="Enter a comma separated list of tags"
-                                                           aria-label="Resource Identifier" aria-describedby="uploadTagsInputPP">
+                                                           aria-label="Resource Identifier"
+                                                           aria-describedby="uploadTagsInputPP">
                                                 </div>
 
+                                                <!-- time extraction -->
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="uploadTimeFormatInputPP">
+                                                            Time Format
+                                                        </span>
+                                                    </div>
+
+                                                    <input name="timeExtraction" type="text" class="form-control"
+                                                           id="uploadTimeFormatInput"
+                                                           placeholder="Optional - time format: yyyy-MM-dd HH:mm:ss.SSS"
+                                                           aria-label="TimeFormat"
+                                                           aria-describedby="uploadTimeFormatInputPP">
+                                                </div>
+
+
+                                                <!-- file selection -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label">Upload</span>
                                                     </div>
                                                     <div class="custom-file">
-                                                        <input type="file" name="fileContent" class="custom-file-input" id="fileupload" multiple >
-                                                        <label class="custom-file-label" for="fileupload">Choose files</label>
+                                                        <input type="file" name="fileContent" class="custom-file-input"
+                                                               id="fileupload" multiple>
+                                                        <label class="custom-file-label" for="fileupload">Choose
+                                                            files</label>
                                                     </div>
                                                 </div>
-
                                             </div>
 
                                             <br>
                                             <div id="files-list"></div>
-
                                         </form>
 
                                     </div>
@@ -416,6 +439,7 @@
                                         >
                                             <div class="col-lg-12" >
 
+                                                <!-- bucket -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label" id="importResourceInputPP">
@@ -427,6 +451,7 @@
                                                             aria-label="Resource Identifier" aria-describedby="importResourceInputPP">
                                                 </div>
 
+                                                <!-- tags -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label" id="importTagsInputPP">
@@ -454,6 +479,7 @@
                                                            aria-label="File include filter"
                                                            aria-describedby="importFileIncludeInputPP">
                                                 </div>
+
                                                 <!-- path prefix -->
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
@@ -480,10 +506,27 @@
 
                                                     <input name="fileAge" type="text" class="form-control"
                                                            id="importFileAgeInput"
-                                                           placeholder="Include data less than days old - 0 to ignore"
+                                                           placeholder="Optional - Include data less than 'n' days old"
                                                            aria-label="Age days"
                                                            aria-describedby="importFileAgeInputPP">
                                                 </div>
+
+                                                <!-- time extraction -->
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importTimeFormatInputPP">
+                                                            Time Format
+                                                        </span>
+                                                    </div>
+
+                                                    <input name="timeFormat" type="text" class="form-control"
+                                                           id="importimeFormatInput"
+                                                           placeholder="Optional - time extraction format: yyyy-MM-dd HH:mm:ss.SSS"
+                                                           aria-label="TimeFormat"
+                                                           aria-describedby="uploadTimeFormatInputPP">
+                                                </div>
+
 
                                                 <button id="importFromStorageButton" class="btn btn-primary"
                                                         data-toggle="tooltip"
@@ -592,8 +635,8 @@
     <script src="js/search-hoverlink.js"></script>
     <script src="js/search.js"></script>
     <script src="js/search-backend.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/uploader.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/import.js"></script>
 
   </body>
 </html>
