@@ -43,6 +43,11 @@ jobs:
           commnd: mvn -N io.takari:maven:wrapper
           command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
 
+
+      - run:
+          name: set alternatives
+          command: sudo update-java-alternatives -s java-11-openjdk-amd64
+
       - run:
           name: Setting JAVA_HOME
           command: export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
