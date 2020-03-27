@@ -52,6 +52,11 @@ jobs:
       - run:
           name: install java-o11
           command: |
+
+      - run:
+          name: install java-o11
+          command: |
+            sudo apt-get install openjdk-11-jdk
             sudo update-java-alternatives -s java-11-openjdk-amd64
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
             export PATH=$JAVA_HOME/bin:$PATH
