@@ -51,19 +51,12 @@ jobs:
 
       - run:
           name: install java-o11
-          command: >
+          command: |
             sudo update-java-alternatives -s java-11-openjdk-amd64
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
             export PATH=$JAVA_HOME/bin:$PATH
             java -version
-
-      - run:
-          name: Checking Java version
-          command: java -version
-
-      - run:
-          name: Setup maven
-          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+            mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
 
       - run:
           name: Install module deps download to work
