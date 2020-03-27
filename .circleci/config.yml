@@ -70,6 +70,8 @@ jobs:
       - run:
           name: Install module deps
           command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
             mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
             ./mvnw package install -Dmaven.test.skip=true
 
@@ -77,21 +79,32 @@ jobs:
       # ########################
       - run:
           name: Download Dependencies
-          command: ./mvnw dependency:go-offline
-
-
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw dependency:go-offline
 
       # Standard maven build and test phases - does not perform a native build (or verify)
       # ########################
       - run:
           name: Build (Standard)
-          command: ./mvnw clean package -DskipTests -Dmaven.test.skip=true
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw clean package -DskipTests -Dmaven.test.skip=true
       - run:
           name: Unit Test
-          command: ./mvnw -Daws.region=eu-west-2 test
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw -Daws.region=eu-west-2 test
+
       - run:
           name: Integration Test
-          command: ./mvnw -Daws.region=eu-west-2 test -P integration
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw -Daws.region=eu-west-2 test -P integration
 
 #      - run: mvn package install -Dmaven.test.skip=true
       #- run: mvn integration-test
