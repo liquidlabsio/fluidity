@@ -4,7 +4,7 @@
 #
 version: 2.1
 orbs:
-  install openjdk-11
+  vm-install-tools: entur/vm-install-tools@0.0.4
 jobs:
   build:
     # Use "machine" instead of e.g. "docker" for better/faster results
@@ -39,14 +39,16 @@ jobs:
           path: test-results
 
       - run:
-          name: Setup maven
-          commnd: mvn -N io.takari:maven:wrapper
-          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+          name: setup open jdk
+          command: install openjdk-11
 
       - run:
           name: Checking Java version
           command: java -version
 
+      - run:
+          name: Setup maven
+          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
 
       - run:
           name: Install module deps download to work
