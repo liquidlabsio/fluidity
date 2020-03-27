@@ -44,6 +44,18 @@ jobs:
           command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
 
       - run:
+          name: Setting JAVA_HOME
+          command: export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+      - run:
+          name: Setting PATH
+          command: export PATH=$JAVA_HOME/bin:$PATH
+
+      - run:
+          name: Checking Java version
+          command: java -version
+
+
+      - run:
           name: Install module deps download to work
           command: ./mvnw package install -Dmaven.test.skip=true
 
