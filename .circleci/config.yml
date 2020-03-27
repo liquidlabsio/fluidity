@@ -6,7 +6,9 @@ version: 2
 jobs:
   build:
     # Use "machine" instead of e.g. "docker" for better/faster results
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
+
     # Uses a "medium" sized machine - maybe increase this to "large" if you pay for CircleCI
     resource_class: medium
     environment:
@@ -19,6 +21,8 @@ jobs:
     steps:
       - checkout
 
+      - run: sudo apt-get update
+      - run: sudo apt-get install openjdk-11-jdk
       # Download and cache dependencies
       - restore_cache:
           keys:
