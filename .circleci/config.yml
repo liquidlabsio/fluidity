@@ -38,10 +38,24 @@ jobs:
       - store_test_results:
           path: test-results
 
-      - run:
-          name: setup open jdk
-          command: install openjdk-11
+      #      - run:
+      #          name: install java-11
+      #          command: >
+      #            sudo apt-get
+      #            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do
+      #            update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin)
+      #            $bin 100; done'
+      #
+      #            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do
+      #            update-alternatives --set $(basename $bin) $bin; done'
 
+      - run:
+          name: install java-o11
+          command: >
+            sudo update-java-alternatives -s java-11-openjdk-amd64
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            java -version
 
       - run:
           name: Checking Java version
