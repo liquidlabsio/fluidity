@@ -61,6 +61,8 @@ jobs:
       - run:
           name: Check java version
           command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
             echo "Java Home to:" $JAVA_HOME
             echo "Path is set to:" $PATH
             java -version
