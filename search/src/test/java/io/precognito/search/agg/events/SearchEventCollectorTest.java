@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchEventCollectorTest {
 
-        @Test
+//        @Test
     public void testGenerateTestData() throws Exception {
 
             String prefix = "/Volumes/SSD2/logs/precog-logs/test-cpu-";
