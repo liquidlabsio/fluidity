@@ -2,7 +2,9 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
-version: 2
+version: 2.1
+orbs:
+  install openjdk-11
 jobs:
   build:
     # Use "machine" instead of e.g. "docker" for better/faster results
@@ -21,8 +23,6 @@ jobs:
     steps:
       - checkout
 
-      - run: sudo apt-get update
-      - run: sudo apt-get install openjdk-11-jdk
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -42,18 +42,6 @@ jobs:
           name: Setup maven
           commnd: mvn -N io.takari:maven:wrapper
           command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
-
-
-      - run:
-          name: set alternatives
-          command: sudo update-java-alternatives -s java-11-openjdk-amd64
-
-      - run:
-          name: Setting JAVA_HOME
-          command: export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-      - run:
-          name: Setting PATH
-          command: export PATH=$JAVA_HOME/bin:$PATH
 
       - run:
           name: Checking Java version
