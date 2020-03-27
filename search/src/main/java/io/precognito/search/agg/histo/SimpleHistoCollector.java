@@ -72,7 +72,7 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     private Series getSeriesItem(String seriesName) {
-        seriesMap.computeIfAbsent(seriesName, item -> new Series(seriesName, DateUtil.floorMin(from), DateUtil.floorMin(to)));
+        seriesMap.computeIfAbsent(seriesName, item -> new TimeSeries(seriesName, DateUtil.floorMin(from), DateUtil.floorMin(to)));
         return seriesMap.get(seriesName);
     }
 

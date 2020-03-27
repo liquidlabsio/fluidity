@@ -16,23 +16,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchEventCollectorTest {
 
-    //    @Test
+        @Test
     public void testGenerateTestData() throws Exception {
 
-        String prefix = "/Volumes/SSD2/logs/precog-logs/test-cpu-";
-        FileOutputStream fos = new FileOutputStream(prefix + new Date().getTime() + ".log");
+            String prefix = "/Volumes/SSD2/logs/precog-logs/test-cpu-";
+            FileOutputStream fos = new FileOutputStream(prefix + new Date().getTime() + ".log");
 
-        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm.SS");
+            DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm.SS");
 
-        long time = System.currentTimeMillis() - DateUtil.HOUR;
-        int max = 100000;
-        for (int i = 1; i < max; i++) {
-            double cpu = i / ((double) max) * 100.0;
-            fos.write(String.format("%s INFO CPU:%d\n", dateTimeFormatter.print(time), Double.valueOf(cpu * Math.random()).intValue()).getBytes());
-            time += 1000;
+            long time = System.currentTimeMillis() - (DateUtil.DAY * 7);
+            int minutes = (int) ((System.currentTimeMillis() - time) / DateUtil.MINUTE);
+            int max = 100000;
+            for (int i = 1; i < minutes; i++) {
+                double cpu = (i / (double) minutes) * 100.0 + (10 * Math.random());
+                fos.write(String.format("%s INFO CPU:%d\n", dateTimeFormatter.print(time), Double.valueOf(cpu).intValue()).getBytes());
+                time += DateUtil.MINUTE;
+            }
+            fos.close();
         }
-        fos.close();
-    }
 
 
     @Test

@@ -8,62 +8,86 @@ import org.joda.time.format.DateTimeFormatter;
 import java.text.SimpleDateFormat;
 
 public class DateUtil {
-    static int standardTZOffset = 0;//DateTimeZone.getDefault().getOffset(new DateTime());
+	static int standardTZOffset = 0;//DateTimeZone.getDefault().getOffset(new DateTime());
 
-	
-	public static final int SECOND =  1000;
+
+	public static final int SECOND = 1000;
 	public static final long MINUTE = 60 * 1000;
+	public static final long TEN_MINS = 10 * MINUTE;
 	public static final long HOUR = MINUTE * 60;
 	public static final long DAY = HOUR * 24;
 	public static final long WEEK = 7 * DAY;
+
+
 	public static final long DX = HOUR * 24;
 
 	public static long convertToTopOfTheDay(long millis, int dayDelta) {
 		if (millis == 0) return 0;
-		return (millis/(DAY)) * DAY + (DAY * dayDelta);
+		return (millis / (DAY)) * DAY + (DAY * dayDelta);
 	}
+
 	public static long getMinutesDiff(long from, long to) {
 		long delta = to - from;
-		return delta/MINUTE;
+		return delta / MINUTE;
 	}
+
 	public static long convertToMin(long valueMs) {
 		if (valueMs == 0) return 0;
-		return valueMs/MINUTE;
+		return valueMs / MINUTE;
 	}
+
 	public static long convertToSec(long valueMs) {
 		if (valueMs == 0) return 0;
-		return valueMs/SECOND;
+		return valueMs / SECOND;
 	}
 
 	public static long floorMin(long valueMs) {
 		return convertToMin(valueMs) * MINUTE;
 	}
+
+	public static long ceilMin(long valueMs) {
+		return (convertToMin(valueMs) + 1) * MINUTE;
+	}
+
 	public static long floorSec(long valueMs) {
 		return convertToSec(valueMs) * SECOND;
 	}
+
 	public static long floorHour(long millis) {
 		if (millis == 0) return 0;
-		return (millis/(HOUR)) * HOUR;
-	}
-	public static long floorDay(long millis) {
-        if (millis == 0) return 0;
-		return ((millis/(DAY)) * DAY);
+		return (millis / (HOUR)) * HOUR;
 	}
 
-	
+	public static long ceilHour(long millis) {
+		if (millis == 0) return 0;
+		return ((millis / (HOUR)) + 1) * HOUR;
+	}
+
+	public static long floorDay(long millis) {
+		if (millis == 0) return 0;
+		return ((millis / (DAY)) * DAY);
+	}
+
+	public static long ceilDay(long millis) {
+		if (millis == 0) return 0;
+		return (((millis / (DAY)) + 1) * DAY);
+	}
+
+
 	/**
 	 * Converts time to fall into a Mod Bucket value = i.e. 16:05 with granularity of 10 would roll to 16:10
+	 *
 	 * @param givenTimeMs
 	 * @param granularityMins
 	 * @return
 	 */
-	public static long rollMsToMinuteMod(long givenTimeMs,int granularityMins, int delta) {
+	public static long rollMsToMinuteMod(long givenTimeMs, int granularityMins, int delta) {
 		long convertToMin = convertToMin(givenTimeMs);
 		DateTime time = new DateTime(givenTimeMs);
 		int minuteOfHour = time.getMinuteOfHour();
 		int mod = minuteOfHour % granularityMins;
 		if (mod == 0 || mod + delta == 0) return convertToMin * MINUTE;
-		
+
 		int newMinute = (mod + delta) * granularityMins;
 		// scrub out minutes
 		long millis = new DateTime(time.getYear(), time.getMonthOfYear(), time.getDayOfMonth(), time.getHourOfDay(), 0, 0, 0).getMillis();

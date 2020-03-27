@@ -18,12 +18,10 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
     }
 
     List<Series> processSeries(List<Series> collectedSeries) {
-
-        Series count = new Series("count", search.from, search.to);
-        collectedSeries.stream().forEach(series -> series.data.stream().forEach(point -> {
+        Series count = new TimeSeries("count", search.from, search.to);
+        collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
             count.update(point[0], count.get(point[0]) + point[1]);
         }));
-
         return Arrays.asList(count);
     }
 
