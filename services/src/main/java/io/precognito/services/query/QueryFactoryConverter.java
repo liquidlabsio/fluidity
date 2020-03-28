@@ -14,9 +14,11 @@ public class QueryFactoryConverter implements Converter<FileMetaDataQueryService
     @Override
     public FileMetaDataQueryService convert(String mode) {
 
+        log.info(System.getProperty("mode", "not-set"));
+
         log.info("Mode:" + mode);
 
-        if (mode.equalsIgnoreCase(LaunchMode.TEST.name())) {
+        if (mode.equalsIgnoreCase(LaunchMode.TEST.name()) || mode.equals("SERVER")) {
             return new FixturedFileMetaDataQueryService();
         } else if (mode.equalsIgnoreCase(AWS.CONFIG)) {
             return new AwsFileMetaDataQueryService();

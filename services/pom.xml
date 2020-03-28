@@ -10,7 +10,6 @@
   <artifactId>services</artifactId>
   <version>0.1-SNAPSHOT</version>
 
-
   <properties>
     <apache.httpcomponents.version>4.5.9</apache.httpcomponents.version>
     <apache.directory.server.version>2.0.0-M22</apache.directory.server.version>
@@ -51,6 +50,30 @@
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.6.2</version>
+    </dependency>
+
+    <!--&lt;!&ndash;    //org.apache.commons.logging.impl.LogFactoryImpl&ndash;&gt;-->
+    <!--    <dependency>-->
+    <!--      <groupId>org.slf4j</groupId>-->
+    <!--      <artifactId>jcl-over-slf4j</artifactId>-->
+    <!--      <version>1.7.30</version>-->
+    <!--    </dependency>-->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.2</version>
+    </dependency>
+
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
@@ -60,17 +83,20 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-amazon-lambda-http</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>joda-time</groupId>
-          <artifactId>joda-time</artifactId>
-        </exclusion>
-      </exclusions>
 
-    </dependency>
+
+    <!--    <dependency>-->
+    <!--      <groupId>io.quarkus</groupId>-->
+    <!--      <artifactId>quarkus-amazon-lambda-http</artifactId>-->
+    <!--      <exclusions>-->
+    <!--        <exclusion>-->
+    <!--          <groupId>joda-time</groupId>-->
+    <!--          <artifactId>joda-time</artifactId>-->
+    <!--        </exclusion>-->
+    <!--      </exclusions>-->
+    <!--    </dependency>-->
+    <!--    -->
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-amazon-dynamodb</artifactId>
@@ -120,16 +146,16 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!--    <dependency>-->
-    <!--      <groupId>software.amazon.awssdk</groupId>-->
-    <!--      <artifactId>apache-client</artifactId>-->
-    <!--      <exclusions>-->
-    <!--        <exclusion>-->
-    <!--          <artifactId>commons-logging</artifactId>-->
-    <!--          <groupId>commons-logging</groupId>-->
-    <!--        </exclusion>-->
-    <!--      </exclusions>-->
-    <!--    </dependency>-->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>apache-client</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
@@ -174,13 +200,39 @@
         <version>${surefire-plugin.version}</version>
         <configuration>
           <excludedGroups>integration</excludedGroups>
-<!--          <argLine>&#45;&#45;illegal-access=permit</argLine>-->
+          <!--          <argLine>&#45;&#45;illegal-access=permit</argLine>-->
           <systemProperties>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemProperties>
         </configuration>
       </plugin>
     </plugins>
+
+    <!-- include the webapp for single-artifact deployments i.e. JVM/Docker/localGraalVM -->
+    <resources>
+      <resource>
+        <directory>${project.basedir}/../web/src/main/webapp</directory><!-- from -->
+        <targetPath>${project.build.directory}/classes/META-INF/resources</targetPath><!-- to -->
+        <includes><!-- what -->
+          <include>**</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory><!-- from -->
+        <targetPath>${project.build.directory}/classes</targetPath><!-- to -->
+        <includes><!-- what -->
+          <include>**</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>${project.basedir}/src/main/resources/config</directory><!-- from -->
+        <targetPath>${project.build.directory}/config</targetPath><!-- to -->
+        <includes><!-- what -->
+          <include>**</include>
+        </includes>
+      </resource>
+
+    </resources>
   </build>
   <profiles>
     <profile>
@@ -200,11 +252,19 @@
     </profile>
     <profile>
       <id>native</id>
+      <properties>
+        <quarkus.package.type>native</quarkus.package.type>
+        <!-- see https://quarkus.io/guides/building-native-image#configuration-reference -->
+        <quarkus.native.additional-build-args>-H:ReflectionConfigurationFiles=reflection-config.json
+        </quarkus.native.additional-build-args>
+      </properties>
       <activation>
         <property>
           <name>native</name>
         </property>
       </activation>
+      <dependencies>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
@@ -246,9 +306,7 @@
           </plugin>
         </plugins>
       </build>
-      <properties>
-        <quarkus.package.type>native</quarkus.package.type>
-      </properties>
+
     </profile>
     <!--    <profile>-->
     <!--      <id>native</id>-->

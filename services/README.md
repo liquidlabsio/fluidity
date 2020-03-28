@@ -2,21 +2,39 @@
 
 ##Description
 
-## Building
+## Building and Running with the Java runtime
 
-> mvn clean package
+    $mvn clean package
+> Changes to the 'search' module are available to the  'services' module by running 'mvn clean install'
+ 
+* Local test mode - using in-memory services
+
+        $ mvn -Dquarkus-profile=test  clean quarkus:dev
+    
+* Local DEV mode - connected to AWS services (S3, DynamoDB)
+
+        $ mvn clean quarkus:dev
+    
+
+From Intellij open the index.html by clicking the browser icon in the top RH corner. The application will run against  the local instance (port 8080).
+See precognito.js for backend-service configuration. 
+
 
 ### Building the GraalVM Native image
+
+**Note: Native tests are always run using the prod profile.**
 
 > https://quarkus.io/guides/building-native-image
 
 ### Install Graalvm (OSX)
-> $ brew cask install graalvm/tap/graalvm-ce-java11 (wait for a bit...and then a bit more...)
+
+    $ brew cask install graalvm/tap/graalvm-ce-java11 (wait for a bit...and then a bit more...)
 
 From the CLI - set the new JVM Home and export the GU Tools<br>
-> $ export JAVA_HOME=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.0.0/Contents/Home
 
-> $ export PATH=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.0.0/Contents/Home/bin:"$PATH"
+    $ export GRAALVM_HOME=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.0.0/Contents/Home
+    $ export JAVA_HOME=$GRAALVM_HOME
+    $ export PATH=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.0.0/Contents/Home/bin:"$PATH"
 
 Install the graalvm native image
 
@@ -47,9 +65,10 @@ Download from https://github.com/graalvm/graalvm-ce-builds/releases
   
  Choose '2' and export env variables as follows
  
- 
-    $ export JAVA_HOME=/usr/lib/jvm/graalvm-11
-    $ export PATH=/usr/lib/jvm/graalvm-11/bin/:$PATH
+
+    $ export GRAALVM_HOME=/usr/lib/jvm/graalvm-11 
+    $ export JAVA_HOME=$GRAALVM_HOME
+    $ export PATH=$GRAALVM_HOME/bin/:$PATH
 
 ### Test GraalVM
 
@@ -57,8 +76,19 @@ Download from https://github.com/graalvm/graalvm-ce-builds/releases
 
 
 ### Building application artifacts
+
+#### Graalvm built for your OS
+
+    $ ./mvnw package -Dmaven.test.skip=true -Pnative
+    $ ./target/services-0.1-SNAPSHOT-runner
+
+
+#### Docker
+
+    $ ./mvnw package -Dmaven.test.skip=true -Pnative -Dquarkus.native.container-runtime=docker
+
  
-#### For Docker
+#### GraalVM in Docker
 
     $ ./mvnw package -Dmaven.test.skip=true -Pnative -Dquarkus.native.container-runtime=docker
 
@@ -78,23 +108,6 @@ Run it with
     $ ./mvnw clean install -Dmaven.test.skip=true -Pnative -Dnative-image.docker-build=true
 
 Note: I needed to run from the Docker Quick start terminal to avoid 'cannot connect to docker' errors. 
-
-## Running the Services locally or deploy as Lambda
-
-> Changes to the 'search' module are available to the  'services' module by running 'mvn clean install'
- 
-* Local test mode - using in-memory services
-
-        $ mvn -Dquarkus-profile=test  clean quarkus:dev
-    
-    
- 
-* Local DEV mode - connected to AWS services (S3, DynamoDB)
-
-        $ mvn clean quarkus:dev
-
-From Intellij open the index.html by clicking the browser icon in the top RH corner. The application will run against  the local instance (port 8080).
-See precognito.js for backend-service configuration. 
 
 
 * Deploy as Lambda - look in etc/deploy-backend.sh
