@@ -6,3 +6,7 @@ precognito:
     storage: SERVER
     indexer: SERVER
     query: SERVER
+
+quarkus:
+  log:
+    level: TRACE

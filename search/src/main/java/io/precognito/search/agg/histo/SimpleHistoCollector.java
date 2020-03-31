@@ -77,11 +77,15 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ObjectMapper objectMapper = new ObjectMapper();
-        String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesMap.values()));
-        outputStream.write(histoJson.getBytes());
-        outputStream.close();
+        try {
+            String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesMap.values()));
+            outputStream.write(histoJson.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<String, Series> series() {

@@ -46,8 +46,9 @@ public class StorageResource {
     public Response uploadFile(@MultipartForm FileMeta fileMeta) {
 
         try {
+            log.debug("uploadFile:" + fileMeta);
 
-            fileMeta.size = fileMeta.fileContent.length;
+            fileMeta.size = Long.valueOf(fileMeta.fileContent.length);
 
             // this series of actions should be put on an event queue
             FileMeta indexedFile = indexer.enrichMeta(fileMeta);
@@ -75,7 +76,7 @@ public class StorageResource {
                                  @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags,
                                  @QueryParam("prefix") String prefix, @QueryParam("ageDays") int ageDays, @QueryParam("timeFormat") String timeFormat) {
 
-        log.info("Import requested");
+        log.debug("importFromStorage");
         try {
             List<FileMeta> imported = storage.importFromStorage(cloudRegion, tenant, storageId, prefix, ageDays, includeFileMask, tags, timeFormat);
 
@@ -99,7 +100,7 @@ public class StorageResource {
                                  @QueryParam("includeFileMask") String includeFileMask, @QueryParam("tags") String tags,
                                  @QueryParam("prefix") String prefix, @QueryParam("ageDays") String ageDays) {
 
-        log.info("Remove import requested");
+        log.info("removeByStorageId");
         if (ageDays.length() == 0) ageDays = "0";
 
         List<FileMeta> query = this.query.query(tenant, includeFileMask, tags);

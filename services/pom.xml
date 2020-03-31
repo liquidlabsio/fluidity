@@ -304,42 +304,32 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>${surefire-plugin.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <includes>
+                    <include>%regex[.*(Native).*Test.*]</include>
+                  </includes>
+                  <excludes>
+                    <include>%regex[.*(Dynamo).*Test.*]</include>
+                  </excludes>
+                  <systemProperties>
+                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                  </systemProperties>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
-
     </profile>
-    <!--    <profile>-->
-    <!--      <id>native</id>-->
-    <!--      <activation>-->
-    <!--        <property>-->
-    <!--          <name>native</name>-->
-    <!--        </property>-->
-    <!--      </activation>-->
-    <!--      <build>-->
-    <!--        <plugins>-->
-    <!--          <plugin>-->
-    <!--            <artifactId>maven-failsafe-plugin</artifactId>-->
-    <!--            <version>${surefire-plugin.version}</version>-->
-    <!--            <executions>-->
-    <!--              <execution>-->
-    <!--                <goals>-->
-    <!--                  <goal>integration-test</goal>-->
-    <!--                  <goal>verify</goal>-->
-    <!--                </goals>-->
-    <!--                <configuration>-->
-    <!--                  <systemProperties>-->
-    <!--                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>-->
-    <!--                  </systemProperties>-->
-    <!--                </configuration>-->
-    <!--              </execution>-->
-    <!--            </executions>-->
-    <!--          </plugin>-->
-    <!--        </plugins>-->
-    <!--      </build>-->
-    <!--      <properties>-->
-    <!--        <quarkus.package.type>native</quarkus.package.type>-->
-    <!--      </properties>-->
-    <!--    </profile>-->
   </profiles>
   <repositories>
     <repository>

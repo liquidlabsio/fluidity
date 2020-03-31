@@ -66,7 +66,7 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
         this.inputStreams.values().forEach(stream -> {
             try {
                 stream.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

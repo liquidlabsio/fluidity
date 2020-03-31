@@ -136,7 +136,7 @@ public class LineByLineEventAggregator implements EventsAggregator {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         this.streams.values().forEach(reader -> {
             try {
                 reader.close();

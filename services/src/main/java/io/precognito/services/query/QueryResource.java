@@ -4,6 +4,8 @@ package io.precognito.services.query;
 import io.precognito.services.storage.Storage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,10 +16,12 @@ import java.util.List;
  * First (naive) implementation.
  * Server side uploader the runs with AWS Client credentials.
  * Loads directly to S3 bucket, driven by a REST based client that does a multi-part, binary post.
- *
  */
 @Path("/query")
 public class QueryResource implements FileMetaDataQueryService {
+
+    private final Logger log = LoggerFactory.getLogger(QueryResource.class);
+
 
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
@@ -38,6 +42,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public void put(@MultipartForm FileMeta fileMeta) {
+        log.debug("put");
         fileMeta.setFileContent(new byte[0]);
         query.put(fileMeta);
     }
@@ -50,6 +55,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @Path("/find")
     @Produces(MediaType.APPLICATION_JSON)
     public FileMeta find(@QueryParam("tenant") String tenant, @QueryParam("filename") String filename) {
+        log.debug("find");
         return query.find(tenant, filename);
     }
 
@@ -59,6 +65,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public byte[] get(@PathParam("tenant") String tenant, @PathParam("filename") String filename, @PathParam("offset") int offset) {
 
+        log.debug("get");
         // requested by storage URL
         if (filename.startsWith("s3://")) {
             return storage.get(cloudRegion, filename, offset);
@@ -93,6 +100,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @Path("/download/{tenant}/{filename}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response download(@PathParam("tenant") String tenant, @PathParam("filename") String filename) {
+        log.debug("download");
         FileMeta fileMeta = query.find(tenant, filename);
         byte[] content = storage.get(cloudRegion, fileMeta.getStorageUrl(), 0);
         return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM)
@@ -104,6 +112,7 @@ public class QueryResource implements FileMetaDataQueryService {
     @Path("/delete")
     @Produces(MediaType.APPLICATION_JSON)
     public FileMeta delete(@QueryParam("tenant") String tenant, @QueryParam("filename")  String filename) {
+        log.debug("delete");
         return query.delete(tenant, filename);
     }
 
@@ -115,6 +124,7 @@ public class QueryResource implements FileMetaDataQueryService {
             , @QueryParam("filenamePart") String filenamePart
             , @QueryParam("tagNamePart") String tagNamePart
     ) {
+        log.debug("query");
         return query.query(tenant, filenamePart, tagNamePart);
     }
 
@@ -122,6 +132,8 @@ public class QueryResource implements FileMetaDataQueryService {
     @Path("/list")
     @Produces("application/json")
     public List<FileMeta> list() {
+
+        log.debug("list");
         return query.list();
     }
 

@@ -57,6 +57,7 @@ quarkus:
           type: default
     # DEBUG console logging
     log:
+      level: INFO
       console:
         enable: true
         format: "%d{HH:mm:ss} %-5p [%c] %s%e%n"
