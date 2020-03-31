@@ -5,17 +5,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SeriesTest {
+class TimeSeriesTest {
 
     @Test
     public void testBuildSeriesAndGetStuff() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - DateUtil.HOUR;
-        Series series = new Series("someFile", from, last);
+        Series series = new TimeSeries("someFile", from, last);
 
         assertFalse(series.hasData());
 
-        testBucket("Before From Bucket", from-DateUtil.HOUR, series, true);
+        testBucket("Before From Bucket", from - DateUtil.HOUR, series, true);
         testBucket("From Bucket", from, series, false);
         testBucket("From Bucket+1000", from+1000, series, false);
         testBucket("Middle Bucket", from + 30 * DateUtil.MINUTE, series, false);

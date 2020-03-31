@@ -30,7 +30,7 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
         List<List> collectedSeriesList =
                 collectedJson.stream().map(json -> {
                     try {
-                        return objectMapper.readValue(json, new TypeReference<List<Series>>() {
+                        return objectMapper.readValue(json, new TypeReference<List<TimeSeries>>() {
                         });
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
@@ -66,7 +66,7 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
         this.inputStreams.values().forEach(stream -> {
             try {
                 stream.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

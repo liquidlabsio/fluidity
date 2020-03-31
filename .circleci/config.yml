@@ -2,11 +2,15 @@
 #
 # Check https://circleci.com/docs/2.0/language-java/ for more details
 #
-version: 2
+version: 2.1
+orbs:
+  vm-install-tools: entur/vm-install-tools@0.0.4
 jobs:
   build:
     # Use "machine" instead of e.g. "docker" for better/faster results
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
+
     # Uses a "medium" sized machine - maybe increase this to "large" if you pay for CircleCI
     resource_class: medium
     environment:
@@ -34,34 +38,73 @@ jobs:
       - store_test_results:
           path: test-results
 
-      - run:
-          name: Setup maven
-          commnd: mvn -N io.takari:maven:wrapper
-          command: mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+      #      - run:
+      #          name: install java-11
+      #          command: >
+      #            sudo apt-get
+      #            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do
+      #            update-alternatives --install /usr/bin/$(basename $bin) $(basename $bin)
+      #            $bin 100; done'
+      #
+      #            sudo sh -c 'for bin in /usr/lib/jvm/jdk-11.0.3+7/bin/*; do
+      #            update-alternatives --set $(basename $bin) $bin; done'
 
       - run:
-          name: Install module deps download to work
-          command: ./mvnw package install -Dmaven.test.skip=true
+          name: install java-o11
+          command: |
+            sudo apt-get update
+            sudo apt-get install openjdk-11-jdk
+
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+
+      - run:
+          name: Check java version
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            echo "Java Home to:" $JAVA_HOME
+            echo "Path is set to:" $PATH
+            java -version
+
+      - run:
+          name: Install module deps
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
+            ./mvnw package install -Dmaven.test.skip=true
 
       # Download maven dependencies so that we can cache them
       # ########################
       - run:
           name: Download Dependencies
-          command: ./mvnw dependency:go-offline
-
-
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw dependency:go-offline
 
       # Standard maven build and test phases - does not perform a native build (or verify)
       # ########################
       - run:
           name: Build (Standard)
-          command: ./mvnw clean package -DskipTests -Dmaven.test.skip=true
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw clean package -DskipTests -Dmaven.test.skip=true
       - run:
           name: Unit Test
-          command: ./mvnw -Daws.region=eu-west-2 test
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw -Daws.region=eu-west-2 test
+
       - run:
           name: Integration Test
-          command: ./mvnw -Daws.region=eu-west-2 test -P integration
+          command: |
+            export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+            export PATH=$JAVA_HOME/bin:$PATH
+            ./mvnw -Daws.region=eu-west-2 test -P integration
 
 #      - run: mvn package install -Dmaven.test.skip=true
       #- run: mvn integration-test

@@ -72,16 +72,20 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     private Series getSeriesItem(String seriesName) {
-        seriesMap.computeIfAbsent(seriesName, item -> new Series(seriesName, DateUtil.floorMin(from), DateUtil.floorMin(to)));
+        seriesMap.computeIfAbsent(seriesName, item -> new TimeSeries(seriesName, DateUtil.floorMin(from), DateUtil.floorMin(to)));
         return seriesMap.get(seriesName);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         ObjectMapper objectMapper = new ObjectMapper();
-        String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesMap.values()));
-        outputStream.write(histoJson.getBytes());
-        outputStream.close();
+        try {
+            String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesMap.values()));
+            outputStream.write(histoJson.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<String, Series> series() {

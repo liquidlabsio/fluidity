@@ -1,0 +1,1 @@
+Static web resources should be placed here.

@@ -23,16 +23,16 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         final List<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
         List<Series> results = new ArrayList<>();
-        Series other = new Series("other", search.from, search.to);
+        Series other = new TimeSeries("other", search.from, search.to);
 
         // collect top items
-        collectedSeries.stream().filter(series -> topSeries.contains(series.name)).forEach(series -> results.add(series));
+        collectedSeries.stream().filter(series -> topSeries.contains(series.name())).forEach(series -> results.add(series));
 
         // collect other items
         results.add(other);
 
-        collectedSeries.stream().filter(series -> !topSeries.contains(series.name))
-                .forEach(series -> series.data.stream()
+        collectedSeries.stream().filter(series -> !topSeries.contains(series.name()))
+                .forEach(series -> series.data().stream()
                         .forEach(dataPoint ->
                                 other.update(dataPoint[0], other.get(dataPoint[0]) + dataPoint[1])
                         ));
@@ -42,10 +42,10 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
     private List<String> getTopSeriesNames(List<Series> collectedSeries, int limit) {
         // count the total hits for the series
         Map<String, Long> countMap = new HashMap<>();
-        collectedSeries.stream().forEach(series -> series.data.stream().forEach(data -> {
-            Long aLong = countMap.get(series.name);
+        collectedSeries.stream().forEach(series -> series.data().stream().forEach(data -> {
+            Long aLong = countMap.get(series.name());
             if (aLong == null) aLong = 0L;
-            countMap.put(series.name, aLong + data[1]);
+            countMap.put(series.name(), aLong + data[1]);
         }));
         // sort by number of hits
         List<Map.Entry<String, Long>> entryArrayList = new ArrayList<>(countMap.entrySet());

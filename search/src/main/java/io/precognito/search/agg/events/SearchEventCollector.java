@@ -126,8 +126,20 @@ public class SearchEventCollector implements EventCollector {
     }
 
     @Override
-    public void close() throws Exception {
-        if (input !=null) input.close();
-        if (output !=null) output.close();
+    public void close() {
+        if (input != null) {
+            try {
+                input.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (output != null) {
+            try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

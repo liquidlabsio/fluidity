@@ -13,7 +13,7 @@ public class StorageFactoryConverter implements Converter<Storage> {
     @Override
     public Storage convert(String mode) {
         log.info("Mode:" + mode);
-        if (mode.equalsIgnoreCase(LaunchMode.TEST.name())) {
+        if (mode.equalsIgnoreCase(LaunchMode.TEST.name()) || mode.equals("SERVER")) {
             return new FixturedStorageService();
         } else if (mode.equalsIgnoreCase(AWS.CONFIG)) {
             return new AwsS3StorageService();
