@@ -1,5 +1,23 @@
 [
   {
+    "name": "org.rocksdb.RocksDBException",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allPublicFields": true
+  },
+  {
+    "name": "org.rocksdb.Status",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allPublicFields": true
+  },
+  {
     "name": "org.jboss.resteasy.spi.DefaultOptionsMethodException",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
