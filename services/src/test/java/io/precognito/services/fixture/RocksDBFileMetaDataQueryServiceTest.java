@@ -1,6 +1,7 @@
 package io.precognito.services.fixture;
 
 import io.precognito.services.query.FileMeta;
+import io.precognito.services.server.RocksDBFileMetaDataQueryService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -8,7 +9,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.precognito.services.fixture.RocksDBFileMetaDataQueryService.PRECOGNITO_FS_BASE_DIR;
+import static io.precognito.services.server.RocksDBFileMetaDataQueryService.PRECOGNITO_FS_BASE_DIR;
 
 class RocksDBFileMetaDataQueryServiceTest {
 

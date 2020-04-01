@@ -33,10 +33,13 @@ public class FileUtil {
         Collection<File> files = FileUtils.listFiles(new File(baseDir), new IOFileFilter() {
             @Override
             public boolean accept(File file) {
-                if (extension.equals("*")) return true;
-                return file.getName().endsWith(extension);
+                if (file.getName().endsWith(extension) || extension.equals("*")) {
+                    String path = file.getPath();
+                    List<String> matchedFilters = dirFilters.stream().filter(dirFilter -> path.contains(dirFilter)).collect(Collectors.toList());
+                    return matchedFilters.size() == dirFilters.size();
+                }
+                return false;
             }
-
             @Override
             public boolean accept(File dir, String name) {
                 return true;
@@ -44,8 +47,7 @@ public class FileUtil {
         }, new IOFileFilter() {
             @Override
             public boolean accept(File file) {
-                List<String> matchedFilters = dirFilters.stream().filter(dirFilter -> file.getAbsolutePath().contains(dirFilter)).collect(Collectors.toList());
-                return matchedFilters.size() == dirFilters.size();
+                return true;
             }
 
             @Override

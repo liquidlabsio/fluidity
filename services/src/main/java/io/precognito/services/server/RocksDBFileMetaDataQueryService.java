@@ -1,4 +1,4 @@
-package io.precognito.services.fixture;
+package io.precognito.services.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,14 +30,14 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
     private final RocksDB db;
 
     public RocksDBFileMetaDataQueryService() {
-        log.info("\n\n\n Created*************************************** ");
+        log.info("Created");
         try {
 
             Optional<String> value = ConfigProvider.getConfig().getOptionalValue(PRECOGNITO_FS_BASE_DIR, String.class);
             if (value.isPresent()) {
                 this.baseDir = value.get();
             } else {
-                this.baseDir = "./storage/rocks-querystore";
+                this.baseDir = "./target/storage/rocks-querystore";
             }
             RocksDB.loadLibrary();
             final Options options = new Options();
@@ -109,10 +109,14 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
     public FileMeta find(String tenant, String filename) {
         try {
             byte[] bytes = db.get(filename.getBytes());
+            if (bytes == null) {
+                log.warn("Failed to load file: {}", filename);
+                return null;
+            }
             return new ObjectMapper().readValue(bytes, FileMeta.class);
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("Faild to load: " + filename);
+            throw new RuntimeException("Failed to load: " + filename);
         }
     }
 

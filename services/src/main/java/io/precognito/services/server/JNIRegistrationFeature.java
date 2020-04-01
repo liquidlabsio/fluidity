@@ -1,4 +1,4 @@
-package io.precognito.services.fixture;
+package io.precognito.services.server;
 
 
 import com.oracle.svm.core.annotate.AutomaticFeature;

@@ -1,4 +1,4 @@
-package io.precognito.services.fixture;
+package io.precognito.services.server;
 
 import io.precognito.services.query.FileMeta;
 import io.precognito.services.storage.Storage;
@@ -24,9 +24,8 @@ public class FileSystemBasedStorageService implements Storage {
         if (value.isPresent()) {
             this.baseDir = value.get();
         } else {
-            this.baseDir = "./storage/fs";
+            this.baseDir = "./target/storage/fs";
         }
-
         log.info("Using storage: {}", this.baseDir);
     }
 
@@ -51,11 +50,13 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public byte[] get(String region, String storageUrl, int offset) {
+        if (storageUrl.startsWith("s3://")) storageUrl = storageUrl.substring("s3://".length());
         byte[] bytes = new byte[0];
         try {
             bytes = FileUtil.readFileToByteArray(new File(storageUrl), -1);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new RuntimeException("Failed to find file:" + storageUrl, e);
         }
         return Arrays.copyOfRange(bytes, offset, bytes.length);
     }
@@ -64,13 +65,16 @@ public class FileSystemBasedStorageService implements Storage {
     public List<FileMeta> importFromStorage(String cloudRegion, String tenant, String storageId, String prefix, int ageDays, String includeFileMask, String tags, String timeFormat) {
 
         log.info("Importing from:{} mask:{}", storageId, includeFileMask);
+        String filePrefix = prefix.equals("*") ? "" : prefix;
+        String fileMask = includeFileMask.equals("*") ? "" : includeFileMask;
 
         long since = System.currentTimeMillis() - ageDays * DateUtil.DAY;
-        Collection<File> files = FileUtil.listDirs(storageId, "", prefix, includeFileMask);
+        Collection<File> files = FileUtil.listDirs(storageId, "", filePrefix, fileMask);
         List<FileMeta> fileMetas = files.stream().filter(file -> file.lastModified() > since)
                 .map(file ->
                 {
-                    FileMeta fm = new FileMeta(tenant, "", tags, file.getName(), new byte[0], inferFakeStartTimeFromSize(file.length(), file.lastModified()), file.lastModified(), timeFormat);
+                    String relativePath = file.getPath().startsWith(storageId) ? file.getPath().substring(storageId.length() + 1) : file.getPath();
+                    FileMeta fm = new FileMeta(tenant, storageId, tags, relativePath, new byte[0], inferFakeStartTimeFromSize(file.length(), file.lastModified()), file.lastModified(), timeFormat);
                     fm.setStorageUrl(file.getAbsolutePath());
                     return fm;
                 })
@@ -93,7 +97,7 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public String getSignedDownloadURL(String region, String storageUrl) {
-        return "not implemented";
+        return "not supported";
     }
 
     @Override
@@ -108,14 +112,14 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
-        // Note: Using linked hashmap to preserve the urls list indexing
         return urls.stream().collect(Collectors.toMap(url -> url, url -> getInputStream(region, tenant, url)));
     }
 
     @Override
     public Map<String, InputStream> getInputStreams(String region, String tenant, String uid, String filenameExtension, long fromTime) {
-        Collection<File> files = FileUtil.listDirs(this.baseDir, filenameExtension, tenant, uid, filenameExtension);
-        return files.stream().collect(Collectors.toMap(file -> file.getName(), file -> {
+        Collection<File> files = FileUtil.listDirs(this.baseDir, filenameExtension, tenant, uid);
+        // Note: s3 is used as a storage prefix
+        return files.stream().collect(Collectors.toMap(file -> "s3://" + file.getPath(), file -> {
             try {
                 return new FileInputStream(file);
             } catch (FileNotFoundException e) {
