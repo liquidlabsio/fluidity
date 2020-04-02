@@ -6,8 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <meta name="description" content="">
-      <meta name="author" content="Neil Avery">
-      <meta name="generator" content="Jekyll v3.8.6">
+      <meta name="author" content="Liquidlabs">
       <title>Precognito | Dataflow Analytics Platform</title>
 
       <!-- Bootstrap core CSS -->
@@ -190,7 +189,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Tags</th>
-                                <th>Host</th>
+                                <th>Resource</th>
                                 <th>Size</th>
                                 <th>From</th>
                                 <th>To</th>
@@ -363,12 +362,14 @@
                                                 <div class="input-group mb-3">
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label" id="uploadResourceInputPP">
-                                                            Resource Identifier
+                                                            Resource Location
                                                         </span>
                                                     </div>
-                                                    <input  name="resource" class="form-control"  type="text" id="uploadResourceInput"
-                                                            placeholder="Provide a resource, host or device name"
-                                                            aria-label="Resource Identifier" aria-describedby="uploadResourceInputPP">
+                                                    <input name="resource" class="form-control" type="text"
+                                                           id="uploadResourceInput"
+                                                           placeholder="Provide a resource, host or device name"
+                                                           aria-label="Resource Location"
+                                                           aria-describedby="uploadResourceInputPP">
                                                 </div>
 
                                                 <!-- tags -->
@@ -429,7 +430,7 @@
                                 <div class="card-header" id="headingTwo">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                            Import from storage (S3, GFS, Azure Storage)
+                                            Import from storage (S3, Local file system)
                                         </button>
                                     </h5>
                                 </div>

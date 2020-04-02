@@ -7,14 +7,12 @@ import io.precognito.services.storage.StorageResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-import java.io.FileInputStream;
 import java.net.URLEncoder;
 import java.util.Arrays;
 
@@ -117,10 +115,8 @@ class SearchResourceTest {
     }
 
     public void upload() throws Exception {
-
-        final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("tenant", "resource",
-                "tag1, tag2", filename, bytes, System.currentTimeMillis() - 10000, System.currentTimeMillis(), "");
+                "tag1, tag2", filename, "SomeData".getBytes(), System.currentTimeMillis() - 10000, System.currentTimeMillis(), "");
 
         storageResource.uploadFile(fileMeta);
     }

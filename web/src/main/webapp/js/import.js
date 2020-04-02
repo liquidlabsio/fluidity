@@ -6,12 +6,12 @@ $(document).ready(function () {
     $("#importFromStorageButton").click(function(event) {
         let inputs = $("#dataImportForm").serializeArray();
 
-        if (inputs[0].value.length == 0 || inputs[1].value.length == 0 || inputs[2].value.length == 0 || inputs[3].value.length == 0 || inputs[4].value.length == 0) {
-            alert("Please provide values for all inputs")
+        if (inputs[0].value.length == 0 || inputs[1].value.length == 0 || inputs[2].value.length == 0 || inputs[3].value.length == 0) {
+            alert("Please provide values for all inputs 1-5")
             return false;
         }
         $.Topic(Precognito.Explorer.Topics.importFromStorage).publish(
-                inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value
+                inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value
         );
         return false;
     })

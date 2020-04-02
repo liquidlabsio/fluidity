@@ -14,7 +14,7 @@ public class FixturedStorageService implements Storage {
 
     static Map<String, byte[]> storage = new HashMap<>();
 
-    public FixturedStorageService(){
+    public FixturedStorageService() {
         log.info("Created");
     }
 
@@ -32,6 +32,9 @@ public class FixturedStorageService implements Storage {
     @Override
     public byte[] get(String region, String storageUrl, int offset) {
         byte[] bytes = storage.get(storageUrl);
+        if (bytes == null) {
+            throw new RuntimeException("Failed to load:" + storageUrl);
+        }
         return Arrays.copyOfRange(bytes, offset, bytes.length);
     }
 
@@ -48,7 +51,8 @@ public class FixturedStorageService implements Storage {
     @Override
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
         byte[] content = this.get(region, storageUrl, 0);
-        if (content == null) throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
+        if (content == null)
+            throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
         return new ByteArrayInputStream(content);
     }
 
@@ -82,6 +86,4 @@ public class FixturedStorageService implements Storage {
     public String getBucketName(String tenant) {
         return "s3://" + tenant;
     }
-
-
 }
