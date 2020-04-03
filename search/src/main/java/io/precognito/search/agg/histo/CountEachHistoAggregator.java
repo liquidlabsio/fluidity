@@ -23,7 +23,7 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         final List<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
         List<Series> results = new ArrayList<>();
-        Series other = new TimeSeries("other", search.from, search.to);
+        Series other = search.getTimeSeries("other", search.from, search.to);
 
         // collect top items
         collectedSeries.stream().filter(series -> topSeries.contains(series.name())).forEach(series -> results.add(series));

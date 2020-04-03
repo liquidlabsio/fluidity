@@ -58,26 +58,26 @@ public class OverlayTimeSeries implements Series {
 
 
         long duration = to - from;
-        // 1 days 1 hour overlay
-        if (duration < DAY) {
-            delta = MINUTE;
-            this.to = DateUtil.ceilMin(to);
-            this.from = this.to - HOUR;
-            // 1-7 days 1 hour overlay by minute
-        } else if (duration < 7 * DAY) {
-            delta = MINUTE;
-            this.to = DateUtil.ceilHour(to);
-            this.from = this.to - HOUR;
 
-            // 7-30 days 1 day overlay by hour
-        } else if (duration > DAY * 30) {
-            delta = HOUR;
+        if (duration < DAY) {
+            // < 1-day == 1 hour/minute
+            delta = MINUTE;
+            this.from = DateUtil.floorHour(to);
             this.to = DateUtil.ceilHour(to);
-            this.from = this.to - DAY;
+        } else if (duration < 7 * DAY) {
+            // 1-7 days == 1 hour overlay by minute
+            delta = MINUTE;
+            this.from = DateUtil.floorHour(to);
+            this.to = DateUtil.ceilHour(to);
+        } else if (duration < DAY * 30) {
+            // 7-30 days 1 day overlay by hour
+            delta = HOUR;
+            this.from = DateUtil.floorDay(to);
+            this.to = DateUtil.ceilDay(to);
         } else {
             delta = DAY;
-            this.to = DateUtil.ceilHour(to);
-            this.from = this.to - (DAY * 7);
+            this.from = DateUtil.floorDay(to);
+            this.to = DateUtil.ceilDay(to);
         }
 
         for (long time = this.from; time <= this.to; time += delta) {

@@ -21,9 +21,9 @@ public class StatsHistoAggregator extends AbstractHistoAggregator {
 
     List<Series> processSeries(List<Series> collectedSeries) {
 
-        Series min = new TimeSeries("min", search.from, search.to);
-        Series max = new TimeSeries("max", search.from, search.to);
-        Series avg = new TimeSeries("avg", search.from, search.to);
+        Series min = search.getTimeSeries("min", search.from, search.to);
+        Series max = search.getTimeSeries("max", search.from, search.to);
+        Series avg = search.getTimeSeries("avg", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
 
             avg.update(point[0], (avg.get(point[0]) + point[1]) / 2);

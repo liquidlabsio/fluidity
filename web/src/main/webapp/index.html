@@ -212,14 +212,14 @@
                 <div id="searchTab" class="mainPanelTab" style="display: none;">
                     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                         <h1 class="h2">Search</h1>
+                        <div id="searchToolbar" class="btn-toolbar mb-2 mb-md-0">
 
+                            <vue-toggle id="searchTimeSeriesSelection" :values="styles"
+                                        :selected.sync="time" default="time.series()"></vue-toggle>
 
-                        <div class="btn-toolbar mb-2 mb-md-0">
-                            <div class="btn-group mr-2">
-                                <button id="refreshFilesSearch" type="button" class="btn btn-sm btn-outline-secondary">Refresh</button>
-                                <button  type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                            </div>
-                            <button id="searchDurationSelector" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button id="searchDurationSelector" type="button"
+                                    class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
                                 <span data-feather="calendar"></span>
                                 Last hour
                             </button>
@@ -235,6 +235,8 @@
                                 <a class="search-duration-dropdown dropdown-item" href="#" data-duration="1440">1
                                     day</a>
                                 <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2880">2
+                                    days</a>
+                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="7200">5
                                     days</a>
                                 <a class="search-duration-dropdown dropdown-item" href="#" data-duration="10080">7
                                     days</a>
@@ -302,16 +304,7 @@
 
                         </div>
 
-
                     </form>
-<!--                    <div class="input-group mb-3">-->
-<!--                        <input id="searchInput" v-model="searchExpression" type="text" class="form-control" placeholder="bucket | host | tags | filename | lineMatch | fieldExtractor | analytic " aria-label="" aria-describedby="basic-addon2">-->
-<!--                        <div class="input-group-append">-->
-<!--                            <button id="searchSubmit" class="btn btn-primary" v-on:click="searchSubmit">-->
-<!--                                <span data-feather="search"></span>-->
-<!--                            </button>-->
-<!--                        </div>-->
-<!--                    </div>-->
 
                     <div id="searchResultStats">
                         {{ stats }}
@@ -342,7 +335,7 @@
                                 <div class="card-header" id="headingOne">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                            Upload local files to Tenant Storage
+                                            Upload data to your tenant storage
                                         </button>
                                     </h5>
                                 </div>
@@ -430,7 +423,7 @@
                                 <div class="card-header" id="headingTwo">
                                     <h5 class="mb-0">
                                         <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                            Import from storage (S3, Local file system)
+                                            Import (S3, Local file system)
                                         </button>
                                     </h5>
                                 </div>
