@@ -35,7 +35,6 @@ public class SearchEventCollector implements EventCollector {
         BufferedInputStream bis = new BufferedInputStream(input);
         BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
         long position = 0;
-        long currentTime = fileFromTime;
 
         LinkedList<Integer> lengths = new LinkedList<>();
 
@@ -43,6 +42,8 @@ public class SearchEventCollector implements EventCollector {
         lengths.add(nextLine.length());
         long guessTimeInterval = guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long scanFilePos = 0;
+
+        long currentTime = getTimeMaybe(timeFormat, fileFromTime, guessTimeInterval, nextLine);
 
         while (nextLine != null) {
 

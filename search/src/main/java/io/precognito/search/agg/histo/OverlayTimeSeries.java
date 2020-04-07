@@ -3,6 +3,7 @@ package io.precognito.search.agg.histo;
 import io.precognito.util.DateUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static io.precognito.util.DateUtil.*;
@@ -39,8 +40,8 @@ public class OverlayTimeSeries implements Series {
     public OverlayTimeSeries() {
     }
 
-    public OverlayTimeSeries(String filename, long from, long to) {
-        this.name = filename;
+    public OverlayTimeSeries(String seriesName, long from, long to) {
+        this.name = seriesName;
         buildHistogram(from, to);
     }
 
@@ -81,7 +82,7 @@ public class OverlayTimeSeries implements Series {
         }
 
         for (long time = this.from; time <= this.to; time += delta) {
-            data.add(new Long[]{time, 0l});
+            data.add(new Long[]{time, -1l});
         }
         this.duration = to - from;
     }
@@ -98,6 +99,17 @@ public class OverlayTimeSeries implements Series {
         int index = index(time);
         if (index < 0 || index >= data.size()) return;
         data.get(index)[1] = value;
+    }
+
+    @Override
+    public String toString() {
+        return "OverlayTimeSeries{" +
+                "name='" + name + '\'' +
+                ", delta=" + delta +
+                ", from=" + new Date(from) +
+                ", to=" + new Date(to) +
+                ", duration=" + duration +
+                '}';
     }
 
 //    @Override
@@ -126,4 +138,6 @@ public class OverlayTimeSeries implements Series {
     public boolean hasData() {
         return data.stream().filter(item -> item[1] > 0).count() > 0;
     }
+
+
 }

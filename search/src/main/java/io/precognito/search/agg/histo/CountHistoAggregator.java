@@ -32,6 +32,6 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
 
     @Override
     public HistoFunction function() {
-        return (currentValue, newValue, nextLine, position, time, expression) -> currentValue + 1;
+        return (currentValue, newValue, nextLine, position, time, expression) -> currentValue == -1 ? currentValue + 2 : + 1;
     }
 }
