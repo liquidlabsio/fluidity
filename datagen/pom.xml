@@ -12,12 +12,80 @@
   <version>1.0-SNAPSHOT</version>
   <name>datagen</name>
   <url>http://maven.apache.org</url>
+
+  <properties>
+    <kotlin.version>1.3.61</kotlin.version>
+    <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
+    <kotlin.compiler.languageVersion>1.3</kotlin.compiler.languageVersion>
+  </properties>
+  
   <dependencies>
+  <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>${kotlin.version}</version>
+  </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-script-runtime</artifactId>
+      <version>${kotlin.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test-junit</artifactId>
+      <version>${kotlin.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jboss.spec.javax.ws.rs</groupId>
+      <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
+      <version>2.0.1.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.10.2</version>
+    </dependency>
+    
   </dependencies>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+    
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+
+        <executions>
+          <execution>
+            <id>compile</id>
+            <goals> <goal>compile</goal> </goals>
+          </execution>
+
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <nowarn>false</nowarn>  <!-- Disable warnings -->
+          <args>
+<!--            <arg>-Xjsr305=strict</arg> &lt;!&ndash; Enable strict mode for JSR-305 annotations &ndash;&gt;-->
+          </args>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

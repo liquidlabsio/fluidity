@@ -7,6 +7,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.sse.SseEventSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -16,8 +20,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchEventCollectorTest {
 
-//        @Test
+
+        @Test
     public void testGenerateTestData() throws Exception {
+
+        String url = "https://stream.wikimedia.org/v2/stream/recentchange";
+            Client client = ClientBuilder.newClient();
+            WebTarget target = client.target(url);
+            try (SseEventSource eventSource = SseEventSource.target(target).build()) {
+                eventSource.register(
+                        (inboundSseEvent) -> {
+                            System.out.println(inboundSseEvent + "\n\n");
+                        });
+             //   eventSource.register(onEvent, onError, onComplete);
+                eventSource.open();
+
+                //Consuming events for one hour
+                Thread.sleep(60 * 60 * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            client.close();
+            System.out.println("End");
+
+
+
 
             String prefix = "/Volumes/SSD2/logs/precog-logs/test-cpu-";
             FileOutputStream fos = new FileOutputStream(prefix + new Date().getTime() + ".log");
