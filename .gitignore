@@ -1,1 +1,6 @@
 /.idea/
+/datagen/target/
+/search/target/
+/services/target/
+/services/services.iml
+/search/search.iml
