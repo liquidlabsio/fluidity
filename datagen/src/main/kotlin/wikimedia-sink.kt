@@ -38,7 +38,7 @@ fun main(){
                 eventSource.open()
 
                 //Consuming events for one minute
-                Thread.sleep(1 * 60 * 1000.toLong())
+                Thread.sleep(10 * 1000.toLong())
             }
         } catch (e: InterruptedException) {
             e.printStackTrace()
