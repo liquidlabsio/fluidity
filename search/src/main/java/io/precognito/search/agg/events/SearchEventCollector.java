@@ -2,6 +2,7 @@ package io.precognito.search.agg.events;
 
 import io.precognito.search.Search;
 import io.precognito.search.agg.histo.HistoCollector;
+import io.precognito.util.DateTimeExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -31,6 +32,7 @@ public class SearchEventCollector implements EventCollector {
 
         int read = 0;
 
+        DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
         BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
         BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
@@ -68,39 +70,11 @@ public class SearchEventCollector implements EventCollector {
                 guessTimeInterval = guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
                 scanFilePos += nextLine.length() + 2;
 
-                currentTime = getTimeMaybe(timeFormat, currentTime, guessTimeInterval, nextLine);
+                currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
             }
         }
         bos.flush();
         return read;
-    }
-
-    boolean invalidFormat = false;
-    transient DateTimeFormatter dateTimeFormatter;
-
-    private long getTimeMaybe(String timeFormat, long currentTime, long guessTimeInterval, String line) {
-        if (timeFormat == null || timeFormat.length() == 0 || timeFormat.equals("*") || invalidFormat) {
-            return currentTime + guessTimeInterval;
-        }
-
-        /**
-         * Handle shitty failure scenarios
-         */
-        if (dateTimeFormatter == null && !invalidFormat) {
-            try {
-                dateTimeFormatter = DateTimeFormat.forPattern(timeFormat);
-            } catch (Exception e) {
-                invalidFormat = true;
-                return currentTime + guessTimeInterval;
-            }
-        }
-        try {
-            DateTime dateTime = dateTimeFormatter.parseDateTime(line.substring(0, timeFormat.length()));
-            return dateTime.getMillis();
-        } catch (Exception ex) {
-            invalidFormat = true;
-            return currentTime + guessTimeInterval;
-        }
     }
 
     /**
