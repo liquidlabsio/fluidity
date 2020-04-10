@@ -45,7 +45,7 @@ public class SearchEventCollector implements EventCollector {
         long guessTimeInterval = guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long scanFilePos = 0;
 
-        long currentTime = getTimeMaybe(timeFormat, fileFromTime, guessTimeInterval, nextLine);
+        long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
 
         while (nextLine != null) {
 
