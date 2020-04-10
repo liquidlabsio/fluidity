@@ -18,7 +18,7 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
     }
 
     List<Series> processSeries(List<Series> collectedSeries) {
-        Series count = new TimeSeries("count", search.from, search.to);
+        Series count = search.getTimeSeries("count", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
             count.update(point[0], count.get(point[0]) + point[1]);
         }));
@@ -32,6 +32,6 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
 
     @Override
     public HistoFunction function() {
-        return (currentValue, newValue, nextLine, position, time, expression) -> currentValue + 1;
+        return (currentValue, newValue, nextLine, position, time, expression) -> currentValue == -1 ? currentValue + 2 : + 1;
     }
 }

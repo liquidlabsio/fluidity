@@ -2,7 +2,6 @@ package io.precognito.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.precognito.search.Search;
-import io.precognito.util.DateUtil;
 
 import java.io.OutputStream;
 import java.util.AbstractMap;
@@ -72,7 +71,7 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     private Series getSeriesItem(String seriesName) {
-        seriesMap.computeIfAbsent(seriesName, item -> new TimeSeries(seriesName, DateUtil.floorMin(from), DateUtil.floorMin(to)));
+        seriesMap.computeIfAbsent(seriesName, item -> search.getTimeSeries(seriesName, from, to));
         return seriesMap.get(seriesName);
     }
 

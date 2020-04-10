@@ -1,3 +1,39 @@
+var toggle = Vue.component("vue-toggle",{
+  props: ['values','selected','default'],
+  created: function () {
+      this.selected = this.default;
+    },
+    methods: {
+      changeSelectVal: function(val) {
+        this.selected = val;
+        // no idea why vue data binding isnt working.... moving on...fix later
+        searchTimeSeriesToggle.time = val;
+      }
+    },
+    template:
+        '<fieldset class="form-group" style="margin: 0px;">'+
+                                  '<div class="form-group" style="margin: 0px;">'+
+                '<div class="btn-group">'+
+                            '<button type="button"'+
+                                    'v-for="(key, val) in values"'+
+                                    '@click="changeSelectVal(key)"'+
+                                    ':class="[\'btn\', { \'btn-outline-primary\': selected === key, \'btn-outline-secondary\': selected !== key }]"'+
+                            '>{{ val }}</button>'+
+                '</div>' +
+         '</div></fieldset>'
+})
+
+searchTimeSeriesToggle = new Vue({
+  el: '#searchTimeSeriesSelection',
+  data: {
+        time: 'time.series()',
+        styles: {
+          'TimeSeries': 'time.series()',
+          'TimeOverlay': 'time.overlay()',
+        }
+  }
+});
+
 
 searchInputBucket = new Vue({
   el: '#bucketFilterWrapper',
@@ -223,7 +259,7 @@ var searchSubmit = new Vue({
         let search = {
             origin: 'username',
             uid: new Date().getTime(),
-            expression: searchInputBucket.query + '|' + searchInputFilename.query + '|' + searchInputRecord.query + '|' +  searchInputField.query + '|' + searchInputAnalytic.query,
+            expression: searchInputBucket.query + '|' + searchInputFilename.query + '|' + searchInputRecord.query + '|' +  searchInputField.query + '|' + searchInputAnalytic.query + '|' + searchTimeSeriesToggle.time,
             from: new Date().getTime() - searcher.duration * 60 * 1000,
             to: new Date().getTime()
         }

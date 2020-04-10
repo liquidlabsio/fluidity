@@ -55,7 +55,7 @@ public class TimeSeries implements Series {
         if (duration > WEEK * 8) delta = DAY * 2;
         if (duration > WEEK * 12) delta = WEEK;
         for (long time = from; time <= to; time += delta) {
-            data.add(new Long[]{time, 0l});
+            data.add(new Long[]{time, -1l});
         }
     }
 
