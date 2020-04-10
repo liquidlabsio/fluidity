@@ -3,6 +3,7 @@ package io.precognito.search.agg.histo;
 import io.precognito.util.DateUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static io.precognito.util.DateUtil.*;
@@ -39,8 +40,8 @@ public class OverlayTimeSeries implements Series {
     public OverlayTimeSeries() {
     }
 
-    public OverlayTimeSeries(String filename, long from, long to) {
-        this.name = filename;
+    public OverlayTimeSeries(String seriesName, long from, long to) {
+        this.name = seriesName;
         buildHistogram(from, to);
     }
 
@@ -58,30 +59,30 @@ public class OverlayTimeSeries implements Series {
 
 
         long duration = to - from;
-        // 1 days 1 hour overlay
-        if (duration < DAY) {
-            delta = MINUTE;
-            this.to = DateUtil.ceilMin(to);
-            this.from = this.to - HOUR;
-            // 1-7 days 1 hour overlay by minute
-        } else if (duration < 7 * DAY) {
-            delta = MINUTE;
-            this.to = DateUtil.ceilHour(to);
-            this.from = this.to - HOUR;
 
-            // 7-30 days 1 day overlay by hour
-        } else if (duration > DAY * 30) {
-            delta = HOUR;
+        if (duration < DAY) {
+            // < 1-day == 1 hour/minute
+            delta = MINUTE;
+            this.from = DateUtil.floorHour(to);
             this.to = DateUtil.ceilHour(to);
-            this.from = this.to - DAY;
+        } else if (duration < 7 * DAY) {
+            // 1-7 days == 1 hour overlay by minute
+            delta = MINUTE;
+            this.from = DateUtil.floorHour(to);
+            this.to = DateUtil.ceilHour(to);
+        } else if (duration < DAY * 30) {
+            // 7-30 days 1 day overlay by hour
+            delta = HOUR;
+            this.from = DateUtil.floorDay(to);
+            this.to = DateUtil.ceilDay(to);
         } else {
             delta = DAY;
-            this.to = DateUtil.ceilHour(to);
-            this.from = this.to - (DAY * 7);
+            this.from = DateUtil.floorDay(to);
+            this.to = DateUtil.ceilDay(to);
         }
 
         for (long time = this.from; time <= this.to; time += delta) {
-            data.add(new Long[]{time, 0l});
+            data.add(new Long[]{time, -1l});
         }
         this.duration = to - from;
     }
@@ -98,6 +99,17 @@ public class OverlayTimeSeries implements Series {
         int index = index(time);
         if (index < 0 || index >= data.size()) return;
         data.get(index)[1] = value;
+    }
+
+    @Override
+    public String toString() {
+        return "OverlayTimeSeries{" +
+                "name='" + name + '\'' +
+                ", delta=" + delta +
+                ", from=" + new Date(from) +
+                ", to=" + new Date(to) +
+                ", duration=" + duration +
+                '}';
     }
 
 //    @Override
@@ -126,4 +138,6 @@ public class OverlayTimeSeries implements Series {
     public boolean hasData() {
         return data.stream().filter(item -> item[1] > 0).count() > 0;
     }
+
+
 }

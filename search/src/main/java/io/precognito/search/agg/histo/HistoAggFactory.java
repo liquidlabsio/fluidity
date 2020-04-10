@@ -23,7 +23,7 @@ public class HistoAggFactory {
     }
 
 
-    public static HistoFunction Count = (currentValue, newValue, nextLine, position, time, expression) -> currentValue + 1;
+    public static HistoFunction Count = (currentValue, newValue, nextLine, position, time, expression) -> currentValue == -1? currentValue + 2 : currentValue +1;
 
     public HistoFunction getHistoAnalyticFunction(Search search) {
         String analytic = search.analyticValue();

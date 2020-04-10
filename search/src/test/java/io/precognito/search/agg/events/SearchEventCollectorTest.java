@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SearchEventCollectorTest {
 
-
 //        @Test
     public void testGenerateTestData() throws Exception {
             String prefix = "/Volumes/SSD2/logs/precog-logs/test-cpu-";
@@ -34,8 +33,6 @@ class SearchEventCollectorTest {
             }
             fos.close();
         }
-
-
     @Test
     public void testSearchGetsTime() throws Exception {
 
@@ -51,7 +48,7 @@ class SearchEventCollectorTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024, timeFormat);
-        assertTrue(process > 0, "didnt process any data");
+        assertTrue(process > 0, "didn't process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
         System.out.println(outFileContents);

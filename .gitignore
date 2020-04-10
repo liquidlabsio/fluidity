@@ -1,6 +1,6 @@
 /.idea/
 /datagen/target/
 /search/target/
+/search/search.iml
 /services/target/
 /services/services.iml
-/search/search.iml

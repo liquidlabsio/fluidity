@@ -1,5 +1,8 @@
 package io.precognito.search;
 
+import io.precognito.search.agg.histo.OverlayTimeSeries;
+import io.precognito.search.agg.histo.Series;
+import io.precognito.search.agg.histo.TimeSeries;
 import io.precognito.search.field.FilenameMatcher;
 import io.precognito.search.field.TagMatcher;
 import io.precognito.search.field.extractor.FieldExtractor;
@@ -14,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.AbstractMap;
 
 /**
- * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic
+ * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic | timeControl
  */
 @RegisterForReflection
 public class Search {
@@ -23,7 +26,7 @@ public class Search {
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 
-    public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic}
+    public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic, timeseries}
 
     @FormParam("origin")
     @PartType(MediaType.TEXT_PLAIN)
@@ -90,6 +93,13 @@ public class Search {
         return fieldExtractor.getSeriesNameAndValue(sourceName, nextLine);
     }
 
+    public Series getTimeSeries(String seriesName, long from, long to) {
+        String[] split = expression.split("\\|");
+        String timeSeriesStyle = split.length > EXPRESSION_PARTS.timeseries.ordinal() ? split[EXPRESSION_PARTS.timeseries.ordinal()].trim() : "";
+
+        if (timeSeriesStyle.equals("time.overlay()")) return new OverlayTimeSeries(seriesName, from, to);
+        return new TimeSeries(seriesName, from, to);
+    }
 
     @Override
     public String toString() {
