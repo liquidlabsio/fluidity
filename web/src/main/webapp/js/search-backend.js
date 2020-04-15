@@ -56,7 +56,7 @@ class SearchRest extends SearchInterface {
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         jQuery.ajax({
             type: 'POST',
-            url: '/search/submit',
+            url: SERVICE_URL + '/search/submit',
             contentType: 'application/json',
             data: JSON.stringify(search),
             dataType: 'json',
@@ -80,7 +80,7 @@ class SearchRest extends SearchInterface {
 
         jQuery.ajax({
             type: 'POST',
-            url: '/search/files/'
+            url: SERVICE_URL + '/search/files/'
                 + encodeURIComponent(DEFAULT_TENANT)
                 + "/"+ encodeURIComponent( JSON.stringify(fileMetasArray)),
             contentType: 'multipart/form-data',

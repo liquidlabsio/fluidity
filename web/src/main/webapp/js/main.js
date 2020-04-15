@@ -1,4 +1,4 @@
-SERVICE_URL = 'http://0.0.0.0:8080'
+SERVICE_URL = 'http://localhost:8080'
 DEFAULT_TENANT='tenant-data-1'
 
 function checkUserLogin(){

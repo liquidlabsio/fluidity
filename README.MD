@@ -1,20 +1,37 @@
 
-![Image description](img/fluidity-logo.png)
+![Image description](img/fluidity-logo1.png)
 
 The Dataflow Analytics Platform
 
 # What is it?
 
-A data analytics platform that focuses on events, datflows and the conception of how they should become observable.
+A data analytics platform that focuses on events, dataflows (streams) and makes them observable.
 
-# What is it - again?
+## What is it - again?
 
-Its monitoring for events. 
+It lets you search and analyse streams of events from logfiles (correlation-Ids, txn ids), Kafka or other sources. 
+Analysis is both historical (batch) and live (stream) - providing insight on streams are behaving now and in the past. 
+Historical analysis provides a baseline for measure performance, data characteristics and more. Perhaps an example is best.
+>A payment processing system.<br>
+>Questions answered.
+>1. What volume of transactions are processed (rate/sec)
+>1. What is the latency at each stage of my pipeline? i.e. are some processing stages backing up?
+>1. Percentile based breakdown and correlation of data attributes versus performance. i.e. Payment amount and Latency
+>1. Heatmap overlay of live performance versus historical performance (broken down by hour-of-day, day-of-week etc)
 
+Visual representations include:
+* Sankey diagrams
+* Stream Graphs
+* Network flow diagrams
+
+### Adhoc log analysis as well
+You can also search and analyse large volumes of machine generated data.
+ 
 # Technology
 
+Fluidity is written to be CloudFirst and Serverless. The goal is to support large volume data storage using S3 or similar, 
+and adhoc compute processing using serverless functions.
 
-Cloud native, serverless machine learning, serverless search engine using the latest technologies to run at minimum cost on the Cloud. 
 Data processing is expensive; this tool is meant to be cheap and simple. It provides basic 
 functionality that most people need. 
 * upload data to storage
@@ -23,12 +40,7 @@ functionality that most people need.
 * find it by the tags and view the raw data
 * search, like a distributed grep
 
-Because it processes data on a storage layer, it is considered a batch system. 
-Storage chunks are immutable, and periodically written. It is not realtime (more like slow-time). 
-If you want streaming realtime correlations and alerts etc then look elsewhere. That is an upstream problem.
- (although there are plans to explore what that looks like using Apache Kafka and Confluent Cloud) 
-
-## Runtime architecture
+## Runtime stack
 1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM is - Java-native microkernel without the traditional Java overhead
 2. Serverless functions. Using the AWS-Lambda extension, API calls are delegated through the APIGateway (proxy) to call onto a Serverless function instance.
 3. Cloud native storage: S3, GFS etc

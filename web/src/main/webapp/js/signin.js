@@ -14,7 +14,7 @@ $(document).ready(function () {
 
          $.ajax({
             type: "POST",
-            url: '/auth/login',
+            url: SERVICE_URL + '/auth/login',
             data: form, // serializes the form's elements.
             crossDomain: true,
             success: function(data) {
