@@ -36,16 +36,16 @@ cd $TEMP_DIR/js
 echo "Step 2 - Configuring REST API in js/backend.js"
 echo "========================"
 
-mv precognito.js precognito.js.BAK
-echo "SERVICE_URL = '$SERVICE_API'" > precognito.js
-sed '1d' precognito.js.BAK >> precognito.js
+mv fluidity.js fluidity.js.BAK
+echo "SERVICE_URL = '$SERVICE_API'" > fluidity.js
+sed '1d' fluidity.js.BAK >> fluidity.js
 
 
 echo "Step 3 - Configuring TENANT_S3 BUCKET in js/backend.js"
 echo "========================"
 
-mv precognito.js precognito.js.BAK.2
-sed "s/DEFAULT_TENANT=.*/"DEFAULT_TENANT=\"${S3_TENANT_BUCKET}"\"/" precognito.js.BAK.2 > precognito.js
+mv fluidity.js fluidity.js.BAK.2
+sed "s/DEFAULT_TENANT=.*/"DEFAULT_TENANT=\"${S3_TENANT_BUCKET}"\"/" fluidity.js.BAK.2 > fluidity.js
 
 
 cd ..

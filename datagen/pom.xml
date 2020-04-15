@@ -3,11 +3,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.precognito</groupId>
+    <groupId>io.fluidity</groupId>
     <artifactId>parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
-  <groupId>io.precognito.datagen</groupId>
+  <groupId>io.fluidity.datagen</groupId>
   <artifactId>datagen</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>datagen</name>

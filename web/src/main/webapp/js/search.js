@@ -1,5 +1,5 @@
 // define pub-sub topics
-Precognito.Search.Topics = {
+Fluidity.Search.Topics = {
     submitSearch: 'submitSearch',
     setSearchFiles: 'setSearchFiles',
     searchFile: 'searchBucket',
@@ -42,21 +42,21 @@ class Search {
     bind() {
         let self = this;
 
-        $.Topic(Precognito.Search.Topics.setSearchFiles).subscribe(function(returnedFileUrls) {
+        $.Topic(Fluidity.Search.Topics.setSearchFiles).subscribe(function(returnedFileUrls) {
             console.log("Got SearchFile URLS:" + returnedFileUrls)
             self.setFileUrls(returnedFileUrls);
         })
-        $.Topic(Precognito.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
+        $.Topic(Fluidity.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
             console.log("Set Bucket Results histo & raw:" + fileResults)
             self.setSearchFileResults(fileResults[0], fileResults[1])
         })
-        $.Topic(Precognito.Search.Topics.setFinalEvents).subscribe(function(events) {
+        $.Topic(Fluidity.Search.Topics.setFinalEvents).subscribe(function(events) {
                 self.setFinalEvents(events)
         })
-        $.Topic(Precognito.Search.Topics.setFinalHisto).subscribe(function(events) {
+        $.Topic(Fluidity.Search.Topics.setFinalHisto).subscribe(function(events) {
                 self.setFinalHisto(events)
         })
-        $.Topic(Precognito.Search.Topics.setHoverInfo).subscribe(function(event) {
+        $.Topic(Fluidity.Search.Topics.setHoverInfo).subscribe(function(event) {
             // expecting event '3:1581603492991:19216:'
            let parts = event.split(":");
            let filename = self.fileLut[parseInt(parts[0])]
@@ -64,13 +64,13 @@ class Search {
            let offset = parts[2];
            searchFileToOpenInfo.searchFileInfo = filename + " @" + new Date(time).toLocaleString() + " - " + offset
         })
-        $.Topic(Precognito.Search.Topics.prepareExplorerToOpen).subscribe(function(event) {
+        $.Topic(Fluidity.Search.Topics.prepareExplorerToOpen).subscribe(function(event) {
             // expecting; 3:1581603492991:19216:
            let parts = event.split(":");
            let filename = self.fileLut[parseInt(parts[0])]
            let time = parseInt(parts[1]);
            let offset = parts[2];
-           $.Topic(Precognito.Explorer.Topics.setExplorerToOpen).publish([ filename, offset, time ])
+           $.Topic(Fluidity.Explorer.Topics.setExplorerToOpen).publish([ filename, offset, time ])
         })
 
 
@@ -119,7 +119,7 @@ class Search {
         this.searchRequest = search;
         this.startTime =  new Date();
         searchChart.series = [];
-        $.Topic(Precognito.Search.Topics.submitSearch).publish(this.searchRequest);
+        $.Topic(Fluidity.Search.Topics.submitSearch).publish(this.searchRequest);
         searchFileToOpenInfo.searchFileInfo = ""
     }
     setFileUrls(fileMetas) {
@@ -131,7 +131,7 @@ class Search {
         this.searchFileMetas.forEach(function(fileMeta, index, arr){
             console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
             // TODO: look at chunking them together
-            $.Topic(Precognito.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
+            $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
         })
     }
 
@@ -144,14 +144,14 @@ class Search {
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
             searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length
-            $.Topic(Precognito.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
-            $.Topic(Precognito.Search.Topics.getFinalHisto).publish(self.searchRequest);
+            $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
+            $.Topic(Fluidity.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }
     }
 
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        searchStats.stats = "Events: " + Precognito.formatNumber(results[0]) + " Elapsed: " + Precognito.formatNumber(elapsed)
+        searchStats.stats = "Events: " + Fluidity.formatNumber(results[0]) + " Elapsed: " + Fluidity.formatNumber(elapsed)
         this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }

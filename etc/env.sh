@@ -2,8 +2,8 @@
 
 # 1. Create and configured this bucket with CORS and Policy files before any deployment. Note edit the policy-S3 arn
 ## application code
-export S3_BUCKET=precognito-runtime
-export STACK_NAME=precognito-faas-runtime
+export S3_BUCKET=fluidity-runtime
+export STACK_NAME=fluidity-faas-runtime
 
 ## uploaded user data (will be prefixed with precongnito-dev or precongnito-prod when it is automatically created)
 export S3_TENANT_BUCKET=tenant-userstore

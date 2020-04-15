@@ -1,7 +1,7 @@
 # This configuration is used when running the GraalVM instance natively (on a server) or within Docker
 
-precognito:
-  prefix: precognito-dev
+fluidity:
+  prefix: fluidity-dev
   services:
     storage: SERVER
     indexer: SERVER

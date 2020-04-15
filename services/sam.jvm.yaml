@@ -1,6 +1,6 @@
   AWSTemplateFormatVersion: '2010-09-09'
   Transform: AWS::Serverless-2016-10-31
-  Description: Serverless search analytics - liquidlabs::precognito
+  Description: Serverless streaming observability - liquidlabs::fluidity
   Globals:
     Api:
       EndpointConfiguration: REGIONAL
@@ -13,7 +13,7 @@
       Properties:
         Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
         Runtime: java11
-        CodeUri: target/precognito-services-0.1-SNAPSHOT-runner.jar
+        CodeUri: target/fluidity-services-0.1-SNAPSHOT-runner.jar
         MemorySize: 512
         Policies: AWSLambdaFullAccess
         Timeout: 900
@@ -25,8 +25,8 @@
               Method: any
 
   Outputs:
-    PrecognitoApi:
-      Description: REST API for the Precog Lambda Service
+    FluidityApi:
+      Description: REST API for the Fluidity Lambda Service
       Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
       Export:
-        Name: PrecognitoApi
+        Name: FluidityApi

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="DEBUG">
     <Properties>
-        <Property name="filename">target/precognito.log</Property>
+        <Property name="filename">target/fluidity.log</Property>
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
@@ -15,7 +15,7 @@
             <AppenderRef ref="Console"/>
         </Logger>
 
-        <Logger name="com.precognito" level="trace" additivity="false">
+        <Logger name="io.fluidity" level="trace" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
         <Root level="WARN">

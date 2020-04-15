@@ -7,15 +7,15 @@
 cloud:
   region: eu-west-2
 
-precognito:
-  prefix: precognito-dev
+fluidity:
+  prefix: fluidity-dev
   services:
     storage: TEST
     indexer: TEST
     query: TEST
 
 "%dev":
-  precognito:
+  fluidity:
     services:
       storage: AWS
       indexer: AWS
@@ -39,8 +39,8 @@ precognito:
         region: eu-west-2
         credentials:
           type: default
-  precognito:
-    prefix: precognito-prod
+  fluidity:
+    prefix: fluidity-prod
     services:
       storage: AWS
       indexer: AWS
@@ -72,5 +72,5 @@ quarkus:
 
 # custom loggers
       category:
-        "io.precognito":
+        "io.fluidity":
           level: INFO

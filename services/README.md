@@ -17,7 +17,7 @@
     
 
 From Intellij open the index.html by clicking the browser icon in the top RH corner. The application will run against  the local instance (port 8080).
-See precognito.js for backend-service configuration. 
+See fluidity.js for backend-service configuration. 
 
 
 ### Building the GraalVM Native image

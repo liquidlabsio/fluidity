@@ -10,7 +10,7 @@ $(document).ready(function () {
             alert("Please provide values for all inputs 1-5")
             return false;
         }
-        $.Topic(Precognito.Explorer.Topics.importFromStorage).publish(
+        $.Topic(Fluidity.Explorer.Topics.importFromStorage).publish(
                 inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value
         );
         return false;
@@ -24,16 +24,16 @@ $(document).ready(function () {
             alert("Please provide value for the bucketname")
             return false;
         }
-        $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).publish(
+        $.Topic(Fluidity.Explorer.Topics.removeImportFromStorage).publish(
                 inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value
         );
 
     })
 
-   $.Topic(Precognito.Explorer.Topics.importedFromStorage).subscribe(function(event) {
+   $.Topic(Fluidity.Explorer.Topics.importedFromStorage).subscribe(function(event) {
         alert("Data is imported:" + event)
    })
-      $.Topic(Precognito.Explorer.Topics.removedImportFromStorage).subscribe(function(event) {
+      $.Topic(Fluidity.Explorer.Topics.removedImportFromStorage).subscribe(function(event) {
            alert("Data is removed:" + event)
       })
 
@@ -55,7 +55,7 @@ $(document).ready(function () {
         return false;
       }
       data.context = $('<p class="file">')
-        .append($('<a target="_blank">').text(data.files[0].name + " bytes:" + Precognito.formatNumber(data.files[0].size)))
+        .append($('<a target="_blank">').text(data.files[0].name + " bytes:" + Fluidity.formatNumber(data.files[0].size)))
         .appendTo($("#files-list"));
       data.submit();
     },

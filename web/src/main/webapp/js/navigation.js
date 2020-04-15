@@ -6,18 +6,18 @@ $(document).ready(function () {
 
   feather.replace()
 
-  new Precognito.Navigation();
+  new Fluidity.Navigation();
 
   $(".nav-link.active").trigger("click")
 
   $("#signout").click(function() {
-    window.localStorage.removeItem("precognito-auth")
+    window.localStorage.removeItem("fluidity-auth")
     window.location.href = "signin.html"
   })
 
 });
 
-Precognito.Navigation = function () {
+Fluidity.Navigation = function () {
   console.log("Navigation created")
   setupNavigationActions();
   setupNavigationHideShow();

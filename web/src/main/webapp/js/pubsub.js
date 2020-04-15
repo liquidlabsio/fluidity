@@ -2,7 +2,7 @@
 
 $(document).ready(function () {
 
-    console.log("Precognito PubSub")
+    console.log("Fluidity PubSub")
 
     var topics = {}
 
