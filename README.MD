@@ -41,13 +41,16 @@ Applicability:
 Fluidity is written to be CloudFirst and Serverless. The goal is to support large volume data storage using S3 or similar, 
 and adhoc compute processing using serverless functions.
 
-Data processing is expensive; this tool is meant to be cheap and simple. It provides basic 
+Data processing is expensive; this tool is meant to be cheap and simple. It provides  
 functionality that most people need. 
-* upload data to storage
+* upload new data to storage
 * import existing storage data
-* then enrich it with meta data (i.e. human readable tags)
-* find it by the tags and view the raw data
+* then enrich data with meta data (i.e. human readable tags)
+* find data by the tags and view the raw data
 * search, like a distributed grep
+* apply stream specific visualizations
+* provide timeseries overlays
+* extrapolate data attributes to extract data models for stream visualization (sankey, streamflow, service map)
 
 ## Runtime stack
 1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM is - Java-native microkernel without the traditional Java overhead
@@ -56,18 +59,6 @@ functionality that most people need.
 4. Cloud native DB (AWS:DynamoDB)
 5. Static web-tier from storage layer (the front end is hosts on S3 etc) and calls to the REST API
  that is part of the APIGateway that delegates to the Serverless function. Much of this call complexity is handled by Quarkus extensions (i.e. lambda-http, resteasy etc)
-
-# Another data tool?
-
-Because you can never have enough! 
-Seriously though, Fluidity runs in your VPC. This means you have total 
-cost of infrastructure. It is designed to run serverless in the most optimial 
-way possible; mostly running in the free tier on supported cloud providers
- (currently AWS). When not in use you only pay for S3/GFS storage (which is relatively cheap). 
- When executing tasks, Serverless functions are executed to handle the work, and then they shutdown.
- 
- # How do I get data into it?
-Data can be uploaded, or better yet it already exists in Cloud Storage (S3, CFG etc). To import external data you will need to look at Flume or logstash/beats - then make them write to S3.
 
 
 # Building
