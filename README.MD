@@ -30,13 +30,11 @@ Functional:
 * Live streaming overlaid upon historical overlay heatmap (correlated behavior and trend analysis)
 
 Applicability:
-* log analysis (see below)
+* log analysis
 * data pipelines via trace identifiers
 * event driven microservices via trace identifier, txn identiers, correlation ids.
 * serverless function dataflow analysis via trace identifier, txn identifiers, correlation ids.
 
-### Adhoc log analysis as well
-You can also search and analyse large volumes of machine generated data.
  
 # Technology
 
