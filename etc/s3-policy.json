@@ -15,7 +15,7 @@
     {
       "Action": "s3:GetBucketAcl",
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::precognito-prod-tenant-userstore",
+      "Resource": "arn:aws:s3:::fluidity-prod-tenant-userstore",
       "Principal": {
         "Service": "logs.eu-west-2.amazonaws.com"
       }
@@ -23,7 +23,7 @@
     {
       "Action": "s3:PutObject",
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::precognito-prod-tenant-userstore/*",
+      "Resource": "arn:aws:s3:::fluidity-prod-tenant-userstore/*",
       "Principal": {
         "Service": "logs.eu-west-2.amazonaws.com"
       }

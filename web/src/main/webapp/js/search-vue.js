@@ -140,7 +140,7 @@ searchInputAnalytic = new Vue({
 //                console.log("value:" + point[1])
                  searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
                  searcher.startTime = new Date();
-                $.Topic(Precognito.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
+                $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
 
               },
               updateTheme(e) {

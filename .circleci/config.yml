@@ -82,7 +82,7 @@ jobs:
           command: |
             export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
             export PATH=$JAVA_HOME/bin:$PATH
-            ./mvnw dependency:go-offline
+              ./mvnw dependency:go-offline
 
       # Standard maven build and test phases - does not perform a native build (or verify)
       # ########################

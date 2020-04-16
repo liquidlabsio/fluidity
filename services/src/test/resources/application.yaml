@@ -7,15 +7,15 @@
 cloud:
   region: eu-west-2
 
-precognito:
-  prefix: precog-dev
+fluidity:
+  prefix: fluidity-dev
   services:
     storage: TEST
     indexer: TEST
     query: TEST
 
 "%dev":
-  precognito:
+  fluidity:
     services:
       storage: AWS
       indexer: AWS
@@ -53,5 +53,5 @@ quarkus:
 
     # custom loggers
     category:
-      "io.precognito":
+      "io.fluidity":
         level: DEBUG

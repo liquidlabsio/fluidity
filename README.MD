@@ -1,20 +1,48 @@
 
-![Image description](img/precog-logo.png)
+![Image description](img/fluidity-logo1.png)
 
 The Dataflow Analytics Platform
 
 # What is it?
 
-A data analytics platform that focuses on events, datflows and the conception of how they should become observable.
+A data analytics platform that focuses on events, dataflows (streams) and makes them observable.
 
-# What is it - again?
+## What is it - again?
 
-Its monitoring for events. 
+It lets you search and analyse streams of events from logfiles (correlation-Ids, txn ids), Kafka or other sources. 
+Analysis is both historical (batch) and live (stream) - providing insight on streams are behaving now and in the past. 
+Historical analysis provides a baseline for measure performance, data characteristics and more. Perhaps an example is best.
+>A payment processing system.<br>
+>Questions answered.
+>1. What volume of transactions are processed (rate/sec)
+>1. What is the latency at each stage of my pipeline? i.e. are some processing stages backing up?
+>1. Percentile based breakdown and correlation of data attributes versus performance. i.e. Payment amount and Latency
+>1. Heatmap overlay of live performance versus historical performance (broken down by hour-of-day, day-of-week etc)
 
+Visual representations include:
+* Sankey diagrams: provide segmented understanding over dataflow stages and correlation between latency and data attributes.
+* Stream Graphs: time series overlays to see trending, spot outliers.
+* Network flow diagrams: node relationships and related traffic.
+
+Functional:
+* Historical timeseries overlay analysis, by time segment (points in time) or overlay (24h overlay)
+* Historical timeseries replay, discover repeatable behavior
+* Live streaming overlaid upon historical overlay heatmap (correlated behavior and trend analysis)
+
+Applicability:
+* log analysis (see below)
+* data pipelines via trace identifiers
+* event driven microservices via trace identifier, txn identiers, correlation ids.
+* serverless function dataflow analysis via trace identifier, txn identifiers, correlation ids.
+
+### Adhoc log analysis as well
+You can also search and analyse large volumes of machine generated data.
+ 
 # Technology
 
+Fluidity is written to be CloudFirst and Serverless. The goal is to support large volume data storage using S3 or similar, 
+and adhoc compute processing using serverless functions.
 
-Cloud native, serverless machine learning, serverless search engine using the latest technologies to run at minimum cost on the Cloud. 
 Data processing is expensive; this tool is meant to be cheap and simple. It provides basic 
 functionality that most people need. 
 * upload data to storage
@@ -23,12 +51,7 @@ functionality that most people need.
 * find it by the tags and view the raw data
 * search, like a distributed grep
 
-Because it processes data on a storage layer, it is considered a batch system. 
-Storage chunks are immutable, and periodically written. It is not realtime (more like slow-time). 
-If you want streaming realtime correlations and alerts etc then look elsewhere. That is an upstream problem.
- (although there are plans to explore what that looks like using Apache Kafka and Confluent Cloud) 
-
-## Runtime architecture
+## Runtime stack
 1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM is - Java-native microkernel without the traditional Java overhead
 2. Serverless functions. Using the AWS-Lambda extension, API calls are delegated through the APIGateway (proxy) to call onto a Serverless function instance.
 3. Cloud native storage: S3, GFS etc
@@ -39,7 +62,7 @@ If you want streaming realtime correlations and alerts etc then look elsewhere. 
 # Another data tool?
 
 Because you can never have enough! 
-Seriously though, Precognito runs in your VPC and its b. This means you own the total 
+Seriously though, Fluidity runs in your VPC. This means you have total 
 cost of infrastructure. It is designed to run serverless in the most optimial 
 way possible; mostly running in the free tier on supported cloud providers
  (currently AWS). When not in use you only pay for S3/GFS storage (which is relatively cheap). 
@@ -66,7 +89,7 @@ Data can be uploaded, or better yet it already exists in Cloud Storage (S3, CFG 
 
 Notes and limits: 
 - If you want data to load quickly to the browser then enable CORS on each S3 bucket and 
-Precognito will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
+Fluidity will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
 If not enabled, then a signed download be tried, and upon failure revert to using a Lambda.
 - The largest browsable file is 100MB before the browser starts to choke on memory (about 250k lines of text) 
 The same file will gzip down to 3.6MB and can be handled by a Function call. AWS Function download limits are limited by lambda return limits -  5MB   
@@ -74,8 +97,8 @@ The same file will gzip down to 3.6MB and can be handled by a Function call. AWS
 Prerequisites: 
 - Install AWS SAM: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html
 - Install the AWS cli. I used version 2.0 - i.e. all cli commands are `> aws2 --stuff--`
-- Create an S3 bucket for the Precognito cloud runtime (lambda-code, front-end website) deployment (put that name into env.sh) <YOUR_S3_BUCKET>
-- Configure the S3 precognito-runtime bucket for static website hosting
+- Create an S3 bucket for the Fluidity cloud runtime (lambda-code, front-end website) deployment (put that name into env.sh) <YOUR_S3_BUCKET>
+- Configure the S3 fluidity-runtime bucket for static website hosting
 - AWS account for the SAM user such that Cloudformation etc is available. Brute force unsecure json as follows: <br>
     **IAM -> User (x) -> inline-policy ** <BR>
     IAMFullAccess,   AmazonS3FullAccess,  AmazonDynamoDBFullAccess  
@@ -102,14 +125,14 @@ Prerequisites:
 ```
 
 #### Scripted
-1. $ cd precognito/etc
+1. $ cd fluidity/etc
 1. edit env.sh with S3 bucket, tenant information etc
 1. $ ./deploy-backend.sh
 1. edit env.sh with APIGateway address
 1. $ ./deploy-frontend.sh 
 1. S3 cp generally fails so change to ./temp-web-package and 'aws2 s3 cp . s3://<BUCKET> --recurvise' files again
 1. Point your browser to the URL in this message 'Point your browser to:'
-1. Username:anything@precognito.io pwd: 'secret'
+1. Username:anything@fluidity.io pwd: 'secret'
 
 ##### Troubleshooting
 1. Check the deployment user has correct permissions - error message will indicate so
@@ -123,9 +146,9 @@ Reference: https://quarkus.io/guides/amazon-lambda-http
 
 **Notes:**
 This approach uses the AWS Gateway Proxy (i.e. the Gateway passes through everything). Quarkus has a HTTP handler embedded in the Lambda the calls on the RX Rest endpoint locally.
-1. Create the precognito fat jar <br>
+1. Create the fluidity fat jar <br>
  `$ mvn clean install` ->
- `target/precognito-0.1-SNAPSHOT-runner.jar`<br>
+ `target/fluidity-0.1-SNAPSHOT-runner.jar`<br>
 1. Package the deployment:<br>
  `$ sam package --template-file sam.jvm.yaml --output-template-file packaged.yaml --s3-bucket <YOUR_S3_BUCKET>`
 1. Deploy it using any stack-name<br>
@@ -140,9 +163,9 @@ The output will display the API-Gateway URL for the front end
 ```json
  { "StackSummaries": [
         {
-            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/precognito-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
-            "StackName": "precognito-faas",
-            "TemplateDescription": "AWS Serverless Quarkus HTTP - liquidlabs::precognito",
+            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/fluidity-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
+            "StackName": "fluidity-faas",
+            "TemplateDescription": "AWS Serverless Quarkus HTTP - liquidlabs::fluidity",
             "CreationTime": "2020-01-22T15:54:04.530000+00:00",
             "LastUpdatedTime": "2020-01-22T15:54:09.927000+00:00",
             "StackStatus": "CREATE_COMPLETE",
@@ -154,15 +177,15 @@ The output will display the API-Gateway URL for the front end
 }
 ```
 1. Note the API-Gateway-Proxy REST URL<br>
-`$ aws2 cloudformation describe-stacks --stack-name precognito-faas`
+`$ aws2 cloudformation describe-stacks --stack-name fluidity-faas`
 ```json
 {
     "Stacks": [
         {
-            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/precognito-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
-            "StackName": "precognito-faas",
+            "StackId": "arn:aws:cloudformation:eu-west-2:001814218767:stack/fluidity-faas/6a5712b0-3d2f-11ea-8738-021679f87d94",
+            "StackName": "fluidity-faas",
             "ChangeSetId": "arn:aws:cloudformation:eu-west-2:001814218767:changeSet/samcli-deploy1579708443/2f0ce821-122f-40b5-ad6f-26861bc64daf",
-            "Description": "Serverless log analysis- liquidlabs::precognito",
+            "Description": "Serverless log analysis- liquidlabs::fluidity",
             "CreationTime": "2020-01-22T15:54:04.530000+00:00",
             "LastUpdatedTime": "2020-01-22T15:54:09.927000+00:00",
             "RollbackConfiguration": {},
@@ -174,10 +197,10 @@ The output will display the API-Gateway URL for the front end
             ],
             "Outputs": [
                 {
-                    "OutputKey": "PrecognitoApi",
+                    "OutputKey": "FluidityApi",
                     "OutputValue": "https://3dwlmgnks6.execute-api.eu-west-2.amazonaws.com/Prod/",
                     "Description": "URL for application",
-                    "ExportName": "PrecognitoApi"
+                    "ExportName": "FluidityApi"
                 }
             ],
             "Tags": [],
@@ -195,6 +218,6 @@ The output will display the API-Gateway URL for the front end
  
 ```
 Browser URL: https://3dwlmgnks6.execute-api.eu-west-2.amazonaws.com/Prod/query/id
-Response:    io.precognito.services.query.QueryResource
+Response:    QueryResource
 ```
 1. Configure the User interface URL to point to the API-Gateway address

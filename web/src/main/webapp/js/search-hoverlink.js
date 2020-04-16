@@ -67,7 +67,7 @@ class HoverLink {
         this.marker = session.addMarker(this.range, "ace_link_marker", "text", true);
 
         // publish token.value - i.e. value:"3:1581603492991:19216: --> "index:timestamp:offset"
-        $.Topic(Precognito.Search.Topics.setHoverInfo).publish(token.value);
+        $.Topic(Fluidity.Search.Topics.setHoverInfo).publish(token.value);
     };
 
     clear() {
@@ -99,7 +99,7 @@ class HoverLink {
         if (this.link) {
             this.link.editor = this.editor;
 //            this._signal("open", this.link);
-            $.Topic(Precognito.Search.Topics.prepareExplorerToOpen).publish(this.link.value);
+            $.Topic(Fluidity.Search.Topics.prepareExplorerToOpen).publish(this.link.value);
             this.clear()
         }
     };

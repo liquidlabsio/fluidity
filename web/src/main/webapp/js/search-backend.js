@@ -29,13 +29,13 @@ class SearchInterface {
 
 class SearchFixture extends SearchInterface {
     submitSearch(search) {
-        $.Topic(Precognito.Search.Topics.setSearchFiles).publish(searchFileUrls);
+        $.Topic(Fluidity.Search.Topics.setSearchFiles).publish(searchFileUrls);
     }
     searchFile(search, fileUrl) {
-        $.Topic(Precognito.Search.Topics.setSearchFileResults).publish(searchFileResults);
+        $.Topic(Fluidity.Search.Topics.setSearchFileResults).publish(searchFileResults);
     }
     getFinalResult(search, searchedFiles) {
-        $.Topic(Precognito.Search.Topics.setFinalResult).publish("We got results");
+        $.Topic(Fluidity.Search.Topics.setFinalResult).publish("We got results");
     }
 }
 
@@ -53,7 +53,7 @@ class SearchRest extends SearchInterface {
     }
 
     submitSearch(search) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         jQuery.ajax({
             type: 'POST',
             url: SERVICE_URL + '/search/submit',
@@ -61,20 +61,20 @@ class SearchRest extends SearchInterface {
             data: JSON.stringify(search),
             dataType: 'json',
             success: function(response) {
-                                       $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                                       $.Topic(Precognito.Search.Topics.setSearchFiles).publish(response);
+                                       $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                                       $.Topic(Fluidity.Search.Topics.setSearchFiles).publish(response);
                                    }
             ,
             fail: function (xhr, ajaxOptions, thrownError) {
                                    alert(xhr.status);
                                    alert(thrownError);
-                                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
 
             }
         });
     }
     searchFile(search, fileMetasArray) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
 
@@ -89,18 +89,18 @@ class SearchRest extends SearchInterface {
             contentType: false,
             cache : false,
             success: function(response) {
-               $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-               $.Topic(Precognito.Search.Topics.setSearchFileResults).publish(response);
+               $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+               $.Topic(Fluidity.Search.Topics.setSearchFileResults).publish(response);
             },
             fail: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
             }
         });
     }
     getFinalEvents(search, fromTime) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
 
@@ -115,18 +115,18 @@ class SearchRest extends SearchInterface {
             contentType: false,
             cache : false,
             success: function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Search.Topics.setFinalEvents).publish(response);
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Search.Topics.setFinalEvents).publish(response);
             },
             fail: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
             }
         });
     }
     getFinalHisto(search) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
 
@@ -140,13 +140,13 @@ class SearchRest extends SearchInterface {
             contentType: false,
             cache : false,
             success: function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Search.Topics.setFinalHisto).publish(response);
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Search.Topics.setFinalHisto).publish(response);
             },
             fail: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr.status);
                 console.log(thrownError);
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
             }
         });
     }
@@ -160,16 +160,16 @@ function searchBackendBinding() {
 
     console.log("Backend is using:" + backend.constructor.name)
 
-    $.Topic(Precognito.Search.Topics.submitSearch).subscribe(function(search) {
+    $.Topic(Fluidity.Search.Topics.submitSearch).subscribe(function(search) {
         backend.submitSearch(search);
     })
-    $.Topic(Precognito.Search.Topics.searchFile).subscribe(function(search, files) {
+    $.Topic(Fluidity.Search.Topics.searchFile).subscribe(function(search, files) {
         backend.searchFile(search, files);
     })
-    $.Topic(Precognito.Search.Topics.getFinalEvents).subscribe(function(search, fromTime) {
+    $.Topic(Fluidity.Search.Topics.getFinalEvents).subscribe(function(search, fromTime) {
         backend.getFinalEvents(search, fromTime);
     })
-    $.Topic(Precognito.Search.Topics.getFinalHisto).subscribe(function(search) {
+    $.Topic(Fluidity.Search.Topics.getFinalHisto).subscribe(function(search) {
         backend.getFinalHisto(search);
     })
 

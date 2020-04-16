@@ -3,9 +3,9 @@
     
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.precognito</groupId>
+    <groupId>io.fluidity</groupId>
     <artifactId>parent</artifactId>
-    <name>Precognito</name>
+    <name>Fluidity</name>
     <version>0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 

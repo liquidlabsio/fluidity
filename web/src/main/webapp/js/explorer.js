@@ -1,5 +1,5 @@
 // define pub-sub topics
-Precognito.Explorer.Topics = {
+Fluidity.Explorer.Topics = {
     uploadFile: 'explorerUploadFile',
     getListFiles: 'explorerGetListFiles',
     setListFiles: 'explorerSetListFiles',
@@ -19,13 +19,13 @@ Precognito.Explorer.Topics = {
 
 $(document).ready(function () {
 
-    let fileList = new Precognito.Explorer.FileList($('#explorerFileListTable'));
+    let fileList = new Fluidity.Explorer.FileList($('#explorerFileListTable'));
 
 
 });
 
-Precognito.Explorer.FileList = function (table) {
-    console.log("Precognito.Explorer.FileList created")
+Fluidity.Explorer.FileList = function (table) {
+    console.log("Fluidity.Explorer.FileList created")
 
     let dataTable
     let sources
@@ -42,16 +42,16 @@ Precognito.Explorer.FileList = function (table) {
         explorerEditor.session.setUseWrapMode(true);
 
 
-        $.Topic(Precognito.Explorer.Topics.setFileContent).subscribe(function(content) {
+        $.Topic(Fluidity.Explorer.Topics.setFileContent).subscribe(function(content) {
             $("#explorerOpenFileName").get(0).scrollIntoView();
             explorerEditor.setValue(content)
         })
 
-        $.Topic(Precognito.Explorer.Topics.setExplorerToOpen).subscribe(function(content) {
+        $.Topic(Fluidity.Explorer.Topics.setExplorerToOpen).subscribe(function(content) {
             // show this tab
             $(".nav-link.explorer").click()
             $("#explorerOpenFileName").text("Filename: " + content[0]);
-            $.Topic(Precognito.Explorer.Topics.getFileContent).publish(content[0], content[1])
+            $.Topic(Fluidity.Explorer.Topics.getFileContent).publish(content[0], content[1])
 
 
         })
@@ -59,9 +59,9 @@ Precognito.Explorer.FileList = function (table) {
 
 
         $('#refreshFiles').click(function(){
-            $.Topic(Precognito.Explorer.Topics.getListFiles).publish("doit")
+            $.Topic(Fluidity.Explorer.Topics.getListFiles).publish("doit")
         });
-        $.Topic(Precognito.Explorer.Topics.getListFiles).publish("get file list on page load")
+        $.Topic(Fluidity.Explorer.Topics.getListFiles).publish("get file list on page load")
 
         $('.zoomExplorer').click(function(event){
                 let zoomDirection = $(event.currentTarget).data().zoom;
@@ -122,12 +122,12 @@ Precognito.Explorer.FileList = function (table) {
 
             if (action == "view") {
                 $("#explorerOpenFileName").text("Filename: " + filename)
-                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename, 0)
+                $.Topic(Fluidity.Explorer.Topics.getFileContent).publish(filename, 0)
             } else if (action == "download"){
-                $.Topic(Precognito.Explorer.Topics.downloadFileContent).publish(filename)
+                $.Topic(Fluidity.Explorer.Topics.downloadFileContent).publish(filename)
             } else {
                 $("#explorerOpenFileName").text("Filename: " + filename)
-                $.Topic(Precognito.Explorer.Topics.getFileContent).publish(filename, 0)
+                $.Topic(Fluidity.Explorer.Topics.getFileContent).publish(filename, 0)
             }
         } catch (err) {
             console.log(err.stack)
@@ -135,7 +135,7 @@ Precognito.Explorer.FileList = function (table) {
         return false;
     })
 
-    $.Topic(Precognito.Explorer.Topics.setListFiles).subscribe(function (listing) {
+    $.Topic(Fluidity.Explorer.Topics.setListFiles).subscribe(function (listing) {
         setListing(listing)
     })
     function setListing(listing) {
@@ -163,7 +163,7 @@ Precognito.Explorer.FileList = function (table) {
     }
 
     function refreshIt() {
-        $.Topic(Precognito.Explorer.Topics).publish("")
+        $.Topic(Fluidity.Explorer.Topics).publish("")
     }
 
     return {

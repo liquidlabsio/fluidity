@@ -1,4 +1,4 @@
-io.precognito.services.storage.StorageFactoryConverter
-io.precognito.services.storage.IndexingFactoryConverter
-io.precognito.services.query.QueryFactoryConverter
-io.precognito.services.search.SearchFactoryConverter
+io.fluidity.services.storage.StorageFactoryConverter
+io.fluidity.services.storage.IndexingFactoryConverter
+io.fluidity.services.query.QueryFactoryConverter
+io.fluidity.services.search.SearchFactoryConverter

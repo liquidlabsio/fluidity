@@ -13,17 +13,19 @@ $(document).ready(function () {
             }
 
          $.ajax({
-                   type: "POST",
-                   url: SERVICE_URL + '/auth/login',
-                   data: form, // serializes the form's elements.
-                   success: function(data)
-                   {
-                       window.localStorage.setItem("precognito-auth", data)
-                       window.location.href = "index.html"
-                   },
-                   fail: function(data){
-                        alert(data);
-                   }
+            type: "POST",
+            url: SERVICE_URL + '/auth/login',
+            data: form, // serializes the form's elements.
+            crossDomain: true,
+            success: function(data) {
+               window.localStorage.setItem("fluidity-auth", data)
+               window.location.href = "index.html"
+            },
+            error: function(data){
+                console.log(data)
+                alert("Error happened:" + data);
+            }
+
              });
 
             return false;

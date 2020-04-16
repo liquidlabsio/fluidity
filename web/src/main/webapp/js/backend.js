@@ -52,11 +52,11 @@ class FilesFixture extends FilesInterface {
         fixturedFiles.forEach((value, key, map) => {
             results.push(value)
         });
-        $.Topic(Precognito.Explorer.Topics.setListFiles).publish(results);
+        $.Topic(Fluidity.Explorer.Topics.setListFiles).publish(results);
     }
 
     fileContents(filename) {
-        $.Topic(Precognito.Explorer.Topics.setFileContent).publish(
+        $.Topic(Fluidity.Explorer.Topics.setFileContent).publish(
             fixturedFiles.get(filename).name + " made up file contents from the test fixture"
         );
     }
@@ -69,13 +69,13 @@ class FilesFixture extends FilesInterface {
 class RestVersion extends FilesInterface {
 
     downloadBinaryDataFromURL(url, filename){
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self=this;
         var oReq = new XMLHttpRequest();
                 oReq.open("GET", url, true);
                 oReq.responseType = "blob";
                 oReq.onload = function(oEvent) {
-                    $.Topic(Precognito.Explorer.Topics.setFileContent).publish("expanding gz...");
+                    $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("expanding gz...");
                   let blob = oReq.response;
                   var reader = new FileReader();
                   reader.readAsArrayBuffer(blob);
@@ -83,50 +83,50 @@ class RestVersion extends FilesInterface {
                       var byteArrayStuff = reader.result;
                       let textyBytes = pako.inflate(byteArrayStuff);
                       var explodedString = new TextDecoder("utf-8").decode(textyBytes);
-                      $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                      $.Topic(Precognito.Explorer.Topics.setFileContent).publish(explodedString);
+                      $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                      $.Topic(Fluidity.Explorer.Topics.setFileContent).publish(explodedString);
                     }
                   }
                 oReq.onerror = function(err) {
                     let url = SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename)
-                    $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                    $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
                     self.downloadBinaryDataFromURL(url, filename);
                 }
                 oReq.send();
     }
 
     listFiles() {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         $.get(SERVICE_URL + '/query/list', {},
             function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Explorer.Topics.setListFiles).publish(response);
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.setListFiles).publish(response);
             }
         ).fail(function(){
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
         })
     }
     importFromStorage(storageId, tags, includeFileMask, prefix, ageDays, timeFormat) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         $.get(SERVICE_URL + '/storage/import', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays, timeFormat: timeFormat},
             function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Explorer.Topics.importedFromStorage).publish(response);
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.importedFromStorage).publish(response);
             })
         .fail(function (xhr, ajaxOptions, thrownError) {
-            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+            $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
             alert("Error status: " + xhr.status + " Msg: " + thrownError);
         })
     }
     removeImportFromStorage(storageId, tags, includeFileMask, prefix, ageDays) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         $.get(SERVICE_URL + '/storage/removeImported', {tenant:DEFAULT_TENANT, storageId: storageId, includeFileMask: includeFileMask, tags: tags, prefix: prefix, ageDays: ageDays},
             function(response) {
-                $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Precognito.Explorer.Topics.removedImportFromStorage).publish(response);
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Explorer.Topics.removedImportFromStorage).publish(response);
             })
         .fail(function (xhr, ajaxOptions, thrownError) {
-            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+            $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
             alert("Error status: " + xhr.status + " Msg: " + thrownError);
         })
     }
@@ -136,50 +136,50 @@ class RestVersion extends FilesInterface {
     * The S3 bucket needs CORS enabled for direct downloads to work. If it fails it retried by using a faas request
     **/
     fileContentsByURL(filename, offset) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self=this;
-        $.Topic(Precognito.Explorer.Topics.setFileContent).publish("loading...");
+        $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("loading...");
         $.get(SERVICE_URL + '/query/getDownloadUrl/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset),{},
             function(urlLocation) {
                 try {
                     if (filename.endsWith(".gz")) {
                         self.downloadBinaryDataFromURL(urlLocation, filename);
-                        $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
+                        $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
                     } else {
                      $.get(urlLocation,{},
                         function(responseContent) {
-                            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                            $.Topic(Precognito.Explorer.Topics.setFileContent).publish(responseContent);
+                            $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                            $.Topic(Fluidity.Explorer.Topics.setFileContent).publish(responseContent);
                         })
                         .fail(function(xhr, ajaxOptions, thrownError) {
-                            $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                            $.Topic(Precognito.Explorer.Topics.setFileContent).publish("load by URL failed (CORS disabled) - falling back ... still loading...");
+                            $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                            $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("load by URL failed (CORS disabled) - falling back ... still loading...");
                             self.fileContents(filename, offset)
                         })
                     }
                 } catch (err) {
                     console.log("Failed to load by signed URL - reverting to Lambda")
-                    $.Topic(Precognito.Explorer.Topics.setFileContent).publish("load by URL failed - falling back ... still loading...");
+                    $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("load by URL failed - falling back ... still loading...");
                     fileContents(filename, offset)
                 }
             })
     }
     fileContents(filename, offset) {
-        $.Topic(Precognito.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self=this;
-        $.Topic(Precognito.Explorer.Topics.setFileContent).publish("loading...");
+        $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("loading...");
         if (filename.endsWith(".gz")) {
-            let url = SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset)
+            let url = SERVICE_URL +  '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset)
             self.downloadBinaryDataFromURL(url, filename);
         } else {
             $.get(SERVICE_URL + '/query/get/' +  encodeURIComponent(DEFAULT_TENANT) + "/" + encodeURIComponent(filename) + "/" + encodeURIComponent(offset),{},
                 function(response) {
-                    $.Topic(Precognito.Explorer.Topics.stopSpinner).publish();
-                    $.Topic(Precognito.Explorer.Topics.setFileContent).publish(response);
+                    $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                    $.Topic(Fluidity.Explorer.Topics.setFileContent).publish(response);
                 })
             .fail(function (xhr, ajaxOptions, thrownError) {
                         alert("Error status:" + xhr.status + " Msg:" + thrownError);
-                        $.Topic(Precognito.Explorer.Topics.setFileContent).publish("Failed to load file contents:" + thrownError + " status:" + xhr.status);
+                        $.Topic(Fluidity.Explorer.Topics.setFileContent).publish("Failed to load file contents:" + thrownError + " status:" + xhr.status);
 
               })
         }
@@ -202,28 +202,28 @@ function backendBinding () {
 
     console.log("Backend is using:" + backend.constructor.name)
 
-    $.Topic(Precognito.Explorer.Topics.getListFiles).subscribe(function(event) {
+    $.Topic(Fluidity.Explorer.Topics.getListFiles).subscribe(function(event) {
         backend.listFiles();
     })
-    $.Topic(Precognito.Explorer.Topics.getFileContent).subscribe(function(event, offset) {
+    $.Topic(Fluidity.Explorer.Topics.getFileContent).subscribe(function(event, offset) {
 //        backend.fileContents(event);
         backend.fileContentsByURL(event, offset);
     })
 
-    $.Topic(Precognito.Explorer.Topics.downloadFileContent).subscribe(function(event) {
+    $.Topic(Fluidity.Explorer.Topics.downloadFileContent).subscribe(function(event) {
         backend.downloadFileContent(event);
     })
 
-    $.Topic(Precognito.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays, timeFormat) {
+    $.Topic(Fluidity.Explorer.Topics.importFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays, timeFormat) {
         backend.importFromStorage(storageId, includeFileMask, tags, prefix, ageDays, timeFormat);
     })
-    $.Topic(Precognito.Explorer.Topics.removeImportFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
+    $.Topic(Fluidity.Explorer.Topics.removeImportFromStorage).subscribe(function(storageId, includeFileMask, tags, prefix, ageDays) {
         backend.removeImportFromStorage(storageId, includeFileMask, tags, prefix, ageDays);
     })
-    $.Topic(Precognito.Explorer.Topics.startSpinner).subscribe(function() {
+    $.Topic(Fluidity.Explorer.Topics.startSpinner).subscribe(function() {
         $(".spinner").show()
     })
-    $.Topic(Precognito.Explorer.Topics.stopSpinner).subscribe(function() {
+    $.Topic(Fluidity.Explorer.Topics.stopSpinner).subscribe(function() {
         $(".spinner").hide()
     })
 
