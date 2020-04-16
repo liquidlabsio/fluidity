@@ -20,9 +20,20 @@ Historical analysis provides a baseline for measure performance, data characteri
 >1. Heatmap overlay of live performance versus historical performance (broken down by hour-of-day, day-of-week etc)
 
 Visual representations include:
-* Sankey diagrams
-* Stream Graphs
-* Network flow diagrams
+* Sankey diagrams: provide segmented understanding over dataflow stages and correlation between latency and data attributes.
+* Stream Graphs: time series overlays to see trending, spot outliers.
+* Network flow diagrams: node relationships and related traffic.
+
+Functional:
+* Historical timeseries overlay analysis, by time segment (points in time) or overlay (24h overlay)
+* Historical timeseries replay, discover repeatable behavior
+* Live streaming overlaid upon historical overlay heatmap (correlated behavior and trend analysis)
+
+Applicability:
+* log analysis (see below)
+* data pipelines via trace identifiers
+* event driven microservices via trace identifier, txn identiers, correlation ids.
+* serverless function dataflow analysis via trace identifier, txn identifiers, correlation ids.
 
 ### Adhoc log analysis as well
 You can also search and analyse large volumes of machine generated data.
