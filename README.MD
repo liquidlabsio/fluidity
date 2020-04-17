@@ -25,8 +25,8 @@ Visual representations include:
 * Network flow diagrams: node relationships and related traffic.
 
 Functional:
-* Historical timeseries overlay analysis, by time segment (points in time) or overlay (24h overlay)
-* Historical timeseries replay, discover repeatable behavior
+* Historical time series overlay analysis, by time segment (points in time) or overlay (24h overlay)
+* Historical time series replay, discover repeatable behavior
 * Live streaming overlaid upon historical overlay heatmap (correlated behavior and trend analysis)
 
 Applicability:
@@ -38,8 +38,8 @@ Applicability:
  
 # Technology
 
-Fluidity is written to be CloudFirst and Serverless. The goal is to support large volume data storage using S3 or similar, 
-and adhoc compute processing using serverless functions.
+Fluidity is written to be CloudFirst and Serverless. The goal is to support large volume data storage using 
+cloud storage (Amazon S3) and adhoc compute processing using serverless functions (AWS Lambda).
 
 Data processing is expensive; this tool is meant to be cheap and simple. It provides  
 functionality that most people need. 
@@ -49,17 +49,17 @@ functionality that most people need.
 * find data by the tags and view the raw data
 * search, like a distributed grep
 * apply stream specific visualizations
-* provide timeseries overlays
+* provide time series overlays
 * extrapolate data attributes to extract data models for stream visualization (sankey, streamflow, service map)
 
 ## Runtime stack
-1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM is - Java-native microkernel without the traditional Java overhead
+1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM - Java-native microkernel without the traditional Java overhead
 2. Serverless functions. Using the AWS-Lambda extension, API calls are delegated through the APIGateway (proxy) to call onto a Serverless function instance.
 3. Cloud native storage: S3, GFS etc
 4. Cloud native DB (AWS:DynamoDB)
 5. Static web-tier from storage layer (the front end is hosts on S3 etc) and calls to the REST API
- that is part of the APIGateway that delegates to the Serverless function. Much of this call complexity is handled by Quarkus extensions (i.e. lambda-http, resteasy etc)
-
+ that is part of the API Gateway that delegates to the Serverless function. Much of this 'call chain' complexity is 
+ handled by Quarkus extensions (i.e. lambda-http, resteasy etc)
 
 # Building
 
@@ -80,7 +80,7 @@ Notes and limits:
 - If you want data to load quickly to the browser then enable CORS on each S3 bucket and 
 Fluidity will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
 If not enabled, then a signed download be tried, and upon failure revert to using a Lambda.
-- The largest browsable file is 100MB before the browser starts to choke on memory (about 250k lines of text) 
+- The largest browsable file is 100MB before the browser starts to suffer from memory limits (about 250k lines of text) 
 The same file will gzip down to 3.6MB and can be handled by a Function call. AWS Function download limits are limited by lambda return limits -  5MB   
 
 Prerequisites: 
@@ -131,7 +131,6 @@ Prerequisites:
 #### Manual
 
 Reference: https://quarkus.io/guides/amazon-lambda-http
-
 
 **Notes:**
 This approach uses the AWS Gateway Proxy (i.e. the Gateway passes through everything). Quarkus has a HTTP handler embedded in the Lambda the calls on the RX Rest endpoint locally.
