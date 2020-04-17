@@ -47,16 +47,16 @@ public class StandardSearchService implements SearchService {
 
             String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
-
+            int[] processedEventsAndTotal = new int[] {0,0};
             try (
                     SearchEventCollector searchProcessor = new SearchEventCollector();
                     SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))
             ) {
-                searchProcessor.process(fileMeta.filename.endsWith(".gz"), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
+                processedEventsAndTotal = searchProcessor.process(fileMeta.filename.endsWith(".gz"), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new String[]{"histo", "search"};
+            return new String[]{"histo", Integer.toString(processedEventsAndTotal[0]), Integer.toString(processedEventsAndTotal[1])};
         } catch (Exception e) {
             e.printStackTrace();
             return new String[0];

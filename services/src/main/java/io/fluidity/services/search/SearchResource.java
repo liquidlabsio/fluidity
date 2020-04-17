@@ -38,6 +38,9 @@ public class SearchResource {
     @ConfigProperty(name = "fluidity.services.storage")
     Storage storageService;
 
+    @ConfigProperty(name = "fluidity.event.limit", defaultValue = "10000")
+    private int eventLimit;
+
     @GET
     @Path("/id")
     @Produces(MediaType.TEXT_PLAIN)
@@ -81,7 +84,8 @@ public class SearchResource {
 
             long start = System.currentTimeMillis();
             try {
-                return searchService.finalizeEvents(search, from, 10000, tenant, cloudRegion, storageService);
+                eventLimit = 10000;
+                return searchService.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storageService);
             } finally {
                 log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
             }
