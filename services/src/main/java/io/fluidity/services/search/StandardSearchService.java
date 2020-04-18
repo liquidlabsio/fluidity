@@ -9,9 +9,11 @@ import io.fluidity.search.agg.events.SearchEventCollector;
 import io.fluidity.search.agg.histo.HistoAggFactory;
 import io.fluidity.search.agg.histo.HistoAggregator;
 import io.fluidity.search.agg.histo.SimpleHistoCollector;
+import net.jpountz.lz4.LZ4FrameInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -38,10 +40,8 @@ public class StandardSearchService implements SearchService {
         try {
             FileMeta fileMeta = files[0];
             String searchUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
-            if (searchUrl.endsWith(".gz")) {
-                inputStream = new GZIPInputStream(inputStream);
-            }
+            InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+
             String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
             OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
 
@@ -52,7 +52,7 @@ public class StandardSearchService implements SearchService {
                     SearchEventCollector searchProcessor = new SearchEventCollector();
                     SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))
             ) {
-                searchProcessor.process(fileMeta.filename.endsWith(".gz"), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
+                searchProcessor.process(fileMeta.isCompressed(), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -61,6 +61,17 @@ public class StandardSearchService implements SearchService {
             e.printStackTrace();
             return new String[0];
         }
+    }
+
+    private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
+        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
+        if (searchUrl.endsWith(".gz")) {
+            inputStream = new GZIPInputStream(inputStream);
+        }
+        if (searchUrl.endsWith(".lz4")) {
+            inputStream = new LZ4FrameInputStream(inputStream);
+        }
+        return inputStream;
     }
 
     @Override

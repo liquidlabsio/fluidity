@@ -139,5 +139,13 @@ public class OverlayTimeSeries implements Series {
         return data.stream().filter(item -> item[1] > 0).count() > 0;
     }
 
+    @Override
+    public void merge(Series series) {
+        series.data().stream()
+                .forEach(dataPoint ->
+                        this.update(dataPoint[0], this.get(dataPoint[0]) + dataPoint[1])
+                );
+    }
+
 
 }

@@ -14,4 +14,6 @@ public interface Series {
     List<Long[]> data();
 
     String name();
+
+    void merge(Series series);
 }

@@ -48,7 +48,9 @@ public class LineByLineEventAggregator implements EventsAggregator {
         streams.entrySet().stream()
                 .forEach(entry -> {
                     try {
-                        nextLines.put(entry.getKey(), split(entry.getKey(), entry.getValue().readLine()));
+                        if (entry != null) {
+                            nextLines.put(entry.getKey(), split(entry.getKey(), entry.getValue().readLine()));
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

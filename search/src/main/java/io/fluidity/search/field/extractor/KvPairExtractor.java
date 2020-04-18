@@ -17,7 +17,7 @@ public class KvPairExtractor implements Extractor {
     }
 
     @Override
-    public AbstractMap.SimpleEntry<String, Long> getKeyAndValue(String sourceName, String nextLine) {
+    public AbstractMap.SimpleEntry<String, Object> getKeyAndValue(String sourceName, String nextLine) {
         Matcher matcher = pattern.matcher(nextLine);
         if (matcher.matches()) {
             return new AbstractMap.SimpleEntry<>(matcher.group(1).trim(), Long.valueOf(matcher.group(2)));
