@@ -10,7 +10,11 @@ import java.util.stream.Collectors;
 
 public class HistoAggFactory {
 
-    List<HistoAggregator> aggs = Arrays.asList(new CountHistoAggregator(null, null), new CountEachHistoAggregator(null, null), new StatsHistoAggregator(null, null));
+    List<HistoAggregator> aggs = Arrays.asList(
+            new CountHistoAggregator(null, null),
+            new CountEachHistoAggregator(null, null),
+            new CountDistinctHistoAggregator(null, null),
+            new StatsHistoAggregator(null, null));
 
     public HistoAggregator get(Map<String, InputStream> inputStreams, Search search) {
         String analytic = search.analyticValue();
@@ -23,7 +27,7 @@ public class HistoAggFactory {
     }
 
 
-    public static HistoFunction Count = (currentValue, newValue, nextLine, position, time, expression) -> currentValue == -1? currentValue + 2 : currentValue +1;
+    public static HistoFunction Count = (currentValue, newValue, nextLine, position, time, expression) -> currentValue == -1 ? currentValue + 2 : currentValue +1;
 
     public HistoFunction getHistoAnalyticFunction(Search search) {
         String analytic = search.analyticValue();

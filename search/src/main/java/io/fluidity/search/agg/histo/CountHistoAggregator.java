@@ -4,6 +4,7 @@ import io.fluidity.search.Search;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -17,10 +18,10 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
         super(inputStreams, search);
     }
 
-    List<Series> processSeries(List<Series> collectedSeries) {
+    List<Series> processSeries(Collection<Series> collectedSeries) {
         Series count = search.getTimeSeries("count", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
-            count.update(point[0], count.get(point[0]) + point[1]);
+            count.update(point[0], add(count.get(point[0]) , point[1]));
         }));
         return Arrays.asList(count);
     }

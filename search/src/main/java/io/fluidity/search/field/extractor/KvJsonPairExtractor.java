@@ -19,14 +19,14 @@ public class KvJsonPairExtractor implements Extractor {
 
     @Override
     public AbstractMap.SimpleEntry<String, Object> getKeyAndValue(String sourceName, String nextLine) {
-        int foundIndex = nextLine.indexOf(token);
+        int foundIndex = nextLine.indexOf("\"" + token + "\"");
         int delimiter = nextLine.indexOf(":", foundIndex);
         if (foundIndex >= 0 && delimiter > 0) {
             int nextFieldDelimiter  = nextLine.indexOf(",", delimiter);
             int nextStringMarker = nextLine.indexOf("\"", delimiter);
             // numeric mode - when the \" is after the next delimiter - it means we have "someField":1234, "anotherField":
             if (nextFieldDelimiter < nextStringMarker) {
-                // numeric mode - token:value, OR  token: value ,
+                // numeric mode - token:value, OR  token: value , (missing quotations)
                 // numeric mode uses token:value pairs.
                 String valueString = nextLine.substring(delimiter+1, nextFieldDelimiter);
                 String cleanValue = valueString.trim();
@@ -41,7 +41,6 @@ public class KvJsonPairExtractor implements Extractor {
                 int toIndex = nextLine.indexOf("\"", nextStringMarker+1);
                 String value = nextLine.substring(nextStringMarker+1, toIndex);
                 return new AbstractMap.SimpleEntry<>(value, 1);
-
             }
 
         } else {

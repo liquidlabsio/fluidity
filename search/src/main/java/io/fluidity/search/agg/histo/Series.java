@@ -11,7 +11,7 @@ public interface Series {
 
     boolean hasData();
 
-    List<Long[]> data();
+    List<long[]> data();
 
     String name();
 

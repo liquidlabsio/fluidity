@@ -19,7 +19,7 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
     }
 
     @Override
-    List<Series> processSeries(List<Series> collectedSeries) {
+    List<Series> processSeries(Collection<Series> collectedSeries) {
         final Set<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
         Map<String, Series> results = new HashMap<>();
@@ -42,13 +42,13 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         return new ArrayList<>(results.values());
     }
 
-    private Set<String> getTopSeriesNames(List<Series> collectedSeries, int limit) {
+    private Set<String> getTopSeriesNames(Collection<Series> collectedSeries, int limit) {
         // count the total hits for the series
         Map<String, Long> countMap = new HashMap<>();
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(data -> {
             Long aLong = countMap.get(series.name());
-            if (aLong == null) aLong = 0L;
-            countMap.put(series.name(), aLong + data[1]);
+            if (aLong == null || aLong == -1) aLong = 0L;
+            countMap.put(series.name(), add(aLong, data[1]));
         }));
         // sort by number of hits
         List<Map.Entry<String, Long>> entryArrayList = new ArrayList<>(countMap.entrySet());

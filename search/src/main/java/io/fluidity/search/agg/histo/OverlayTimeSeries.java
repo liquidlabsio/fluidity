@@ -31,7 +31,7 @@ import static io.fluidity.util.DateUtil.*;
 public class OverlayTimeSeries implements Series {
 
     public String name;
-    public List<Long[]> data = new ArrayList();
+    public List<long[]> data = new ArrayList();
     public long delta = MINUTE;
     private long from;
     private long to;
@@ -46,7 +46,7 @@ public class OverlayTimeSeries implements Series {
     }
 
     @Override
-    public List<Long[]> data() {
+    public List<long[]> data() {
         return data;
     }
 
@@ -82,7 +82,7 @@ public class OverlayTimeSeries implements Series {
         }
 
         for (long time = this.from; time <= this.to; time += delta) {
-            data.add(new Long[]{time, -1l});
+            data.add(new long[]{time, -1l});
         }
         this.duration = to - from;
     }
@@ -139,13 +139,24 @@ public class OverlayTimeSeries implements Series {
         return data.stream().filter(item -> item[1] > 0).count() > 0;
     }
 
+
     @Override
     public void merge(Series series) {
         series.data().stream()
                 .forEach(dataPoint ->
-                        this.update(dataPoint[0], this.get(dataPoint[0]) + dataPoint[1])
+                        this.update(dataPoint[0], add(this.get(dataPoint[0]), dataPoint[1]))
                 );
     }
 
-
+    /**
+     * Cater for sentinal value of -1
+     * @param currentValue
+     * @param newValue
+     * @return
+     */
+    private long add(long currentValue, long newValue) {
+        currentValue = currentValue == -1 ? 0 : currentValue;
+        newValue = newValue == -1 ? 0 : newValue;
+        return currentValue + newValue;
+    }
 }
