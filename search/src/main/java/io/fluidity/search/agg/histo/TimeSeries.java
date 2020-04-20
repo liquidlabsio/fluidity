@@ -23,7 +23,7 @@ import static io.fluidity.util.DateUtil.*;
 public class TimeSeries implements Series {
 
     public String name;
-    public List<Long[]> data = new ArrayList();
+    public List<long[]> data = new ArrayList();
     public long delta = DateUtil.MINUTE;
 
     public TimeSeries() {
@@ -35,7 +35,7 @@ public class TimeSeries implements Series {
     }
 
     @Override
-    public List<Long[]> data() {
+    public List<long[]> data() {
         return data;
     }
 
@@ -55,7 +55,7 @@ public class TimeSeries implements Series {
         if (duration > WEEK * 8) delta = DAY * 2;
         if (duration > WEEK * 12) delta = WEEK;
         for (long time = from; time <= to; time += delta) {
-            data.add(new Long[]{time, -1l});
+            data.add(new long[]{time, -1l});
         }
     }
 
@@ -82,5 +82,25 @@ public class TimeSeries implements Series {
     @Override
     public boolean hasData() {
         return data.stream().filter(item -> item[1] > 0).count() > 0;
+    }
+
+    @Override
+    public void merge(Series series) {
+        series.data().stream()
+                .forEach(dataPoint ->
+                        this.update(dataPoint[0], add(this.get(dataPoint[0]), dataPoint[1]))
+                );
+    }
+
+    /**
+     * Cater for sentinal value of -1
+     * @param currentValue
+     * @param newValue
+     * @return
+     */
+    private long add(long currentValue, long newValue) {
+        currentValue = currentValue == -1 ? 0 : currentValue;
+        newValue = newValue == -1 ? 0 : newValue;
+        return currentValue + newValue;
     }
 }

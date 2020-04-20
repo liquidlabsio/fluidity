@@ -1,6 +1,7 @@
 package io.fluidity.services.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.FileMetaDataQueryService;
@@ -76,7 +77,7 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
     public void putList(List<FileMeta> fileMetas) {
         WriteOptions writeOptions = new WriteOptions();
         WriteBatch writeBatch = new WriteBatch();
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = getObjectMapper();
         fileMetas.forEach(item -> {
             try {
                 writeBatch.put(item.filename.getBytes(), objectMapper.writeValueAsString(item).getBytes());
@@ -94,12 +95,16 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
         }
     }
 
+    private ObjectMapper getObjectMapper() {
+        return new ObjectMapper();
+    }
+
     @Override
     public void put(FileMeta fileMeta) {
         log.info("save");
         try {
             fileMeta.setFileContent(new byte[0]);
-            db.put(fileMeta.filename.getBytes(), new ObjectMapper().writeValueAsString(fileMeta).getBytes());
+            db.put(fileMeta.filename.getBytes(), getObjectMapper().writeValueAsString(fileMeta).getBytes());
         } catch (RocksDBException | JsonProcessingException e) {
             log.error("Error saving entry in RocksDB, cause: {}, message: {}", e.getCause(), e.getMessage());
         }
@@ -113,7 +118,7 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
                 log.warn("Failed to load file: {}", filename);
                 return null;
             }
-            return new ObjectMapper().readValue(bytes, FileMeta.class);
+            return getObjectMapper().readValue(bytes, FileMeta.class);
         } catch (RocksDBException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to load: " + filename);
@@ -148,7 +153,7 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
 
         List<FileMeta> results = new ArrayList<>();
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = getObjectMapper();
 
             RocksIterator iterator = db.newIterator();
             iterator.seekToFirst();

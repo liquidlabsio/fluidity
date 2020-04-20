@@ -30,7 +30,7 @@ class Search {
         this.searchedFileUrls = [];
         this.searchEditor = ace.edit("searchResultsEditor");
         this.searchEditor.setTheme("ace/theme/monokai");
-        this.searchEditor.session.setMode("ace/mode/javascript");
+        this.searchEditor.session.setMode("ace/mode/json");
         this.searchEditor.session.setUseWrapMode(true);
         this.duration = 60;
 
@@ -137,7 +137,7 @@ class Search {
 
     setSearchFileResults(histoUrl, eventsUrl) {
         let self = this;
-         searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " files"
+         searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " sources"
 
         this.searchedEvents.push(eventsUrl)
         this.searchedHistos.push(histoUrl)

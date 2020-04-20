@@ -3,10 +3,7 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.search.Search;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +19,7 @@ public class StatsHistoAggregator extends AbstractHistoAggregator {
         super(inputStreams, search);
     }
 
-    List<Series> processSeries(List<Series> collectedSeries) {
+    List<Series> processSeries(Collection<Series> collectedSeries) {
 
         Series min = search.getTimeSeries("min", search.from, search.to);
         Series max = search.getTimeSeries("max", search.from, search.to);
@@ -48,10 +45,15 @@ public class StatsHistoAggregator extends AbstractHistoAggregator {
             LinkedList<Long> values = new LinkedList<>();
 
             @Override
-            public long calculate(long currentValue, long newValue, String nextLine, long position, long time, String expression) {
-                values.add(newValue);
-                if (values.size() > movingAvgLength) values.pop();
-                return values.stream().collect(Collectors.summingLong(Long::longValue)) / values.size();
+            public long calculate(long currentValue, Object newValue, String nextLine, long position, long time, String expression) {
+                if (newValue instanceof Long) {
+                    Long value = (Long) newValue;
+                    values.add(value);
+                    if (values.size() > movingAvgLength) values.pop();
+                    return values.stream().collect(Collectors.summingLong(Long::longValue)) / values.size();
+                } else {
+                    return -1;
+                }
             }
         };
         return histoFunction;

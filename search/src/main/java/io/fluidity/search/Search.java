@@ -86,7 +86,7 @@ public class Search {
 
     private transient FieldExtractor fieldExtractor;
 
-    public AbstractMap.SimpleEntry<String, Long> getSeriesNameAndValue(String sourceName, String nextLine) {
+    public AbstractMap.SimpleEntry<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
         if (fieldExtractor == null) {
             fieldExtractor = new FieldExtractor(expression);
         }

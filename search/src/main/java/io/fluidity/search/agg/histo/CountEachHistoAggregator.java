@@ -12,51 +12,55 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         return analytic.equals("analytic.countEach()");
     }
 
-    public static final int LIMIT = 10;
+    public static final int LIMIT = 25;
 
     public CountEachHistoAggregator(Map<String, InputStream> inputStreams, Search search) {
         super(inputStreams, search);
     }
 
     @Override
-    List<Series> processSeries(List<Series> collectedSeries) {
-        final List<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
+    List<Series> processSeries(Collection<Series> collectedSeries) {
+        final Set<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
-        List<Series> results = new ArrayList<>();
-        Series other = search.getTimeSeries("other", search.from, search.to);
+        Map<String, Series> results = new HashMap<>();
 
         // collect top items
-        collectedSeries.stream().filter(series -> topSeries.contains(series.name())).forEach(series -> results.add(series));
+        collectedSeries.stream().filter(series -> topSeries.contains(series.name())).forEach(series -> {
+            if (results.containsKey(series.name())) {
+                Series series1 = results.get(series.name());
+                series1.merge(series);
+            } else {
+                results.put(series.name(), series);
+            }
+        });
 
         // collect other items
-        results.add(other);
+        Series other = search.getTimeSeries("other", search.from, search.to);
+        results.put(other.name(), other);
 
-        collectedSeries.stream().filter(series -> !topSeries.contains(series.name()))
-                .forEach(series -> series.data().stream()
-                        .forEach(dataPoint ->
-                                other.update(dataPoint[0], other.get(dataPoint[0]) + dataPoint[1])
-                        ));
-        return results;
+        collectedSeries.stream().filter(series -> !topSeries.contains(series.name())).forEach(series -> other.merge(series));
+        return new ArrayList<>(results.values());
     }
 
-    private List<String> getTopSeriesNames(List<Series> collectedSeries, int limit) {
+    private Set<String> getTopSeriesNames(Collection<Series> collectedSeries, int limit) {
         // count the total hits for the series
         Map<String, Long> countMap = new HashMap<>();
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(data -> {
             Long aLong = countMap.get(series.name());
-            if (aLong == null) aLong = 0L;
-            countMap.put(series.name(), aLong + data[1]);
+            if (aLong == null || aLong == -1) aLong = 0L;
+            countMap.put(series.name(), add(aLong, data[1]));
         }));
         // sort by number of hits
         List<Map.Entry<String, Long>> entryArrayList = new ArrayList<>(countMap.entrySet());
-        Collections.sort(entryArrayList, Comparator.comparingLong(Map.Entry::getValue));
+
+        entryArrayList.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
         if (entryArrayList.size() > limit) {
             entryArrayList = entryArrayList.subList(0, limit);
         }
 
         // strip out the names
-        return entryArrayList.stream().map(item -> item.getKey()).collect(Collectors.toList());
+        return entryArrayList.stream().map(item -> item.getKey()).collect(Collectors.toSet());
     }
 
     @Override

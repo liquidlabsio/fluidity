@@ -5,10 +5,12 @@ import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Captured relevant file meta data: name, location, source, size, tags etc
  */
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 @RegisterForReflection
 public class FileMeta {
 
@@ -31,6 +33,10 @@ public class FileMeta {
 
     public boolean isMatch(String filenamePart, String tagNamePart) {
         return (filenamePart.equals("*") || this.filename.contains(filenamePart)) && (tagNamePart.equals("*") || this.getTags().contains(tagNamePart));
+    }
+
+    public boolean isCompressed() {
+        return filename.endsWith(".gz") || filename.endsWith(".lz4");
     }
 
     // This is used to help with ORM mappings

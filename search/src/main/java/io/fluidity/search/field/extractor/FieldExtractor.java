@@ -29,6 +29,8 @@ public class FieldExtractor {
 
             if (typeOf.equals("getKVPair")) {
                 this.extractor = new KvPairExtractor(expressionPart);
+            } else if (typeOf.equals("getJsonPair")) {
+                this.extractor = new KvJsonPairExtractor(expressionPart);
             } else {
                 this.extractor = null;
             }
@@ -43,8 +45,8 @@ public class FieldExtractor {
         }
     }
 
-    public AbstractMap.SimpleEntry<String, Long> getSeriesNameAndValue(String sourceName, String nextLine) {
-        if (expressionPart.equals("*")) return new AbstractMap.SimpleEntry<>(sourceName, 1l);
+    public AbstractMap.SimpleEntry<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
+        if (expressionPart.equals("*")) return new AbstractMap.SimpleEntry<>(sourceName, 1);
         return extractor.getKeyAndValue(sourceName, nextLine);
     }
 }

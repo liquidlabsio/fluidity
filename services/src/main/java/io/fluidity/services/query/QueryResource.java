@@ -2,6 +2,7 @@ package io.fluidity.services.query;
 
 
 import io.fluidity.services.storage.Storage;
+import net.jpountz.lz4.LZ4FrameInputStream;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
@@ -10,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -75,7 +79,20 @@ public class QueryResource implements FileMetaDataQueryService {
         if (fileMeta == null) {
             return ("Failed to find FileMeta for:" + tenant + " file:" + filename).getBytes();
         }
-        return storage.get(cloudRegion, fileMeta.getStorageUrl(), offset);
+        byte[] bytes = storage.get(cloudRegion, fileMeta.getStorageUrl(), offset);
+        if (fileMeta.filename.endsWith(".lz4")) {
+            LZ4FrameInputStream inStream = null;
+            try {
+                inStream = new LZ4FrameInputStream(new ByteArrayInputStream(bytes));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                inStream.transferTo(baos);
+                return baos.toByteArray();
+            } catch (IOException e) {
+                log.error("Failed to decode lz4:{}", filename, e);
+                return "Could not decode LZ4 data".getBytes();
+            }
+        }
+        return bytes;
     }
 
     @GET
