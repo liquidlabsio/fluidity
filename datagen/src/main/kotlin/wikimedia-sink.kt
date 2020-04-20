@@ -14,8 +14,8 @@ import javax.ws.rs.sse.SseEventSource
 
 fun main(){
 
-//    val output = "datagen/target/wikimedia"
-    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
+    val output = "datagen/target/wikimedia"
+//    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
 
     File(output).mkdirs();
 
@@ -56,7 +56,7 @@ private fun writeToFsForAWhile(fileName: String, target: WebTarget?, client: Cli
                 eventSource.open()
 
                 //Consume events for one minute
-                Thread.sleep(1 * 60 * 1000.toLong())
+                Thread.sleep(1 * 10 * 1000.toLong())
             }
         } catch (e: InterruptedException) {
             e.printStackTrace()
