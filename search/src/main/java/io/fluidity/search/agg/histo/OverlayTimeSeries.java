@@ -84,7 +84,7 @@ public class OverlayTimeSeries implements Series {
         for (long time = this.from; time <= this.to; time += delta) {
             data.add(new long[]{time, -1l});
         }
-        this.duration = to - from;
+        this.duration = this.to - this.from;
     }
 
     @Override
@@ -97,7 +97,10 @@ public class OverlayTimeSeries implements Series {
     @Override
     public void update(long time, long value) {
         int index = index(time);
-        if (index < 0 || index >= data.size()) return;
+        if (index < 0 || index >= data.size()) {
+            System.out.println("Bad time series index:" + index);
+            return;
+        }
         data.get(index)[1] = value;
     }
 

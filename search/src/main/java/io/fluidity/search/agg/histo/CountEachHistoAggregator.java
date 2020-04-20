@@ -52,7 +52,8 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         }));
         // sort by number of hits
         List<Map.Entry<String, Long>> entryArrayList = new ArrayList<>(countMap.entrySet());
-        Collections.sort(entryArrayList, Comparator.comparingLong(Map.Entry::getValue));
+
+        entryArrayList.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
         if (entryArrayList.size() > limit) {
             entryArrayList = entryArrayList.subList(0, limit);
