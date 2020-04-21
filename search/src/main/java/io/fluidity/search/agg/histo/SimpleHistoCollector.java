@@ -63,7 +63,7 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        AbstractMap.SimpleEntry<String, Long> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
+        AbstractMap.SimpleEntry<String, Object> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
             Series series = getSeriesItem(seriesNameAndValue.getKey());
             series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getValue(), nextLine, position, currentTime, search.expression));

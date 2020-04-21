@@ -8,6 +8,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,13 +40,24 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
                     return null;
                 }).collect(Collectors.toList());
 
-        List<Series> collectedSeries = (List<Series>) collectedSeriesList.stream().flatMap(list -> list.stream()).collect(Collectors.toList());
+        List<Series> collectedSeriesWithPossibleDuplicateNames = (List<Series>) collectedSeriesList.stream().flatMap(list -> list.stream()).collect(Collectors.toList());
 
-        return objectMapper.writeValueAsString(processSeries(collectedSeries));
+        HashMap<String, Series> reducedSeries = new HashMap<>();
+        collectedSeriesWithPossibleDuplicateNames.forEach(series ->
+        {
+            if (reducedSeries.containsKey(series.name())) {
+                reducedSeries.get(series.name()).merge(series);
+            } else {
+                reducedSeries.put(series.name(), series);
+            }
+        }
+        );
+
+        return objectMapper.writeValueAsString(processSeries(reducedSeries.values()));
 
     }
 
-    abstract List<Series> processSeries(List<Series> collectedSeries);
+    abstract List<Series> processSeries(Collection<Series> collectedSeries);
 
     private String readJson(InputStream inputStream) {
         try {
@@ -72,4 +85,11 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
         });
 
     }
+
+    protected long add(long currentValue, long newValue) {
+        currentValue = currentValue == -1 ? 0 : currentValue;
+        newValue = newValue == -1 ? 0 : newValue;
+        return currentValue + newValue;
+    }
+
 }

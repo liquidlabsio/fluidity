@@ -116,6 +116,7 @@ searchInputAnalytic = new Vue({
         '*',
         'analytic.count()',
         'analytic.countEach()',
+        'analytic.countDistinct()',
         'analytic.countBy(tag)',
         'analytic.stats()',
         'analytic.statsBy(tag)',
