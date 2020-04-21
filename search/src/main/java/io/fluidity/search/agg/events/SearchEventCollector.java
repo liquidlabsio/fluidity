@@ -23,11 +23,12 @@ public class SearchEventCollector implements EventCollector {
     private OutputStream output;
 
     @Override
-    public int process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
+    public int[] process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
         this.input = input;
         this.output = output;
 
-        int read = 0;
+        int readEvents = 0;
+        int totalEvents = 0;
 
         DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
         BufferedOutputStream bos = new BufferedOutputStream(output);
@@ -50,8 +51,8 @@ public class SearchEventCollector implements EventCollector {
                 byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
                 bos.write(bytes);
                 histoCollector.add(currentTime, position, nextLine);
-                read++;
-                read++;// NL
+                readEvents++;
+                readEvents++;// NL
 
                 // tracks the dest file offset - so it can be seek-to-offset for user actions (histogram click, or raw events click)
                 position += bytes.length;
@@ -69,15 +70,15 @@ public class SearchEventCollector implements EventCollector {
 
                 currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
             }
+            totalEvents++;
         }
         bos.flush();
-        return read;
+        return new int[] { readEvents, totalEvents };
     }
 
     /**
      * Fudge the time interval from the time-span and the size of the file - presume avg line fileLength is 1024 bytes.
-     * Very hacky - but very fast.
-     * TODO: consider option to support time-stamp extraction, event if only from the first couple of events
+     * Hacky - but very fast.
      *
      * @param fromTime
      * @param toTime

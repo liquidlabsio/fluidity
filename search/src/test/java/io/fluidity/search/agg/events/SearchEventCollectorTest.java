@@ -47,8 +47,8 @@ class SearchEventCollectorTest {
         String timeFormat = "yyyy-MM-dd HH:mm.SS";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024, timeFormat);
-        assertTrue(process > 0, "didn't process any data");
+        int[] process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024, timeFormat);
+        assertTrue(process[0] > 0, "didn't process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
         System.out.println(outFileContents);
@@ -67,8 +67,8 @@ class SearchEventCollectorTest {
         search.to = System.currentTimeMillis();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024, "");
-        assertTrue(process > 0, "didnt process any data");
+        int[] process = simpleSearchProcessor.process(false, new NoopHistoCollector(), search, new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos, 0, System.currentTimeMillis(), 1024, "");
+        assertTrue(process[0] > 0, "didnt process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
         System.out.println(outFileContents);

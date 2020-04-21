@@ -48,7 +48,7 @@ class Search {
         })
         $.Topic(Fluidity.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
             console.log("Set Bucket Results histo & raw:" + fileResults)
-            self.setSearchFileResults(fileResults[0], fileResults[1])
+            self.setSearchFileResults(fileResults[0], fileResults[1], fileResults[2])
         })
         $.Topic(Fluidity.Search.Topics.setFinalEvents).subscribe(function(events) {
                 self.setFinalEvents(events)
@@ -126,6 +126,7 @@ class Search {
         console.log("Got Files:" + fileMetas)
         let self = this;
         this.searchFileMetas = fileMetas;
+        this.totalEvents = 0;
         this.searchedEvents = []
         this.searchedHistos = []
         this.searchFileMetas.forEach(function(fileMeta, index, arr){
@@ -135,15 +136,18 @@ class Search {
         })
     }
 
-    setSearchFileResults(histoUrl, eventsUrl) {
+    setSearchFileResults(histoUrl, processedEventCount, totalEventCount) {
         let self = this;
          searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " sources"
 
-        this.searchedEvents.push(eventsUrl)
+        this.searchedEvents.push(totalEventCount)
         this.searchedHistos.push(histoUrl)
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
-            searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length
+            this.totalEvents =  searchedEvents.reduce(function(a, b){
+                        return a + b;
+            }, 0);
+            searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length + " Total Events:" + this.totalEvents
             $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
             $.Topic(Fluidity.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }
@@ -151,7 +155,7 @@ class Search {
 
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        searchStats.stats = "Events: " + Fluidity.formatNumber(results[0]) + " Elapsed: " + Fluidity.formatNumber(elapsed)
+        searchStats.stats = "Events: " + Fluidity.formatNumber(results[0]) + " From: " + this.totalEvents + " Elapsed: " + Fluidity.formatNumber(elapsed)
         this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }

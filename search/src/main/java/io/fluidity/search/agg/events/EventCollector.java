@@ -11,5 +11,5 @@ public interface EventCollector extends AutoCloseable {
     /**
      * Note: lines must be written to an .evt (event) outputstream using: timestamp:filepos:data
      */
-    int process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long length, String timeFormat) throws IOException;
+    int[] process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long length, String timeFormat) throws IOException;
 }
