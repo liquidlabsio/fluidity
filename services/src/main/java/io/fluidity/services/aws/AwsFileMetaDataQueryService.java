@@ -33,7 +33,6 @@ import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.Que
 @ApplicationScoped
 public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     public static final int BATCH_LIMIT = 24;
-    private ExecutorService executor = Executors.newCachedThreadPool();
 
     public static final int BATCH_PAUSE_MS = 50;
     public static final long READ_CAPACITY = 30L;
@@ -298,5 +297,15 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
      */
     public void setClient(DynamoDbClient client) {
         this.dynamoDbClient = client;
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+        dynamoDbClient.close();
     }
 }

@@ -1,13 +1,27 @@
 package io.fluidity.util;
 
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+/**
+ *
+ * Supports formats as follows
+ * - yyyy-MM-dd'T'HH:mm:SS
+ * - prefix:[dt":"] yyyy-MM-dd'T'HH:mm:SS
+ * - prefix:[timestamp":] LONG
+ * - prefix:[timestamp":] LONG_SEC
+ *
+ * Note: As per the examples:
+ * - Single quotes are used to support non-parse characters. - the first entry above shows 'T' being literalized
+ * - UnixLong support with MS and S granularity - 3rd and 4th examples
+ * - Indexing into a record by using 'prefix'. i.e. json fields can be accessed - 2,3,4 above
+ *
+ */
 public class DateTimeExtractor {
 
-    private boolean invalidFormat = false;
-    transient DateTimeFormatter dateTimeFormatter;
+
+    DateTimeParser parser;
+
     private String format;
     private String prefix;
 
@@ -22,41 +36,99 @@ public class DateTimeExtractor {
             this.format = format;
         }
 
+        if (this.format.equals("LONG")) {
+            parser = new LongDateTimeParser();
+        }
+        if (this.format.equals("LONG_SEC")) {
+            parser = new LongSecDateTimeParser();
+        }
+
         /**
          * Handle shitty failure scenarios
          */
-        if (dateTimeFormatter == null) {
-            try {
-                dateTimeFormatter = DateTimeFormat.forPattern(this.format);
-            } catch (Exception e) {
-            }
+        try {
+            parser = new JodaDateTimeParser(this.format);
+        } catch (Exception e) {
         }
     }
 
-    private String getPrefix(String format) {
-        int indexFrom = "prefix[".length()+1;
-        int indexTo = format.indexOf("]");
-        return format.substring(indexFrom, indexTo);
-    }
+        private String getPrefix(String format) {
+            int indexFrom = "prefix[".length()+1;
+            int indexTo = format.indexOf("]");
+            return format.substring(indexFrom, indexTo);
+        }
 
     public long getTimeMaybe(long currentTime, long guessTimeInterval, String line) {
-        if (dateTimeFormatter == null ) {
+        if (parser == null ) {
             return currentTime + guessTimeInterval;
         }
 
         try {
-            int from = 0;
-            int to = from + format.length();
-            if (prefix != null) {
-                from = line.indexOf(prefix) + prefix.length();
-                to = from + format.length();
-                if (format.contains("'")) to -= Long.valueOf(format.chars().filter(ch -> ch == '\'').count()).intValue();
-            }
-            DateTime dateTime = dateTimeFormatter.parseDateTime(line.substring(from, to));
-            return dateTime.getMillis();
+            return parser.parseString(getStringSegment(line));
         } catch (Exception ex) {
-            invalidFormat = true;
+            parser = null;
             return currentTime + guessTimeInterval;
         }
+    }
+
+    private String getStringSegment(String line) {
+        int from = 0;
+        int to = from + format.length();
+        if (prefix != null) {
+            from = line.indexOf(prefix) + prefix.length();
+            to = from + parser.formatLength();
+            if (format.contains("'")) to -= Long.valueOf(format.chars().filter(ch -> ch == '\'').count()).intValue();
+        }
+        return line.substring(from, to);
+    }
+
+    static class JodaDateTimeParser implements DateTimeParser {
+
+        private final String format;
+        transient DateTimeFormatter dateTimeFormatter;
+
+        public JodaDateTimeParser(String format) {
+            this.dateTimeFormatter = DateTimeFormat.forPattern(format);
+            this.format = format;
+        }
+
+        @Override
+        public int formatLength() {
+            return format.length();
+        }
+
+        @Override
+        public long parseString(String string) {
+            return dateTimeFormatter.parseDateTime(string).getMillis();
+        }
+    }
+
+    static class LongSecDateTimeParser implements DateTimeParser {
+        @Override
+        public long parseString(String string) {
+            return Long.valueOf(string) * 1000;
+        }
+
+        @Override
+        public int formatLength() {
+            return 10;
+        }
+    }
+
+    static class LongDateTimeParser implements DateTimeParser {
+        @Override
+        public long parseString(String string) {
+            return Long.valueOf(string);
+        }
+
+        @Override
+        public int formatLength() {
+            return 13;
+        }
+    }
+
+    interface DateTimeParser {
+        long parseString(String string);
+        int formatLength();
     }
 }

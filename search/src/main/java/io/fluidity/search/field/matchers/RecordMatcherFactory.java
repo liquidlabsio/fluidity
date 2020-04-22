@@ -11,7 +11,7 @@ public class RecordMatcherFactory {
      * @param expression
      * @return
      */
-    public static List<PMatcher> matchers = Arrays.asList(new PPatternMatcher(), new GrepMatcher(), new AllMatcher());
+    public static List<PMatcher> matchers = Arrays.asList(new BooleanMatcher(), new PPatternMatcher(), new GrepMatcher(), new AllMatcher());
 
     public static PMatcher getMatcher(String recordFilter) {
         List<PMatcher> collect = matchers.stream().filter(matcher -> matcher.isForMe(recordFilter)).collect(Collectors.toList());

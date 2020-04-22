@@ -79,7 +79,9 @@ searchInputRecord = new Vue({
       completes: [
         '*',
         'record.contains(TEXT)',
-        'record.matches(.*TXN:.*)'
+        'record.matches(.*TXN:.*)',
+        'findThis AND alsoThis',
+        'foundThis OR foundThat'
       ]
     }
   }

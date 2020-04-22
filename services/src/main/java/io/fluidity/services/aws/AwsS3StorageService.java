@@ -339,6 +339,16 @@ public class AwsS3StorageService implements Storage {
         return results;
     }
 
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
     private Map<String, InputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
 
         Map<String, InputStream> results = new ConcurrentHashMap<>();

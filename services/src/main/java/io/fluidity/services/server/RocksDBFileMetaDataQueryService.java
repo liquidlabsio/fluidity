@@ -180,4 +180,14 @@ public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService
     public List<FileMeta> list() {
         return query("", "", "");
     }
+
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void stop() {
+        log.info("Stopping");
+        db.close();
+    }
 }
