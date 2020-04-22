@@ -60,4 +60,14 @@ public class FixturedFileMetaDataQueryService implements FileMetaDataQueryServic
     public List<FileMeta> list() {
         return new ArrayList<>(storage.values());
     }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
 }

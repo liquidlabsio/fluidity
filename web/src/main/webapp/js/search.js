@@ -140,11 +140,11 @@ class Search {
         let self = this;
          searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " sources"
 
-        this.searchedEvents.push(totalEventCount)
+        this.searchedEvents.push(parseInt(totalEventCount))
         this.searchedHistos.push(histoUrl)
 
         if (this.searchedEvents.length == this.searchFileMetas.length) {
-            this.totalEvents =  searchedEvents.reduce(function(a, b){
+            this.totalEvents =  this.searchedEvents.reduce(function(a, b){
                         return a + b;
             }, 0);
             searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length + " Total Events:" + this.totalEvents
@@ -155,7 +155,7 @@ class Search {
 
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        searchStats.stats = "Events: " + Fluidity.formatNumber(results[0]) + " From: " + this.totalEvents + " Elapsed: " + Fluidity.formatNumber(elapsed)
+        searchStats.stats = "Events: " + Fluidity.formatNumber(results[0]) + " From: " + Fluidity.formatNumber(this.totalEvents) + " Elapsed: " + Fluidity.formatNumber(elapsed)
         this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }

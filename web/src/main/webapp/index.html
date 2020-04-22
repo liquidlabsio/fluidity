@@ -443,8 +443,8 @@
                                                             Resource Identifier
                                                         </span>
                                                     </div>
-                                                    <input  name="resource" class="form-control"  type="text" id="importResourceInput"
-                                                            placeholder="Storage resource name (S3 bucket name, local FS path etc)"
+                                                    <input  name="importResource" class="form-control"  type="text" id="importResourceInput"
+                                                            placeholder="Storage resource name (S3 bucket name OR local FS path)"
                                                             aria-label="Resource Identifier" aria-describedby="importResourceInputPP">
                                                 </div>
 
@@ -456,7 +456,7 @@
                                                         </span>
                                                     </div>
 
-                                                    <input name="tags"  type="text" class="form-control" id="importTagsInput"
+                                                    <input name="importTags"  type="text" class="form-control" id="importTagsInput"
                                                            placeholder="Comma separated list of tags for labelling"
                                                            aria-label="Resource Identifier" aria-describedby="importTagsInputPP">
                                                 </div>
@@ -470,7 +470,7 @@
                                                         </span>
                                                     </div>
 
-                                                    <input name="fileIncludes" type="text" class="form-control"
+                                                    <input name="importFileIncludes" type="text" class="form-control"
                                                            id="importFileIncludesInput"
                                                            placeholder="Partial file path or name: i.e. prod.log"
                                                            aria-label="File include filter"
@@ -486,7 +486,7 @@
                                                         </span>
                                                     </div>
 
-                                                    <input name="filePrefix" type="text" class="form-control"
+                                                    <input name="importFilePrefix" type="text" class="form-control"
                                                            id="importFilePrefixInput"
                                                            placeholder="Start of the resource Path i.e. exportedData"
                                                            aria-label="Path prefix"
@@ -501,7 +501,7 @@
                                                         </span>
                                                     </div>
 
-                                                    <input name="fileAge" type="text" class="form-control"
+                                                    <input name="importFileAge" type="text" class="form-control"
                                                            id="importFileAgeInput"
                                                            placeholder="Optional - Include data less than 'n' days old"
                                                            aria-label="Age days"
@@ -513,11 +513,12 @@
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="importTimeFormatInputPP">
-                                                            Time Format
+                                                            <a target="_blank" href="https://github.com/liquidlabsio/fluidity/blob/master/search/src/main/java/io/fluidity/util/DateTimeExtractor.java">
+                                                                Time Format</a>
                                                         </span>
                                                     </div>
 
-                                                    <input name="timeFormat" type="text" class="form-control"
+                                                    <input name="importTimeFormat" type="text" class="form-control"
                                                            id="importimeFormatInput"
                                                            placeholder="Optional - time extraction format: yyyy-MM-dd HH:mm:ss.SSS"
                                                            aria-label="TimeFormat"

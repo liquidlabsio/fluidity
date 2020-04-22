@@ -1,5 +1,6 @@
 package io.fluidity.services.storage;
 
+import io.fluidity.services.Lifecycle;
 import io.fluidity.services.query.FileMeta;
 
 import java.io.InputStream;
@@ -7,7 +8,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-public interface Storage {
+public interface Storage extends Lifecycle {
     /**
      * Store and Capture the Storage URL
      * @param region
@@ -31,4 +32,6 @@ public interface Storage {
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix, long fromTime);
+
+    void stop();
 }

@@ -158,4 +158,14 @@ public class QueryResource implements FileMetaDataQueryService {
     public void deleteList(List<FileMeta> removed) {
 
     }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
+    }
 }

@@ -75,6 +75,7 @@ public class FileSystemBasedStorageService implements Storage {
                 {
                     String relativePath = file.getPath().startsWith(storageId) ? file.getPath().substring(storageId.length() + 1) : file.getPath();
                     FileMeta fm = new FileMeta(tenant, storageId, tags, relativePath, new byte[0], inferFakeStartTimeFromSize(file.length(), file.lastModified()), file.lastModified(), timeFormat);
+                    fm.setSize(guessSize(file));
                     fm.setStorageUrl(file.getAbsolutePath());
                     return fm;
                 })
@@ -82,6 +83,12 @@ public class FileSystemBasedStorageService implements Storage {
 
         log.debug("Imported {}", fileMetas.size());
         return fileMetas;
+    }
+
+    private long guessSize(File file) {
+        if (file.getName().endsWith(".gz")) return file.length() * 20l;
+        if (file.getName().endsWith(".lz4")) return file.length() * 4l;
+        return file.length();
     }
 
     private long inferFakeStartTimeFromSize(long size, long lastModified) {
@@ -127,6 +134,16 @@ public class FileSystemBasedStorageService implements Storage {
             }
             return null;
         }));
+    }
+
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 
     @Override
