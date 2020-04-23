@@ -56,7 +56,7 @@ private fun writeToFsForAWhile(fileName: String, target: WebTarget?, client: Cli
                 eventSource.open()
 
                 //Consume events for one minute
-                Thread.sleep(1 * 10 * 1000.toLong())
+                Thread.sleep(5 * 60 * 1000.toLong())
             }
         } catch (e: InterruptedException) {
             e.printStackTrace()
