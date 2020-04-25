@@ -311,10 +311,11 @@
                     <div id="searchResultStats">
                         {{ stats }}
                     </div>
-                    <div id="searchChart">
-                        <apexchart height="350" :options="chartOptions" :series="series"
-                                   v-on:click="click"></apexchart>
-                    </div>
+
+                    <amchart id="searchChart" >
+                    </amchart>
+<!--                        <apexchart height="350" :options="chartOptions" :series="series"-->
+<!--                                   v-on:click="click"></apexchart>-->
                     <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
                     </a>
@@ -620,6 +621,9 @@
     <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts" crossorigin="anonymous"></script>
 
 
+    <script src="//www.amcharts.com/lib/4/core.js"></script>
+    <script src="//www.amcharts.com/lib/4/charts.js"></script>
+
     <script src="https://unpkg.com/vue-bootstrap-typeahead" crossorigin="anonymous"></script>
 
 
@@ -629,7 +633,10 @@
     <script src="js/backend.js"></script>
     <script src="js/explorer.js"></script>
 
+    <script src="js/amcharts-vue.js"></script>
+
     <script src="js/search-vue.js"></script>
+    <script src="js/search-chart.js"></script>
     <script src="js/search-hoverlink.js"></script>
     <script src="js/search.js"></script>
     <script src="js/search-backend.js"></script>
