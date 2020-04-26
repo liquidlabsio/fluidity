@@ -10,8 +10,7 @@
       <title>Fluidity | Dataflow Analytics Platform</title>
 
       <!-- Bootstrap core CSS -->
-      <link href="css/bootstrap.min.css" rel="stylesheet"
-            crossorigin="anonymous">
+      <link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
       <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet"
             crossorigin="anonymous">
@@ -311,12 +310,9 @@
                     <div id="searchResultStats">
                         {{ stats }}
                     </div>
-
-                    <div id="searchChartDiv">
-                        <amchart-xy id="searchChart" type="line" :options="options" :series="series"></amchart-xy>
+                    <div id="searchChart">
+                        <gchart-xy type='line' :options="chartOptions" :series="series" v-on:click="click"></gchart-xy>
                     </div>
-<!--                        <apexchart height="350" :options="chartOptions" :series="series"-->
-<!--                                   v-on:click="click"></apexchart>-->
                     <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
                     </a>
@@ -621,22 +617,34 @@
     <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts" crossorigin="anonymous"></script>
 
 
-    <script src="//www.amcharts.com/lib/4/core.js"></script>
-    <script src="//www.amcharts.com/lib/4/charts.js"></script>
-
     <script src="https://unpkg.com/vue-bootstrap-typeahead" crossorigin="anonymous"></script>
 
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!--    <script type="text/javascript">-->
+<!--      google.charts.load('current');   // Don't need to specify chart libraries!-->
+<!--      google.charts.setOnLoadCallback(drawVisualization);-->
 
+<!--      function drawVisualization() {-->
+<!--        var wrapper = new google.visualization.ChartWrapper({-->
+<!--          chartType: 'ColumnChart',-->
+<!--          dataTable: [['', 'Germany', 'USA', 'Brazil', 'Canada', 'France', 'RU'],-->
+<!--                      ['', 700, 300, 400, 500, 600, 800]],-->
+<!--          options: {'title': 'Countries'},-->
+<!--          containerId: 'vis_div'-->
+<!--        });-->
+<!--        wrapper.draw();-->
+<!--      }-->
+<!--    </script>-->
+
+
+    <script src="js/gcharts-vue.js"></script>
     <!-- App -->
     <script src="js/pubsub.js"></script>
     <script src="js/main.js"></script>
     <script src="js/backend.js"></script>
     <script src="js/explorer.js"></script>
 
-    <script src="js/amcharts-vue.js"></script>
-
     <script src="js/search-vue.js"></script>
-    <script src="js/search-chart.js"></script>
     <script src="js/search-hoverlink.js"></script>
     <script src="js/search.js"></script>
     <script src="js/search-backend.js"></script>
