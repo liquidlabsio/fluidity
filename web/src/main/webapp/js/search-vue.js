@@ -1,3 +1,6 @@
+/**
+* Vue component for the search page
+**/
 var toggle = Vue.component("vue-toggle",{
   props: ['values','selected','default'],
   created: function () {
