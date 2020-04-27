@@ -1,4 +1,4 @@
-apexSearchChart = new Vue({
+searchChart = new Vue({
         el: '#searchChart',
         components: {
           apexchart: VueApexCharts,
@@ -47,6 +47,11 @@ apexSearchChart = new Vue({
                     animations: {
                                  enabled: false
                     },
+                 zoom: {
+                            type: 'x',
+                            enabled: true,
+                            autoScaleYaxis: true
+                          },
                      toolbar: {
                         show: true,
                         tools: {

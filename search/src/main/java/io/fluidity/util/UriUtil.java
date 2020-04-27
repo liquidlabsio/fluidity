@@ -10,11 +10,24 @@ public class UriUtil {
     }
 
     public static String[] getHostnameAndPath(String url) {
-        int beginIndex = url.indexOf("//") + 2;
-        int toIndex = url.indexOf("/", beginIndex);
-        String hostname = url.substring(beginIndex, toIndex);
-        String path = url.substring(toIndex + 1);
-        return new String[]{hostname, path};
+        if (isWindowsVersion(url)) {
+            int beginIndex = url.indexOf(":\\") + 2;
+            int toIndex = url.indexOf("\\", beginIndex);
+            String hostname = url.substring(beginIndex, toIndex);
+            String path = url.substring(toIndex + 1);
+            return new String[]{hostname, path};
+
+        } else {
+            int beginIndex = url.indexOf("//") + 2;
+            int toIndex = url.indexOf("/", beginIndex);
+            String hostname = url.substring(beginIndex, toIndex);
+            String path = url.substring(toIndex + 1);
+            return new String[]{hostname, path};
+        }
+    }
+
+    private static boolean isWindowsVersion(String url) {
+        return url.contains(":\\");
     }
 
 }

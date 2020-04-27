@@ -92,7 +92,7 @@ public class SearchResource {
         } catch (Throwable t) {
             t.printStackTrace();
             log.error("finalizeEventsFailed", t);
-            return new String[]{"0", "0"};
+            return new String[]{"0", "0", "0"};
         }
     }
 

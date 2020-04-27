@@ -24,8 +24,9 @@ public class FileSystemBasedStorageService implements Storage {
         if (value.isPresent()) {
             this.baseDir = value.get();
         } else {
-            this.baseDir = "./target/storage/fs";
+            this.baseDir = "./storage/fs";
         }
+        new File(baseDir).mkdirs();
         log.info("Using storage: {}", this.baseDir);
     }
 
