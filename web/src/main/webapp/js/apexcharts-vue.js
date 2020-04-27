@@ -43,24 +43,19 @@ searchChart = new Vue({
             chartOptions: {
                 chart: {
                     height: 150,
-                    type: 'bar',
+                    type: 'line',
                     animations: {
-                                 enabled: false
-                    },
-                 zoom: {
-                            type: 'x',
-                            enabled: true,
-                            autoScaleYaxis: true
-                          },
-                     toolbar: {
+                          enabled: false,
+                      },
+                    toolbar: {
                         show: true,
                         tools: {
-                                  download: true,
-                                  selection: true,
-                                  zoom: true,
-                                  zoomin: false,
-                                  zoomout: false,
-                                  pan: true,
+                              download: true,
+                              selection: true,
+                              zoom: true,
+                              zoomin: false,
+                              zoomout: false,
+                              pan: true,
                             customIcons: [
                                 {
                                     icon: '<img class="apex-toolbar-icon" src="img/tools-bar.png" width="25">',
