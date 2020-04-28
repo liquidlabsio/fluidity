@@ -9,8 +9,8 @@ import java.util.*
 fun main(){
 
 //    val output = "datagen/target/lambda-datagen/"
-//    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
-    val output = "/work/logs/"
+    val output = "/Volumes/SSD2/logs/fluidity/awslambda/"
+//    val output = "/work/logs/"
 
     println("Running from:" + File(".").absolutePath)
     File(output).mkdirs();
@@ -36,11 +36,12 @@ fun writeToFsForAWhile(writer: BufferedWriter, template: String) {
     templates.forEach {template -> result = template.evaluate(result) }
     writer.write(result)
     writer.write("\n")
+    writer.flush()
 }
 
 class TsTemplate() : Template("{{LOG_TIMESTAMP}}") {
     // format as 2020-04-22T16:10:38.119Z
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm.SS.mmm'Z'")
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm.ss.SSS'Z'")
     override fun evaluate(document: String): String {
         return document.replace(matches, formatter.format(LocalDateTime.now()))
     }

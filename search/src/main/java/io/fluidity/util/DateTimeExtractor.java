@@ -3,6 +3,8 @@ package io.fluidity.util;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Arrays;
+
 /**
  *
  * Supports formats as follows
@@ -64,20 +66,19 @@ public class DateTimeExtractor {
         }
 
         try {
-            return parser.parseString(getStringSegment(line));
+            return parser.parseString(getStringSegment(line, parser.formatLength()));
         } catch (Exception ex) {
             parser = null;
             return currentTime + guessTimeInterval;
         }
     }
 
-    private String getStringSegment(String line) {
+    private String getStringSegment(String line, int length) {
         int from = 0;
-        int to = from + format.length();
+        int to = from + length;
         if (prefix != null) {
             from = line.indexOf(prefix) + prefix.length();
-            to = from + parser.formatLength();
-            if (format.contains("'")) to -= Long.valueOf(format.chars().filter(ch -> ch == '\'').count()).intValue();
+            to = from + length;
         }
         return line.substring(from, to);
     }
@@ -85,16 +86,19 @@ public class DateTimeExtractor {
     static class JodaDateTimeParser implements DateTimeParser {
 
         private final String format;
+        private int formatLength;
         transient DateTimeFormatter dateTimeFormatter;
 
         public JodaDateTimeParser(String format) {
             this.dateTimeFormatter = DateTimeFormat.forPattern(format);
             this.format = format;
+            this.formatLength = format.length();
+            this.formatLength -= format.chars().filter(ch -> ch == '\'').count();
         }
 
         @Override
         public int formatLength() {
-            return format.length();
+            return formatLength;
         }
 
         @Override
