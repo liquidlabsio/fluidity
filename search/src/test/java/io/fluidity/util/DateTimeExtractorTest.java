@@ -9,6 +9,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class DateTimeExtractorTest {
 
     @Test
+    public void matchedDateTimeTest() {
+        String testMe = "2020-04-28T19:06.38.775Z START RequestId: a788fb69-f6c4-4ee2-bb40-0c87bc61738c Version: $LATEST";
+        DateTimeExtractor dateTimeExtractor = new DateTimeExtractor("yyyy-MM-dd'T'HH:mm.SS");
+        long timeMaybe = dateTimeExtractor.getTimeMaybe(System.currentTimeMillis(), 100, testMe);
+        System.out.println(timeMaybe);
+        Date x = new Date(timeMaybe);
+        System.out.println(x);
+        assertEquals(6, x.getMinutes());
+    }
+
+    @Test
     public void matchedDateTime() {
         DateTimeExtractor dateTimeExtractor = new DateTimeExtractor("yyyy-MM-dd HH:mm.SS");
         long timeMaybe = dateTimeExtractor.getTimeMaybe(System.currentTimeMillis(), 100, "2020-02-14 13:01.22");

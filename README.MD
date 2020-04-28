@@ -1,13 +1,13 @@
 
-![Image description](img/fluidity-logo1.png)
+![Image description](img/fluidity-by.png)
 
-The Dataflow Analytics Platform
+The Dataflow analytics and visualization platform
 
 # What is it?
 
-A data analytics platform that focuses on events, dataflows (streams) and makes them observable.
+A data analytics platform that focuses on events, dataflows (streams of events) and makes them observable.
 
-## What is it - again?
+## In more detail...
 
 It lets you search and analyse streams of events from logfiles (correlation-Ids, txn ids), Kafka or other sources. 
 Analysis is both historical (batch) and live (stream) - providing insight on streams are behaving now and in the past. 
