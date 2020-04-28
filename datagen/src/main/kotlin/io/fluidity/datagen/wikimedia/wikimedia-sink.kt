@@ -14,8 +14,9 @@ import javax.ws.rs.sse.SseEventSource
 
 fun main(){
 
-    val output = "datagen/target/wikimedia"
+//    val output = "datagen/target/wikimedia"
 //    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
+    val output = "/work/logs/"
 
     File(output).mkdirs();
 

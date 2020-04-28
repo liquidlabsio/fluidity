@@ -1,0 +1,6 @@
+{{LOG_TIMESTAMP}} START RequestId: {{UUID}} Version: $LATEST
+{{LOG_TIMESTAMP}} {{UUID}}	INFO	Download handler received:{    "company": "BoucheCousue",  "name": "Gonzague",    "email": "blog@gonzague.me", "reason": "None_of_the_above",   "role": "Student"}
+{{LOG_TIMESTAMP}} {{UUID}}	INFO	emailing:"blog@gonzague.me"
+{{LOG_TIMESTAMP}} {{UUID}}	INFO	SUCCESS SENDING:{"ResponseMetadata": { "RequestId": "180e4bd1-3d00-4146-a9d6-fde7b2fca58f"}, "MessageId": "01020171a2a7cf0d-4f3b73ac-e5f8-4207-b2f5-5a980204aea1-000000"}
+{{LOG_TIMESTAMP}} END RequestId: {{UUID}}
+{{LOG_TIMESTAMP}} REPORT RequestId: {{UUID}}	Duration: {{DURATION:800-999}} ms	Billed Duration: {{BILLED_DURATION:800-1200}} ms	Memory Size: 128 MB	Max Memory Used: {{MEM_USED:90-100}} MB	Init Duration: {{INIT_DURATION:100-600}} ms
