@@ -1,7 +1,7 @@
-
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2976c0c51a34d3fb6e1460a9aa394cd)](https://www.codacy.com/gh/liquidlabsio/fluidity?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=liquidlabsio/fluidity&amp;utm_campaign=Badge_Grade)
 ![Image description](img/fluidity-by.png)
 
-The Dataflow analytics and visualization platform
+The dataflow analytics and visualization platform
 
 # What is it?
 
@@ -12,14 +12,14 @@ A data analytics platform that focuses on events, dataflows (streams of events) 
 It lets you search and analyse streams of events from logfiles (correlation-Ids, txn ids), Kafka or other sources. 
 Analysis is both historical (batch) and live (stream) - providing insight on streams are behaving now and in the past. 
 Historical analysis provides a baseline for measure performance, data characteristics and more. Perhaps an example is best.
->A payment processing system.<br>
->Questions answered.
->1. What volume of transactions are processed (rate/sec)
->1. What is the latency at each stage of my pipeline? i.e. are some processing stages backing up?
+>A payment processing system.<br> 
+>>Questions answered:
+>1. Volume of transactions processed (rate/sec)
+>1. Latency profiling at each stage of a pipeline? i.e. are some processing stages backing up?
 >1. Percentile based breakdown and correlation of data attributes versus performance. i.e. Payment amount and Latency
 >1. Heatmap overlay of live performance versus historical performance (broken down by hour-of-day, day-of-week etc)
 
-Visual representations include:
+Visual analysis:
 * Sankey diagrams: provide segmented understanding over dataflow stages and correlation between latency and data attributes.
 * Stream Graphs: time series overlays to see trending, spot outliers.
 * Network flow diagrams: node relationships and related traffic.
@@ -31,6 +31,7 @@ Functional:
 
 Applicability:
 * log analysis
+* distributed tracing using correlation-ids
 * data pipelines via trace identifiers
 * event driven microservices via trace identifier, txn identiers, correlation ids.
 * serverless function dataflow analysis via trace identifier, txn identifiers, correlation ids.
@@ -52,13 +53,13 @@ functionality that most people need.
 * provide time series overlays
 * extrapolate data attributes to extract data models for stream visualization (sankey, streamflow, service map)
 
-## Runtime stack
-1. Quarkus - a Java container providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM - Java-native microkernel without the traditional Java overhead
+## Runtime
+1. Quarkus: a Java container runtime providing the best of breed tools/frameworks from the Java ecosystem. They compile down to GraalVM - Java-native microkernel without the traditional Java overhead
 2. Serverless functions. Using the AWS-Lambda extension, API calls are delegated through the APIGateway (proxy) to call onto a Serverless function instance.
 3. Cloud native storage: S3, GFS etc
-4. Cloud native DB (AWS:DynamoDB)
-5. Static web-tier from storage layer (the front end is hosts on S3 etc) and calls to the REST API
- that is part of the API Gateway that delegates to the Serverless function. Much of this 'call chain' complexity is 
+4. Cloud native database (AWS:DynamoDB)
+5. Static web-tier from storage layer (i.e. hosted on S3) and calls to the REST API
+ via API Gateway and delegates to the Serverless function. Call-chain complexity is 
  handled by Quarkus extensions (i.e. lambda-http, resteasy etc)
 
 # Building
@@ -70,11 +71,11 @@ functionality that most people need.
     Open index.html in a browser from Intellij (backend.js defaults to http://localhost:8080 which quarkus is running the REST endpoint)
 
 
-#### Server Mode to run natively on a Host 
+#### Server Mode 
 
 > build and run the GraalVM executable.
 
-#### AWS Deployment
+#### Cloud - AWS Deployment
 
 Notes and limits: 
 - If you want data to load quickly to the browser then enable CORS on each S3 bucket and 
