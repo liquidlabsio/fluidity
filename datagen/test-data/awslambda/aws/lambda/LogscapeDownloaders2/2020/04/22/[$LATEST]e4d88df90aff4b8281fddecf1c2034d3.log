@@ -1,0 +1,6 @@
+2020-04-22T16:10:38.119Z START RequestId: 14504657-f82b-49f0-95f1-249e92d966a9 Version: $LATEST
+2020-04-22T16:10:38.119Z 14504657-f82b-49f0-95f1-249e92d966a9	INFO	Download handler received:{    "company": "BoucheCousue",  "name": "Gonzague",    "email": "blog@gonzague.me", "reason": "None_of_the_above",   "role": "Student"}
+2020-04-22T16:10:38.119Z 14504657-f82b-49f0-95f1-249e92d966a9	INFO	emailing:"blog@gonzague.me"
+2020-04-22T16:10:38.119Z 14504657-f82b-49f0-95f1-249e92d966a9	INFO	SUCCESS SENDING:{"ResponseMetadata": { "RequestId": "180e4bd1-3d00-4146-a9d6-fde7b2fca58f"}, "MessageId": "01020171a2a7cf0d-4f3b73ac-e5f8-4207-b2f5-5a980204aea1-000000"}
+2020-04-22T16:10:38.119Z END RequestId: 14504657-f82b-49f0-95f1-249e92d966a9
+2020-04-22T16:10:38.119Z REPORT RequestId: 14504657-f82b-49f0-95f1-249e92d966a9	Duration: 988.22 ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: 84 MB	Init Duration: 371.81 ms

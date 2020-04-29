@@ -14,8 +14,9 @@ import javax.ws.rs.sse.SseEventSource
 
 fun main(){
 
-    val output = "datagen/target/wikimedia"
+//    val output = "datagen/target/wikimedia"
 //    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
+    val output = "/work/logs/"
 
     File(output).mkdirs();
 
@@ -26,12 +27,12 @@ fun main(){
         val wikiMediaUrl = "https://stream.wikimedia.org/v2/stream/recentchange"
         val client = ClientBuilder.newClient()
         val target = client.target(wikiMediaUrl)
-        writeToFsForAWhile(fileName, target, client)
+        applyTemplates(fileName, target, client)
     }
 
 }
 
-private fun writeToFsForAWhile(fileName: String, target: WebTarget?, client: Client) {
+private fun applyTemplates(fileName: String, target: WebTarget?, client: Client) {
     println("Writing to " + File(fileName).absolutePath)
 
     var count = 0

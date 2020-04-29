@@ -1,0 +1,170 @@
+START RequestId: 911c58ba-25e3-479f-b236-68449209ef6e Version: $LATEST
+2019-12-01T10:18:17.410Z	911c58ba-25e3-479f-b236-68449209ef6e	INFO	Email Sender going to handle:
+{
+    "resource": "/LogscapeContactus2",
+    "path": "/LogscapeContactus2",
+    "httpMethod": "OPTIONS",
+    "headers": {
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+        "access-control-request-headers": "content-type",
+        "access-control-request-method": "POST",
+        "CloudFront-Forwarded-Proto": "https",
+        "CloudFront-Is-Desktop-Viewer": "true",
+        "CloudFront-Is-Mobile-Viewer": "false",
+        "CloudFront-Is-SmartTV-Viewer": "false",
+        "CloudFront-Is-Tablet-Viewer": "false",
+        "CloudFront-Viewer-Country": "GB",
+        "Host": "77pt4hfzc7.execute-api.eu-west-1.amazonaws.com",
+        "origin": "http://localhost:63342",
+        "Referer": "http://localhost:63342/logscape.com/web/contact.html",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+        "Via": "2.0 6c973aa0cbaa9809a414d7a4e20e26ce.cloudfront.net (CloudFront)",
+        "X-Amz-Cf-Id": "AFBGFlKrgIQ6zSn8I03nF3ZRHANrTmHmVK0D4h4-F5iS6Cv5GulXMg==",
+        "X-Amzn-Trace-Id": "Root=1-5de39368-83eaeb810b157343c1ffc4ab",
+        "X-Forwarded-For": "81.107.170.115, 70.132.46.136",
+        "X-Forwarded-Port": "443",
+        "X-Forwarded-Proto": "https"
+    },
+    "multiValueHeaders": {
+        "Accept": [
+            "*/*"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate, br"
+        ],
+        "Accept-Language": [
+            "en-GB,en-US;q=0.9,en;q=0.8"
+        ],
+        "access-control-request-headers": [
+            "content-type"
+        ],
+        "access-control-request-method": [
+            "POST"
+        ],
+        "CloudFront-Forwarded-Proto": [
+            "https"
+        ],
+        "CloudFront-Is-Desktop-Viewer": [
+            "true"
+        ],
+        "CloudFront-Is-Mobile-Viewer": [
+            "false"
+        ],
+        "CloudFront-Is-SmartTV-Viewer": [
+            "false"
+        ],
+        "CloudFront-Is-Tablet-Viewer": [
+            "false"
+        ],
+        "CloudFront-Viewer-Country": [
+            "GB"
+        ],
+        "Host": [
+            "77pt4hfzc7.execute-api.eu-west-1.amazonaws.com"
+        ],
+        "origin": [
+            "http://localhost:63342"
+        ],
+        "Referer": [
+            "http://localhost:63342/logscape.com/web/contact.html"
+        ],
+        "sec-fetch-mode": [
+            "cors"
+        ],
+        "sec-fetch-site": [
+            "cross-site"
+        ],
+        "User-Agent": [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
+        ],
+        "Via": [
+            "2.0 6c973aa0cbaa9809a414d7a4e20e26ce.cloudfront.net (CloudFront)"
+        ],
+        "X-Amz-Cf-Id": [
+            "AFBGFlKrgIQ6zSn8I03nF3ZRHANrTmHmVK0D4h4-F5iS6Cv5GulXMg=="
+        ],
+        "X-Amzn-Trace-Id": [
+            "Root=1-5de39368-83eaeb810b157343c1ffc4ab"
+        ],
+        "X-Forwarded-For": [
+            "81.107.170.115, 70.132.46.136"
+        ],
+        "X-Forwarded-Port": [
+            "443"
+        ],
+        "X-Forwarded-Proto": [
+            "https"
+        ]
+    },
+    "queryStringParameters": null,
+    "multiValueQueryStringParameters": null,
+    "pathParameters": null,
+    "stageVariables": null,
+    "requestContext": {
+        "resourceId": "3cm8md",
+        "resourcePath": "/LogscapeContactus2",
+        "httpMethod": "OPTIONS",
+        "extendedRequestId": "EBP4aH8SjoEFasQ=",
+        "requestTime": "01/Dec/2019:10:18:16 +0000",
+        "path": "/prod/LogscapeContactus2",
+        "accountId": "001814218767",
+        "protocol": "HTTP/1.1",
+        "stage": "prod",
+        "domainPrefix": "77pt4hfzc7",
+        "requestTimeEpoch": 1575195496918,
+        "requestId": "f5d3015d-6ed0-4223-9982-722c68027d53",
+        "identity": {
+            "cognitoIdentityPoolId": null,
+            "accountId": null,
+            "cognitoIdentityId": null,
+            "caller": null,
+            "sourceIp": "81.107.170.115",
+            "principalOrgId": null,
+            "accessKey": null,
+            "cognitoAuthenticationType": null,
+            "cognitoAuthenticationProvider": null,
+            "userArn": null,
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+            "user": null
+        },
+        "domainName": "77pt4hfzc7.execute-api.eu-west-1.amazonaws.com",
+        "apiId": "77pt4hfzc7"
+    },
+    "body": null,
+    "isBase64Encoded": false
+}
+2019-12-01T10:18:17.410Z	911c58ba-25e3-479f-b236-68449209ef6e	INFO	sending email data:
+{
+    "Destination": {
+        "ToAddresses": [
+            "support@logscape.com"
+        ]
+    },
+    "Message": {
+        "Body": {
+            "Text": {
+                "Data": "From: undefined\nEmail: undefined\nMsg: undefined",
+                "Charset": "UTF-8"
+            }
+        },
+        "Subject": {
+            "Data": "Contact via Website from undefined",
+            "Charset": "UTF-8"
+        }
+    },
+    "Source": "support@logscape.com"
+}
+2019-12-01T10:18:18.197Z	911c58ba-25e3-479f-b236-68449209ef6e	INFO	finished sending email....
+2019-12-01T10:18:18.234Z	911c58ba-25e3-479f-b236-68449209ef6e	INFO	SUCCESS SENDING:
+{
+    "ResponseMetadata": {
+        "RequestId": "014df02b-8be1-4f5a-a65a-aada73ae6e60"
+    },
+    "MessageId": "0102016ec0f7d5ec-733bb532-5434-4338-b9b2-f1169fe79678-000000"
+}
+END RequestId: 911c58ba-25e3-479f-b236-68449209ef6e
+REPORT RequestId: 911c58ba-25e3-479f-b236-68449209ef6e	Duration: 848.63 ms	Billed Duration: 900 ms	Memory Size: 128 MB	Max Memory Used: 90 MB	Init Duration: 339.87 ms
