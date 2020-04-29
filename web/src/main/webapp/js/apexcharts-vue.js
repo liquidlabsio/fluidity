@@ -43,7 +43,7 @@ searchChart = new Vue({
             chartOptions: {
                 chart: {
                     height: 150,
-                    type: 'line',
+                    type: "line",
                     animations: {
                           enabled: false,
                       },

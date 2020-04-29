@@ -28,7 +28,7 @@ var toggle = Vue.component("vue-toggle",{
 
 searchTimeSeriesToggle = new Vue({
   el: '#searchTimeSeriesSelection',
-  data: function () {
+  data() {
     return {
       time: 'time.series()',
       styles: {

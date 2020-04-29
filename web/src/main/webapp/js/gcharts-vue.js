@@ -15,25 +15,21 @@ Vue.component("gchart-xy",{
 /**
 * type: line, bar, 
 **/
-    props: ['type', 'series', 'options', 'width', 'height'],
+    props: ["type", "series", "options", "width", "height"],
     template:
-            '<div class="gchart-xy" ref="chartdiv"></div>',
-  created() {
-        console.log("CREATING GCHARTS type:" + this.chartType)
-        this.type = 'line';
-    },
+            "<div class='gchart-xy' ref='chartdiv'></div>",
     created() {
-        this.$watch("options", options => {
+        this.$watch("options", (options) => {
           if (!this.chart && options) {
            console.log("Chart options changed");
           }
         });
 
-        this.$watch("series", series => {
+        this.$watch("series", (series) => {
             console.log("Chart series changed");
             this.updateSeries(this.series);
         });
-        this.$watch("type", type => {
+        this.$watch("type", (type) => {
             console.log("Chart type changed");
              google.charts.load('current', {'packages':[this.type]});
              google.charts.setOnLoadCallback(this.draw);
@@ -50,11 +46,11 @@ Vue.component("gchart-xy",{
           console.log("CREATE:" + this.type);
           } else {
           console.log("ALREADY EXISTS")
-           console.log(chart)
-           this.refresh()
+           console.log(chart);
+           this.refresh();
           }
 
-          google.charts.load('current', {'packages':[this.type]});
+          google.charts.load("current", {"packages":[this.type]});
 //          google.charts.load('current', {'packages':['corechart']});
           //google.charts.setOnLoadCallback(this.drawChart);
         },
@@ -64,23 +60,23 @@ Vue.component("gchart-xy",{
     },
      updateSeries(newSeries) {
         if (newSeries.length == 0) {
-        console.log("Empty series")
+        console.log("Empty series");
         return;
         }
         let data = new google.visualization.DataTable();
-        data.addColumn('datetime', 'Time');
+        data.addColumn("datetime", "Time");
         var rows = []
         newSeries.forEach((element, index) => {
-            data.addColumn('number', element.name);
+            data.addColumn("number", element.name);
             element.data.forEach((element, index) => {
+                var row = [];
                 if (rows.length <= index) {
-                    row = [];
                     row.push(new Date(element[0]));
                     row.push(element[1]);
                     rows.push(row);
                 } else {
                     row = rows[index];
-                    row.push(element[1])
+                    row.push(element[1]);
                 }
             })
         })
@@ -91,7 +87,7 @@ Vue.component("gchart-xy",{
     },
     refresh() {
         console.log("refresh");
-        setType(this.type)
+        setType(this.type);
 //        this.destroy();
 //        return this.init();
     },
@@ -116,7 +112,6 @@ Vue.component("gchart-xy",{
              height: this.height,
             //width: 600,
             curveType: 'function',
-            height: this.height,
             legend: { position: 'bottom', maxLines: 3 },
           };
 
