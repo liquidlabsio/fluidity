@@ -10,8 +10,7 @@
       <title>Fluidity | Dataflow Analytics Platform</title>
 
       <!-- Bootstrap core CSS -->
-      <link href="css/bootstrap.min.css" rel="stylesheet"
-            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
       <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet"
             crossorigin="anonymous">
@@ -312,8 +311,8 @@
                         {{ stats }}
                     </div>
                     <div id="searchChart">
-                        <apexchart height="350" :options="chartOptions" :series="series"
-                                   v-on:click="click"></apexchart>
+                        <apexchart height="350" :options="chartOptions" :series="series" v-on:click="click"></apexchart>
+<!--                        <gchart-xy height="350" :type="type" :options="options" :series="series"></gchart-xy>-->
                     </div>
                     <a class="searchZoom" data-zoom="in" href="#">
                         <span data-feather="zoom-in"></span>
@@ -587,7 +586,6 @@
         }
     </script>
     <script src="js/vendor/bootstrap.bundle.min.js"
-            integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"
             crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js" crossorigin="anonymous"></script>
 
@@ -622,6 +620,10 @@
 
     <script src="https://unpkg.com/vue-bootstrap-typeahead" crossorigin="anonymous"></script>
 
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script src="js/gcharts-vue.js"></script>
+    <script src="js/apexcharts-vue.js"></script>
 
     <!-- App -->
     <script src="js/pubsub.js"></script>

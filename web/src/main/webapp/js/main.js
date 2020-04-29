@@ -5,8 +5,8 @@ function checkUserLogin(){
     if (window.location.pathname.endsWith("index.html")) {
         let auth = window.localStorage.getItem("fluidity-auth")
         if (auth == null || auth.length == 0) {
-            alert("User is not logged in")
-            window.location.href = "signin.html"
+//            alert("User is not logged in")
+//            window.location.href = "signin.html"
         } else {
             let timestamp = parseInt(auth.split(":")[0])
             let sessionAgeHours = (new Date().getTime() - timestamp)/(1000 * 60 * 12);
