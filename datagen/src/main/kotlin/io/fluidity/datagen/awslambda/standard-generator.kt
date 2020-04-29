@@ -116,6 +116,9 @@ open class RangeTemplate(matches: String) : Template(matches) {
         return document.substring(0, from) + calcValue + document.substring(to)
     }
 
+    /**
+     * Calculate range value. parse :100-200 part of the template and apply influence and random scaling
+     */
     open fun calcValue(rangeString: String, infuenceFactor: Double): Int {
         val split = rangeString.split(":")
         val numberString = split[1].split("-")
@@ -141,6 +144,9 @@ open class RangeTemplate(matches: String) : Template(matches) {
  * Base class
  */
 open class Template(val matches: String) {
+    /**
+     * Apply template expansion
+     */
     open fun evaluate(document: String) : String {
         return document.replace(matches, "matched");
     }
