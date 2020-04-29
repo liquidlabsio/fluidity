@@ -23,11 +23,12 @@ searchChart = new Vue({
                 };
               },
                setChartStyle(style) {
-                              this.chartOptions = {
-                                chart: {
-                                  type: style
-                                }
-                              };
+                      this.chartOptions = {
+                        chart: {
+                          type: style,
+                          stacked: true
+                        }
+                      };
                 }
 
         },

@@ -133,6 +133,26 @@ searchInputAnalytic = new Vue({
   }
 })
 
+searchInputGroupBy = new Vue({
+  el: '#groupByWrapper',
+  components: {
+    VueBootstrapTypeahead
+  },
+  data() {
+    return {
+      query: '*',
+      completes: [
+        '*',
+        'groupBy(tag)',
+        'groupBy(path)',
+        'groupBy(path[1])',
+        'groupBy(path[1-2])',
+        'groupBy(path[last])',
+      ]
+    }
+  }
+})
+
 var searchSubmit = new Vue({
     el: '#searchSubmit',
     methods: {
@@ -140,7 +160,9 @@ var searchSubmit = new Vue({
         let search = {
             origin: 'username',
             uid: new Date().getTime(),
-            expression: searchInputBucket.query + '|' + searchInputFilename.query + '|' + searchInputRecord.query + '|' +  searchInputField.query + '|' + searchInputAnalytic.query + '|' + searchTimeSeriesToggle.time,
+            expression: searchInputBucket.query + '|' + searchInputFilename.query + '|' + searchInputRecord.query
+                        + '|' +  searchInputField.query + '|' + searchInputAnalytic.query
+                        + '|' + searchTimeSeriesToggle.time + '|' + searchInputGroupBy.query ,
             from: new Date().getTime() - searcher.duration * 60 * 1000,
             to: new Date().getTime()
         }

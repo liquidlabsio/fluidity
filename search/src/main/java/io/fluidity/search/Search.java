@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.AbstractMap;
 
 /**
- * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic | timeControl
+ * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic | timeControl | groupby
  */
 @RegisterForReflection
 public class Search {
@@ -26,7 +26,7 @@ public class Search {
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 
-    public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic, timeseries}
+    public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic, timeseries, groupby}
 
     @FormParam("origin")
     @PartType(MediaType.TEXT_PLAIN)
@@ -92,6 +92,14 @@ public class Search {
         }
         return fieldExtractor.getSeriesNameAndValue(sourceName, nextLine);
     }
+    private transient GroupByExtractor groupByExtractor;
+    public AbstractMap.SimpleEntry<String, Object> applyGroupBy(AbstractMap.SimpleEntry<String, Object> seriesNameAndValue, String tags, String sourceName) {
+        if (groupByExtractor == null) {
+            groupByExtractor = new GroupByExtractor(expression);
+        }
+        return groupByExtractor.applyGrouping(seriesNameAndValue, tags, sourceName);
+    }
+
 
     public Series getTimeSeries(String seriesName, long from, long to) {
         String[] split = expression.split("\\|");
