@@ -13,7 +13,7 @@ public class KvPairExtractor implements Extractor {
     private final Pattern pattern;
 
     public KvPairExtractor(String expressionPart) {
-        String patternString = ".* (" + expressionPart + ")(\\d+).*";
+        String patternString = ".*(" + expressionPart + ")(\\d+).*";
         pattern = Pattern.compile(patternString);
     }
 
