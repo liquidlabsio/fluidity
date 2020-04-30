@@ -10,11 +10,11 @@ import io.fluidity.search.field.matchers.PMatcher;
 import io.fluidity.search.field.matchers.RecordMatcherFactory;
 import io.fluidity.util.UriUtil;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.graalvm.collections.Pair;
 import org.jboss.resteasy.annotations.jaxrs.FormParam;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 
 import javax.ws.rs.core.MediaType;
-import java.util.AbstractMap;
 
 /**
  * Expression-Parts: [bucket | host | tags] | filename | lineMatcher-IncludeFilter | fieldExtractor | analytic | timeControl | groupby
@@ -86,27 +86,27 @@ public class Search {
 
     private transient FieldExtractor fieldExtractor;
 
-    public AbstractMap.SimpleEntry<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
+    public Pair<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
         if (fieldExtractor == null) {
             fieldExtractor = new FieldExtractor(expression);
         }
         return fieldExtractor.getSeriesNameAndValue(sourceName, nextLine);
     }
     private transient GroupByExtractor groupByExtractor;
-    public AbstractMap.SimpleEntry<String, Object> applyGroupBy(AbstractMap.SimpleEntry<String, Object> seriesNameAndValue, String tags, String sourceName) {
+    public String applyGroupBy(String tags, String sourceName) {
         if (groupByExtractor == null) {
             groupByExtractor = new GroupByExtractor(expression);
         }
-        return groupByExtractor.applyGrouping(seriesNameAndValue, tags, sourceName);
+        return groupByExtractor.applyGrouping(tags, sourceName);
     }
 
 
-    public Series getTimeSeries(String seriesName, long from, long to) {
+    public Series getTimeSeries(String seriesName, String groupBy, long from, long to) {
         String[] split = expression.split("\\|");
         String timeSeriesStyle = split.length > EXPRESSION_PARTS.timeseries.ordinal() ? split[EXPRESSION_PARTS.timeseries.ordinal()].trim() : "";
 
-        if (timeSeriesStyle.equals("time.overlay()")) return new OverlayTimeSeries(seriesName, from, to);
-        return new TimeSeries(seriesName, from, to);
+        if (timeSeriesStyle.equals("time.overlay()")) return new OverlayTimeSeries(seriesName, groupBy, from, to);
+        return new TimeSeries(seriesName, groupBy, from, to);
     }
 
     @Override

@@ -25,7 +25,7 @@ class SimpleHistoCollectorTest {
         collector.add(from, 100, "Line");
         collector.add(from, 100, "Line");
         collector.close();
-        Series series = collector.series().values().iterator().next();
+        Series series = collector.series().getValues().iterator().next();
         long lineCountWithDefaultFunction = series.get(from);
         assertEquals(3, lineCountWithDefaultFunction);
 

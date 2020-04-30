@@ -11,7 +11,7 @@ class TimeSeriesTest {
     public void testBuildSeriesAndGetStuff() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - DateUtil.HOUR;
-        Series series = new TimeSeries("someFile", from, last);
+        Series series = new TimeSeries("someFile", "", from, last);
 
         assertFalse(series.hasData());
 

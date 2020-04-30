@@ -32,7 +32,7 @@ class OverlayTimeSeriesTest {
 
         long from = today + dateTimeFormatter.parseDateTime("01:00.00").getMillis();
         long to = today + dateTimeFormatter.parseDateTime("15:45.00").getMillis();
-        Series series = new OverlayTimeSeries("someFile", from, to);
+        Series series = new OverlayTimeSeries("someFile", "", from, to);
 
 
         DateTime localTime = dateTimeFormatter.parseDateTime("12:30.00");
@@ -60,7 +60,7 @@ class OverlayTimeSeriesTest {
     public void testStandardTimeSeries() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last);
 
         assertFalse(series.hasData());
 
@@ -74,7 +74,7 @@ class OverlayTimeSeriesTest {
     public void testOutOfBoundsOverlay() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last);
 
         assertFalse(series.hasData());
 
@@ -93,7 +93,7 @@ class OverlayTimeSeriesTest {
     public void testUpdateMatchesAcrossDifferentBounds() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someData", from, last);
+        Series series = new OverlayTimeSeries("someData", "", from, last);
 
         long expectedFrom = DateUtil.ceilHour(last)-HOUR;
 

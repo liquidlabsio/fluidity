@@ -3,6 +3,7 @@ package io.fluidity.search.agg.events;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.search.Search;
+import org.graalvm.collections.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,12 +58,12 @@ public class LineByLineEventAggregator implements EventsAggregator {
                 });
     }
 
-    private Map.Entry<Long, RecordEntry> split(String streamName, String nextLine) {
+    private Pair<Long, RecordEntry> split(String streamName, String nextLine) {
         int i = nextLine.indexOf(":");
         if (i == -1) return null;
         Long time = Long.valueOf(nextLine.substring(0, i));
         String line = splitLine ? nextLine.substring(i + 1) : nextLine;
-        return new AbstractMap.SimpleEntry(time, new RecordEntry(streamName, time, line));
+        return Pair.create(time, new RecordEntry(streamName, time, line));
     }
 
     @Override
@@ -87,7 +88,7 @@ public class LineByLineEventAggregator implements EventsAggregator {
         return new ObjectMapper().writeValueAsString(keySet);
     }
 
-    Map<String, Map.Entry<Long, RecordEntry>> nextLines = new HashMap<>();
+    Map<String, Pair<Long, RecordEntry>> nextLines = new HashMap<>();
 
     /**
      * Searched lines are stored using: timestamp:filepos:data
@@ -97,7 +98,7 @@ public class LineByLineEventAggregator implements EventsAggregator {
      * @throws IOException
      */
     private RecordEntry getNextLine(Map<String, BufferedReader> streams) throws IOException {
-        Map.Entry<String, Map.Entry<Long, RecordEntry>> nextLine = findNextLine(nextLines);
+        Map.Entry<String, Pair<Long, RecordEntry>> nextLine = findNextLine(nextLines);
         if (nextLine == null) {
             return null;
         }
@@ -110,9 +111,9 @@ public class LineByLineEventAggregator implements EventsAggregator {
 
 
         // Note: 'nextLine' points to a hashmap entry that can be mutated by updates below.
-        RecordEntry result = nextLine.getValue().getValue();
+        RecordEntry result = nextLine.getValue().getRight();
         String streamUrl = nextLine.getKey();
-        Map.Entry<Long, RecordEntry> newStreamLineValue = readNewStreamLine(streamUrl, streams.get(streamUrl));
+        Pair<Long, RecordEntry> newStreamLineValue = readNewStreamLine(streamUrl, streams.get(streamUrl));
         if (newStreamLineValue == null) {
             streams.remove(streamUrl).close();
             nextLines.remove(streamUrl);
@@ -122,14 +123,14 @@ public class LineByLineEventAggregator implements EventsAggregator {
         return result;
     }
 
-    private Map.Entry<String, Map.Entry<Long, RecordEntry>> findNextLine(Map<String, Map.Entry<Long, RecordEntry>> nextLines) {
-        Map.Entry<String, Map.Entry<Long, RecordEntry>> found = null;
-        List<Map.Entry<String, Map.Entry<Long, RecordEntry>>> collect = nextLines.entrySet().stream().filter(entry -> found == null || entry.getValue().getKey() < found.getValue().getKey()).collect(Collectors.toList());
+    private Map.Entry<String, Pair<Long, RecordEntry>> findNextLine(Map<String, Pair<Long, RecordEntry>> nextLines) {
+        Map.Entry<String, Pair<Long, RecordEntry>> found = null;
+        List<Map.Entry<String, Pair<Long, RecordEntry>>> collect = nextLines.entrySet().stream().filter(entry -> found == null || entry.getValue().getLeft() < found.getValue().getLeft()).collect(Collectors.toList());
         if (collect.size() == 0) return null;
         else return collect.iterator().next();
     }
 
-    private Map.Entry<Long, RecordEntry> readNewStreamLine(String streamName, BufferedReader reader) throws IOException {
+    private Pair<Long, RecordEntry> readNewStreamLine(String streamName, BufferedReader reader) throws IOException {
         String line = reader.readLine();
         if (line != null) {
             return split(streamName, line);

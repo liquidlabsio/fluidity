@@ -3,6 +3,8 @@ package io.fluidity.search.agg.histo;
 import java.util.List;
 
 public interface Series {
+    String groupBy();
+
     long get(long time);
 
     void update(long time, long value);
@@ -16,4 +18,5 @@ public interface Series {
     String name();
 
     void merge(Series series);
+
 }

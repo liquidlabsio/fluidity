@@ -22,6 +22,7 @@ import static io.fluidity.util.DateUtil.*;
  */
 public class TimeSeries implements Series {
 
+    public String groupBy;
     public String name;
     public List<long[]> data = new ArrayList();
     public long delta = DateUtil.MINUTE;
@@ -29,8 +30,9 @@ public class TimeSeries implements Series {
     public TimeSeries() {
     }
 
-    public TimeSeries(String filename, long from, long to) {
+    public TimeSeries(String filename, String groupBy, long from, long to) {
         this.name = filename;
+        this.groupBy = groupBy;
         buildHistogram(DateUtil.floorMin(from), DateUtil.floorMin(to));
     }
 
@@ -44,6 +46,10 @@ public class TimeSeries implements Series {
         return name;
     }
 
+    @Override
+    public String groupBy() {
+        return groupBy;
+    }
     private void buildHistogram(long from, long to) {
         long duration = to - from;
         delta = MINUTE;

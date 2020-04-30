@@ -1,6 +1,5 @@
 package io.fluidity.search;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,14 +24,14 @@ public class GroupByExtractor {
         groupBy = (split.length > Search.EXPRESSION_PARTS.groupby.ordinal() ? split[Search.EXPRESSION_PARTS.groupby.ordinal()].trim() : "").trim();
     }
 
-    public AbstractMap.SimpleEntry<String, Object> applyGrouping(AbstractMap.SimpleEntry<String, Object> seriesNameAndValue, String tags, String sourceName) {
+    public String applyGrouping(String tags, String sourceName) {
         if (groupBy.equals("groupBy(tag)")) {
-            return prependKey(tags, seriesNameAndValue);
+            return tags;
         }
         if (groupBy.startsWith(GROUP_BY_PATH)) {
-            return prependKey(processPathExpression(groupBy.substring(GROUP_BY_PATH.length()), sourceName), seriesNameAndValue);
+            return processPathExpression(groupBy.substring(GROUP_BY_PATH.length()), sourceName);
         }
-        return seriesNameAndValue;
+        return "";
     }
 
     /**
@@ -87,7 +86,4 @@ public class GroupByExtractor {
         return path;
     }
 
-    private AbstractMap.SimpleEntry<String, Object> prependKey(String groupKey, AbstractMap.SimpleEntry<String, Object> seriesNameAndValue) {
-        return new AbstractMap.SimpleEntry<>(groupKey + "-" + seriesNameAndValue.getKey(), seriesNameAndValue.getValue());
-    }
 }

@@ -1,8 +1,7 @@
 package io.fluidity.search.field.extractor;
 
 import io.fluidity.search.Search;
-
-import java.util.AbstractMap;
+import org.graalvm.collections.Pair;
 
 /**
  * Support fieldname and value extraction:
@@ -45,8 +44,8 @@ public class FieldExtractor {
         }
     }
 
-    public AbstractMap.SimpleEntry<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
-        if (expressionPart.equals("*")) return new AbstractMap.SimpleEntry<>(sourceName, 1);
+    public Pair<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
+        if (expressionPart.equals("*")) return Pair.create(sourceName, 1);
         return extractor.getKeyAndValue(sourceName, nextLine);
     }
 }

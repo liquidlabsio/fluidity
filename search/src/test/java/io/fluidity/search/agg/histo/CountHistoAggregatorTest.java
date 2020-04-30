@@ -16,6 +16,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CountHistoAggregatorTest {
 
     @Test
+    void processCountGroupBy() throws Exception {
+
+        Search search = new Search();
+        search.expression = "*| *| *| *| *| *| groupBy(tag)";
+        Map<String, InputStream> inputStreams = new HashMap<>();
+
+        /**
+         * Map/Build a non-aggregated series for a single source
+         */
+        long to = System.currentTimeMillis();
+        long from = to - 5 * DateUtil.MINUTE;
+
+        generateSeriesData(search, inputStreams, to, from, "someFile111");
+        generateSeriesData(search, inputStreams, to, from, "someFile222");
+
+        /**
+         * Reduce/Merge them together
+         */
+        CountHistoAggregator aggregator = new CountHistoAggregator(inputStreams, search);
+        String histogram = aggregator.process();
+        assertNotNull(histogram);
+        assertTrue(histogram.contains("tag-value"));
+    }
+
+    @Test
     void process() throws Exception {
 
         Search search = new Search();
@@ -48,7 +73,7 @@ class CountHistoAggregatorTest {
 
     private void generateSeriesData(Search search, Map<String, InputStream> inputStreams, long to, long from, String seriesName) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "tags", "s3://blah", search, from, to, HistoAggFactory.Count);
+        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "tag-value", "s3://blah", search, from, to, HistoAggFactory.Count);
         histoCollector.add(from, 1000, "someLine");
         histoCollector.close();
 

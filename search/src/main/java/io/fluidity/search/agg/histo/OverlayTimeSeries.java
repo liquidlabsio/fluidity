@@ -31,17 +31,19 @@ import static io.fluidity.util.DateUtil.*;
 public class OverlayTimeSeries implements Series {
 
     public String name;
+    public String groupBy;
     public List<long[]> data = new ArrayList();
     public long delta = MINUTE;
     private long from;
     private long to;
     private long duration;
 
-    public OverlayTimeSeries() {
-    }
+    public OverlayTimeSeries(){
 
-    public OverlayTimeSeries(String seriesName, long from, long to) {
+    }
+    public OverlayTimeSeries(String seriesName, String groupBy, long from, long to) {
         this.name = seriesName;
+        this.groupBy = groupBy;
         buildHistogram(from, to);
     }
 
@@ -53,6 +55,11 @@ public class OverlayTimeSeries implements Series {
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public String groupBy() {
+        return groupBy;
     }
 
     private void buildHistogram(long from, long to) {

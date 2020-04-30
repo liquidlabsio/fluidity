@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CountEachHistoAggregatorTest {
 
     @Test
-    void process() throws Exception {
+    void processCount() throws Exception {
 
         Search search = new Search();
         Map<String, InputStream> inputStreams = new HashMap<>();
@@ -30,7 +30,6 @@ class CountEachHistoAggregatorTest {
         generateSeriesData(search, inputStreams, to, from, "someFile111");
         generateSeriesData(search, inputStreams, to, from, "someFile222");
 
-
         /**
          * Reduce/Merge them together
          */
@@ -39,13 +38,11 @@ class CountEachHistoAggregatorTest {
         assertNotNull(histogram);
         assertTrue(histogram.contains("someFile111"));
         assertTrue(histogram.contains("someFile222"));
-
-        System.out.printf("Got: \n%s", histogram);
     }
 
     private void generateSeriesData(Search search, Map<String, InputStream> inputStreams, long to, long from, String seriesName) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "tags", "s3://blah", search, from, to, HistoAggFactory.Count);
+        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "test-tags", "s3://blah", search, from, to, HistoAggFactory.Count);
         histoCollector.add(from, 1000, "someLine");
         histoCollector.close();
 

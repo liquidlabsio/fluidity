@@ -2,12 +2,14 @@ package io.fluidity.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.search.Search;
+import org.graalvm.collections.EconomicMap;
+import org.graalvm.collections.Pair;
 
 import java.io.OutputStream;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  *
@@ -47,7 +49,7 @@ public class SimpleHistoCollector implements HistoCollector {
     private final String tags;
     private final String storageUrl;
     private Search search;
-    private final Map<String, Series> seriesMap = new HashMap<>();
+    private final EconomicMap<String, Series> seriesMap = EconomicMap.create();
 
     public SimpleHistoCollector(OutputStream outputStream, String sourceName, String tags, String storageUrl, Search search, long from, long to, HistoFunction histoFunction) {
         this.outputStream = outputStream;
@@ -63,16 +65,19 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        AbstractMap.SimpleEntry<String, Object> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
+        Pair<String, Object> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
-            seriesNameAndValue = search.applyGroupBy(seriesNameAndValue, tags, sourceName);
-            Series series = getSeriesItem(seriesNameAndValue.getKey());
-            series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getValue(), nextLine, position, currentTime, search.expression));
+            String groupBy = search.applyGroupBy(tags, sourceName);
+            seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());
+            Series series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
+            series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, search.expression));
         }
     }
 
-    private Series getSeriesItem(String seriesName) {
-        seriesMap.computeIfAbsent(seriesName, item -> search.getTimeSeries(seriesName, from, to));
+    private Series getSeriesItem(String groupBy, String seriesName) {
+        if (!seriesMap.containsKey(seriesName)){
+            seriesMap.put(seriesName, search.getTimeSeries(seriesName, groupBy, from, to));
+        }
         return seriesMap.get(seriesName);
     }
 
@@ -80,7 +85,9 @@ public class SimpleHistoCollector implements HistoCollector {
     public void close() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesMap.values()));
+
+            List<Series> seriesList = StreamSupport.stream(seriesMap.getValues().spliterator(), false).collect(Collectors.toList());
+            String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesList));
             outputStream.write(histoJson.getBytes());
             outputStream.close();
         } catch (Exception e) {
@@ -88,7 +95,7 @@ public class SimpleHistoCollector implements HistoCollector {
         }
     }
 
-    public Map<String, Series> series() {
+    public EconomicMap<String, Series> series() {
         return seriesMap;
     }
 }
