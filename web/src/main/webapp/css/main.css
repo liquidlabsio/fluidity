@@ -184,8 +184,10 @@ File upload UI
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
 }
-#wrapper {
-  padding-top: 50px;
-  width: 400px;
-  margin: 0 auto 0 auto;
+.big-input {
+   width: 350px;
+      -webkit-transition: all .5s ease;
+      -moz-transition: all .5s ease;
+      transition: all .5s ease;
+
 }

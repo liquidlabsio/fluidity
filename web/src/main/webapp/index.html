@@ -273,7 +273,7 @@
                                     placeholder="*"
                             ></vue-bootstrap-typeahead>
                         </div>
-                        <div class="form-group col-md-3" id="recordFilterWrapper">
+                        <div class="form-group col-md-2" id="recordFilterWrapper">
                             <label class="control-label">Record Match</label>
                             <vue-bootstrap-typeahead
                                     v-model="query"
@@ -290,7 +290,15 @@
                             ></vue-bootstrap-typeahead>
                         </div>
                         <div class="form-group col-md-2"  id="analyticExtractWrapper">
-                            <label class="control-label">Analytic</label>
+                        <label class="control-label">Analytic</label>
+                        <vue-bootstrap-typeahead
+                                v-model="query"
+                                :data="completes"
+                                placeholder="*"
+                        ></vue-bootstrap-typeahead>
+                    </div>
+                        <div class="form-group col-md-1"  id="groupByWrapper">
+                            <label class="control-label">GroupBy</label>
                             <vue-bootstrap-typeahead
                                     v-model="query"
                                     :data="completes"

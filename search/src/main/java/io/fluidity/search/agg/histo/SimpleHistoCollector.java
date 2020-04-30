@@ -65,6 +65,7 @@ public class SimpleHistoCollector implements HistoCollector {
 
         AbstractMap.SimpleEntry<String, Object> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
+            seriesNameAndValue = search.applyGroupBy(seriesNameAndValue, tags, sourceName);
             Series series = getSeriesItem(seriesNameAndValue.getKey());
             series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getValue(), nextLine, position, currentTime, search.expression));
         }
