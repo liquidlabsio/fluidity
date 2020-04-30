@@ -2,10 +2,6 @@ package io.fluidity.search.field.extractor;
 
 import org.graalvm.collections.Pair;
 
-import java.util.AbstractMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Support extraction of:
  * ..."user":"99kerob".... with field.getJsonKVPair(user)

@@ -3,8 +3,6 @@ package io.fluidity.search.field.extractor;
 import io.fluidity.search.Search;
 import org.graalvm.collections.Pair;
 
-import java.util.AbstractMap;
-
 /**
  * Support fieldname and value extraction:
  * field.getKVPair("CPU:") - gets the value

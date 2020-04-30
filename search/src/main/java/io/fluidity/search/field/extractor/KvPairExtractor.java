@@ -2,7 +2,6 @@ package io.fluidity.search.field.extractor;
 
 import org.graalvm.collections.Pair;
 
-import java.util.AbstractMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

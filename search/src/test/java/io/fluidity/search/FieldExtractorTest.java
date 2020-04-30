@@ -4,8 +4,6 @@ import io.fluidity.search.field.extractor.FieldExtractor;
 import org.graalvm.collections.Pair;
 import org.junit.jupiter.api.Test;
 
-import java.util.AbstractMap;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldExtractorTest {

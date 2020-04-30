@@ -1,11 +1,7 @@
 package io.fluidity.search.field.extractor;
 
 import org.graalvm.collections.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.common.Assert;
-
-import java.util.AbstractMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
