@@ -10,7 +10,7 @@ class GroupByExtractorTest {
 
     @Test
     void applyGroupByTag() {
-        GroupByExtractor groupByExtractor = new GroupByExtractor("bucket| filename| record| field| analytic| timeseries| groupBy(tags)");
+        GroupByExtractor groupByExtractor = new GroupByExtractor("bucket| filename| record| field| analytic| timeseries| groupBy(tag)");
         AbstractMap.SimpleEntry<String, Object> pair = new AbstractMap.SimpleEntry<>("key", "value");
         AbstractMap.SimpleEntry<String, Object> stringObjectSimpleEntry = groupByExtractor.applyGrouping(pair, "tag", "sourcePath");
         assertEquals("tag-key", stringObjectSimpleEntry.getKey());;
