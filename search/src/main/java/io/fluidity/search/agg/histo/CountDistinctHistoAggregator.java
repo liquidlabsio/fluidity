@@ -27,7 +27,7 @@ public class CountDistinctHistoAggregator extends AbstractHistoAggregator {
     }
 
     List<Series> processSeries(Collection<Series> collectedSeries) {
-        Series count = search.getTimeSeries("distinct", search.from, search.to);
+        Series count = search.getTimeSeries("distinct", "", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
             count.update(point[0], add(count.get(point[0]), point[1]));
         }));

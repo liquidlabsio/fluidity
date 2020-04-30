@@ -3,10 +3,7 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.search.Search;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CountHistoAggregator extends AbstractHistoAggregator {
 
@@ -19,11 +16,14 @@ public class CountHistoAggregator extends AbstractHistoAggregator {
     }
 
     List<Series> processSeries(Collection<Series> collectedSeries) {
-        Series count = search.getTimeSeries("count", search.from, search.to);
+        Map<String, Series> results = new HashMap<>();
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
-            count.update(point[0], add(count.get(point[0]) , point[1]));
+            String groupBy = series.groupBy();
+            if (groupBy.length() == 0) groupBy = "count";
+            Series series1 = results.computeIfAbsent(groupBy, k -> search.getTimeSeries(k, "", search.from, search.to));
+            series1.update(point[0], add(series1.get(point[0]) , point[1]));
         }));
-        return Arrays.asList(count);
+        return new ArrayList<>(results.values());
     }
 
     @Override

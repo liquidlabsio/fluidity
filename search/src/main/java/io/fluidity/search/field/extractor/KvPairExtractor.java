@@ -1,5 +1,7 @@
 package io.fluidity.search.field.extractor;
 
+import org.graalvm.collections.Pair;
+
 import java.util.AbstractMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,10 +19,10 @@ public class KvPairExtractor implements Extractor {
     }
 
     @Override
-    public AbstractMap.SimpleEntry<String, Object> getKeyAndValue(String sourceName, String nextLine) {
+    public Pair<String, Object> getKeyAndValue(String sourceName, String nextLine) {
         Matcher matcher = pattern.matcher(nextLine);
         if (matcher.matches()) {
-            return new AbstractMap.SimpleEntry<>(matcher.group(1).trim(), Long.valueOf(matcher.group(2)));
+            return Pair.create(matcher.group(1).trim(), Long.valueOf(matcher.group(2)));
         } else {
             return null;
         }

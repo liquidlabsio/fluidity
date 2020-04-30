@@ -35,7 +35,7 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         });
 
         // collect other items
-        Series other = search.getTimeSeries("other", search.from, search.to);
+        Series other = search.getTimeSeries("other", "", search.from, search.to);
         results.put(other.name(), other);
 
         collectedSeries.stream().filter(series -> !topSeries.contains(series.name())).forEach(series -> other.merge(series));

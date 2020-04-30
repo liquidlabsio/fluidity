@@ -1,10 +1,10 @@
 package io.fluidity.search.field.extractor;
 
-import java.util.AbstractMap;
+import org.graalvm.collections.Pair;
 
 /**
  * FieldExtractors
  */
 public interface Extractor {
-    AbstractMap.SimpleEntry<String, Object> getKeyAndValue(String sourceName, String nextLine);
+    Pair<String, Object> getKeyAndValue(String sourceName, String nextLine);
 }
