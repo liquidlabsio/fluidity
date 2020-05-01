@@ -39,6 +39,9 @@ fun main() {
     }
 }
 
+/**
+ * Set of templates used to generate aws-lambda log output
+ */
 class LambdaLogGenerator {
 
     /**

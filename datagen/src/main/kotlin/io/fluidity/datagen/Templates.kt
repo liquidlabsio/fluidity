@@ -6,6 +6,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * Set of DataGen template functions used to create simulation data
+ */
 class Templates {
     companion object {
         // MILLIS_CALCULATIONS
@@ -190,6 +193,9 @@ class Templates {
             return document.substring(fromIndex, toindex)
         }
 
+        /**
+         * String replace
+         */
         open fun replaceItem(document: String, templatedValue: String): String {
             val from = document.indexOf(matches)
             val to = document.indexOf("}}", from) + 2

@@ -30,7 +30,6 @@ class TemplatesTest {
         assert(evaluate.contains("newValue"))
     }
 
-
     @Test
     fun rangeWorks() {
         val template = RangeTemplate("{{SOMETHING:")
@@ -39,7 +38,7 @@ class TemplatesTest {
     }
 
     @Test
-    fun optionalWorks() {
+    fun optionalRuleWorks() {
         val template = OptionalTemplate()
         val evaluate = template.evaluate("this is {{OPTIONAL:true|false}}", System.currentTimeMillis(), mutableMapOf())
         assert(evaluate.contains("true") || evaluate.contains("false"))

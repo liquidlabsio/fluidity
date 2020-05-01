@@ -11,7 +11,9 @@ import javax.ws.rs.client.WebTarget
 import javax.ws.rs.sse.InboundSseEvent
 import javax.ws.rs.sse.SseEventSource
 
-
+/**
+ * Generate a series of dataflow steps that are linked by correlations. Its a single flow (no branching)
+ */
 fun main(){
 
 //    val output = "datagen/target/wikimedia"
