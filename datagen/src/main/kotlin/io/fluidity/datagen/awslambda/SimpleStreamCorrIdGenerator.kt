@@ -3,6 +3,7 @@ import io.fluidity.datagen.Templates.*
 import java.io.BufferedWriter
 import java.io.File
 import java.nio.charset.Charset
+import java.util.*
 import java.util.UUID.randomUUID
 
 /**
@@ -31,20 +32,36 @@ fun main() {
 
     val outDir = outputRoot + outputPath
     File(outDir).mkdirs()
-
-
     var count = 0
     val generator = CorrelationTraceGenerator()
 
     var timestamp = System.currentTimeMillis() - Templates.DAY
-    while (count++ < 10) {
+    while (count++ < 10000) {
         val constMap = mutableMapOf("CORR_ID" to randomUUID().toString(), "FROM_USER" to generator.getUser(generator.fromUserList), "TO_USER" to generator.getUser(generator.toUserList))
 
-        val writer = File(outDir + "correlation.log").bufferedWriter(Charset.defaultCharset())
+        var currentTimeStamp = timestamp
+        var outfileNumber = 0
 
         // the set of templates represents a dataflow bound together by the correlationId
-        templates.forEach { template -> generator.applyTemplates(writer, template, timestamp, constMap) }
-        timestamp += 1000
+        templates.forEach { template ->
+            run {
+                File(outDir + "corr-" + count + "-" + outfileNumber++ + ".log").bufferedWriter(Charset.defaultCharset()).use { writer ->
+                    generator.applyTemplates(writer, template, currentTimeStamp, constMap)
+                    // add latency between each step
+                    currentTimeStamp += 100
+
+                    // slow transaction every now and then
+                    if (count % 1000 == 0) {
+                        currentTimeStamp += 5000
+                    }
+                }
+            }
+        }
+        timestamp += 100
+
+        if (count % 1000 == 0) {
+            println("Count:" + count + " Time:" + Date(timestamp))
+        }
     }
 }
 
@@ -53,7 +70,7 @@ fun main() {
  * Builds logic specific to building the single-dataflow-trace entities
  */
 class CorrelationTraceGenerator {
-    val templates = listOf(TsTemplate(), UUIDTemplate(), ConstTemplate(), TsWithOffset(),
+    val templates = listOf(TsTemplate(), UUIDTemplate(), ConstTemplate(), TsWithOffset(), OptionalTemplate(),
             // Lambda metrics
             ClockSkewRangeTemplate("{{DURATION"), ClockSkewRangeTemplate("{{BILLED_DURATION"), RangeTemplate("{{MEM_SIZE"),
             RangeTemplate("{{MEM_USED"), ClockSkewRangeTemplate("{{INIT_DURATION"))

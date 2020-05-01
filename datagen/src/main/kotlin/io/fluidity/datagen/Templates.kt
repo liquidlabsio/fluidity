@@ -19,9 +19,10 @@ class Templates {
 
     /**
      * Timestamp template
+     * Default format as 2020-04-22T16:10:38.119Z
      */
     class TsTemplate : Template("{{LOG_TIMESTAMP}}") {
-        // format as 2020-04-22T16:10:38.119Z
+
         private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm.ss.SSS'Z'")
 
         override fun evaluate(document: String, timestamp: Long, inputConstant: MutableMap<String, String>): String {
@@ -159,14 +160,10 @@ class Templates {
             var lower = Integer.parseInt(numberString[0])
             val upper = Integer.parseInt(numberString[1])
             lower += ((upper - lower) * infuenceFactor).toInt()
-
             val range = upper - lower
-
             val value = range * Math.random()
-
             return (lower + value).toInt()
         }
-
     }
 
     /**

@@ -1,6 +1,6 @@
 {{LOG_TIMESTAMP}} START RequestId: {{UUID}} Version: $LATEST
 {{LOG_TIMESTAMP}} {{UUID}} {{CONST:CORR_ID}} INFO	{ "action": "confirmation"  "from": "{{CONST:FROM_USER}}","to": "{{CONST:TO_USER}}","email": "blog@gonzague.me"}
-{{LOG_TIMESTAMP}} {{UUID}} {{CONST:CORR_ID}} INFO Email Sender going to "payment status": "Payment {{OPTIONAL:complete|failed}}"
+{{LOG_TIMESTAMP}} {{UUID}} {{CONST:CORR_ID}} INFO Email notification "payment status": "Payment {{OPTIONAL:SUCCESS|FAILED}}"
 {{LOG_TIMESTAMP:1000}} {{UUID}} {{CONST:CORR_ID}} INFO	SUCCESS SENDING MESSAGE: {    "ResponseMetadata": {        "RequestId": "014df02b-8be1-4f5a-a65a-aada73ae6e60"  },    "MessageId": "0102016ec0f7d5ec-733bb532-5434-4338-b9b2-f1169fe79678-000000"}
 {{LOG_TIMESTAMP:1000}} {{UUID}} {{CONST:CORR_ID}} { "result": "ok" }
 {{LOG_TIMESTAMP:1000}} END RequestId: {{UUID}}
