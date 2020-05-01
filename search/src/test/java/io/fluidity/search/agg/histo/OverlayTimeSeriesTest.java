@@ -1,19 +1,20 @@
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.util.DateUtil;
-import org.apache.http.client.utils.DateUtils;
 import org.joda.time.DateTime;
-import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeParser;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.fluidity.util.DateUtil.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static io.fluidity.util.DateUtil.HOUR;
+import static io.fluidity.util.DateUtil.MINUTE;
+import static io.fluidity.util.DateUtil.floorDay;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OverlayTimeSeriesTest {
 

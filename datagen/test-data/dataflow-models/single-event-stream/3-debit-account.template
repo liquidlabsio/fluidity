@@ -1,5 +1,5 @@
 {{LOG_TIMESTAMP}} START RequestId: {{UUID}} Version: $LATEST
-{{LOG_TIMESTAMP}} {{UUID}} {{CORR_ID}} INFO	{ "action": "debit-processing"  "from": "{{FROM_USER}}","to": "{{TO_USER}}","email": "blog@gonzague.me", "reason": "None_of_the_above","role": "Student"}
-{{LOG_TIMESTAMP_100}} {{UUID}} {{CORR_ID}} { "result": "ok" }
-{{LOG_TIMESTAMP_100}} END RequestId: {{UUID}}
-{{LOG_TIMESTAMP_100}} REPORT RequestId: {{UUID}}	Duration: {{DURATION:600-999}} ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: {{MEM_USED:50-100}} MB	Init Duration: {{INIT_DURATION:100-600}} ms
+{{LOG_TIMESTAMP}} {{UUID}} {{CONST:CORR_ID}} INFO	{ "action": "debit-processing"  "from": "{{CONST:FROM_USER}}","to": "{{CONST:TO_USER}}","email": "blog@gonzague.me", "reason": "None_of_the_above","role": "Student"}
+{{LOG_TIMESTAMP:100}} {{UUID}} {{CONST:CORR_ID}} { "result": "ok" }
+{{LOG_TIMESTAMP:100}} END RequestId: {{UUID}}
+{{LOG_TIMESTAMP:100}} REPORT RequestId: {{UUID}}	Duration: {{DURATION:600-999}} ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: {{MEM_USED:50-100}} MB	Init Duration: {{INIT_DURATION:100-600}} ms

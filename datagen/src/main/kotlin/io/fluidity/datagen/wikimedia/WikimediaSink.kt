@@ -18,11 +18,11 @@ fun main(){
 //    val output = "/Volumes/SSD2/logs/fluidity/wikimedia/"
     val output = "/work/logs/"
 
-    File(output).mkdirs();
+    File(output).mkdirs()
 
     while (true) {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm");
-        val fileName = output + "edit-stream-" + formatter.format(LocalDateTime.now()) + ".log";
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm")
+        val fileName = output + "edit-stream-" + formatter.format(LocalDateTime.now()) + ".log"
 
         val wikiMediaUrl = "https://stream.wikimedia.org/v2/stream/recentchange"
         val client = ClientBuilder.newClient()

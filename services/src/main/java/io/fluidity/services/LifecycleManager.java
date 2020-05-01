@@ -1,8 +1,6 @@
 package io.fluidity.services;
 
-import io.fluidity.services.aws.AwsS3StorageService;
 import io.fluidity.services.query.FileMetaDataQueryService;
-import io.fluidity.services.search.SearchService;
 import io.fluidity.services.storage.Storage;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;

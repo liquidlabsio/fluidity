@@ -114,22 +114,25 @@ APP UI
  */
 
 #mainPanel {
- padding-right: 5px !important;
-
+  padding-right: 5px !important;
 }
 
 .mainPanelTab {
  padding-right: 20px;
 }
+
 #explorerFileListTable {
   padding: 10px;
 }
+
 .normalSizeEditor {
  height: 400px;
 }
+
 .mediumSizeEditor {
  height: 600px;
 }
+
 .largeSizeEditor {
  height: 900px;
 }
@@ -154,10 +157,10 @@ File upload UI
    background: lightgreen;
 }
  .file a {
-   display: block;
-   position: relative;
-   padding: 5px;
-   color: black;
+  display: block;
+  position: relative;
+  padding: 5px;
+  color: black;
 }
 
 .file-upload-label {
@@ -167,30 +170,31 @@ File upload UI
 .navCompressed {
   width: 45px;
 }
+
 #spinnerHome {
-    width: 40px;
-    height: 20px;
-    padding:5px;
+  width: 40px;
+  height: 20px;
+  padding:5px;
 }
+
 .spinner {
-    display: none;
-    padding: 5px;
-    spadding-right: 20px;
-    width: 20px;
-    height: 20px;
+  display: none;
+  padding: 5px;
+  width: 20px;
+  height: 20px;
 }
 
 .rotateimg90 {
-  -webkit-transform:rotate(90deg);
+  -webkit-transform: rotate(90deg);
   -moz-transform: rotate(90deg);
   -ms-transform: rotate(90deg);
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
 }
-.big-input {
-   width: 350px;
-      -webkit-transition: all .5s ease;
-      -moz-transition: all .5s ease;
-      transition: all .5s ease;
 
+.big-input {
+  width: 350px;
+  -webkit-transition: all .5s ease;
+  -moz-transition: all .5s ease;
+  transition: all .5s ease;
 }
