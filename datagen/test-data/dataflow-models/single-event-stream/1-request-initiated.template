@@ -1,0 +1,5 @@
+{{LOG_TIMESTAMP}} START RequestId: {{UUID}} Version: $LATEST
+{{LOG_TIMESTAMP}} {{UUID}} {{CORR_ID}} INFO	{ "action": "payment-request-initiated"  "from": "{{FROM_USER}}","to": "{{TO_USER}}","email": "blog@gonzague.me", "reason": "None_of_the_above","role": "Student"}
+{{LOG_TIMESTAMP}} {{UUID}} {{CORR_ID}} { "action": "submit"  "from": "{{FROM_USER}}","to": "{{TO_USER}}","email": "blog@gonzague.me", "reason": "None_of_the_above","role": "Student"}
+{{LOG_TIMESTAMP}} END RequestId: {{UUID}}
+{{LOG_TIMESTAMP}} REPORT RequestId: {{UUID}}	Duration: {{DURATION:600-999}} ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: {{MEM_USED:50-100}} MB	Init Duration: {{INIT_DURATION:100-600}} ms
