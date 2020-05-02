@@ -20,9 +20,9 @@ body {
   z-index: 100; /* Behind the navbar */
   padding: 48px 0 0; /* Height of navbar */
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-   -webkit-transition: all .5s ease;
-    -moz-transition: all .5s ease;
-    transition: all .5s ease;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
 
 .sidebar-sticky {
@@ -174,7 +174,7 @@ File upload UI
 #spinnerHome {
   width: 40px;
   height: 20px;
-  padding:5px;
+  padding: 5px;
 }
 
 .spinner {
@@ -194,7 +194,7 @@ File upload UI
 
 .big-input {
   width: 350px;
-  -webkit-transition: all .5s ease;
-  -moz-transition: all .5s ease;
-  transition: all .5s ease;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }

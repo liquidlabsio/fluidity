@@ -4,6 +4,9 @@ import io.fluidity.datagen.Templates.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
+/**
+ * Templates used to build workload simulators
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplatesTest {
 
