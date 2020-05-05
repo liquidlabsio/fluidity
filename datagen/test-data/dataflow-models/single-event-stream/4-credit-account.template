@@ -1,0 +1,5 @@
+{{LOG_TIMESTAMP}} START RequestId: {{UUID}} Version: $LATEST
+{{LOG_TIMESTAMP}} {{UUID}} {{CONST:CORR_ID}} INFO	{ "action": "credit-processing"  "from": "{{CONST:FROM_USER}}","to": "{{CONST:TO_USER}}","email": "blog@gonzague.me"}
+{{LOG_TIMESTAMP:100}} {{UUID}} {{CONST:CORR_ID}} { "result": "ok" }
+{{LOG_TIMESTAMP:100}} END RequestId: {{UUID}}
+{{LOG_TIMESTAMP:100}} REPORT RequestId: {{UUID}}	Duration: {{DURATION:600-999}} ms	Billed Duration: 1000 ms	Memory Size: 128 MB	Max Memory Used: {{MEM_USED:50-100}} MB	Init Duration: {{INIT_DURATION:100-600}} ms
