@@ -1,11 +1,15 @@
 package io.fluidity.services;
 
-import io.fluidity.services.aws.AwsFileMetaDataQueryService;
+import io.fluidity.services.aws.AwsQueryService;
 import io.fluidity.services.aws.LocalDynamoDbContainer;
 import io.fluidity.services.query.FileMeta;
 import io.quarkus.test.junit.QuarkusTest;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import javax.inject.Inject;
@@ -48,7 +52,7 @@ public class FileMetaLocalDynamoTest {
     }
 
     @Inject
-    AwsFileMetaDataQueryService metaDataService;
+    AwsQueryService metaDataService;
 
     @Test
     public void ormTest() throws IOException {

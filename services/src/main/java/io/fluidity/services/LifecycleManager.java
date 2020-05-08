@@ -1,6 +1,6 @@
 package io.fluidity.services;
 
-import io.fluidity.services.query.FileMetaDataQueryService;
+import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
@@ -16,7 +16,7 @@ public class LifecycleManager {
 
 
     @ConfigProperty(name = "fluidity.services.query")
-    FileMetaDataQueryService query;
+    QueryService query;
 
     @ConfigProperty(name = "fluidity.services.storage")
     Storage storageService;

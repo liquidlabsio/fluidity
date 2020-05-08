@@ -11,9 +11,11 @@ import java.util.regex.Pattern;
 public class KvPairExtractor implements Extractor {
 
     private final Pattern pattern;
+    private final String expressionPart;
 
     public KvPairExtractor(String expressionPart) {
         String patternString = ".*(" + expressionPart + ")(\\d+).*";
+        this.expressionPart = expressionPart;
         pattern = Pattern.compile(patternString);
     }
 

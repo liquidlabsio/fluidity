@@ -1,13 +1,18 @@
 package io.fluidity.services.storage;
 
 import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
+import io.fluidity.services.query.QueryService;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
@@ -31,7 +36,7 @@ public class StorageResource {
     StorageIndexer indexer;
 
     @ConfigProperty(name = "fluidity.services.query")
-    FileMetaDataQueryService query;
+    QueryService query;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)

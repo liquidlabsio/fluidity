@@ -3,29 +3,35 @@ package io.fluidity.search.agg.events;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.HistoCollector;
 import io.fluidity.util.DateTimeExtractor;
+import io.fluidity.util.DateUtil;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.LinkedList;
 
 /**
  * Note: lines must be written in following format: timestamp:filepos:data to the filtered view - the .event file
  * <p>
- * Grep or Filter lines according to the search expression.
- * TODO: look at native TruffleRegEx in Graalvm & Quarkus
- * https://www.graalvm.org/docs/reference-manual/native-image/
  * <p>
- * Macro-options are mainly helpful for polyglot capabilities of native images:
- * <p>
- * --language:regex to make Truffle Regular Expression engine available that exposes regular expression functionality in GraalVM supported languages
  */
 public class SearchEventCollector implements EventCollector {
+    private final HistoCollector histoCollector;
     private InputStream input;
     private OutputStream output;
 
-    @Override
-    public int[] process(boolean isCompressed, HistoCollector histoCollector, Search search, InputStream input, OutputStream output, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
+    public SearchEventCollector(HistoCollector histoCollector, InputStream input, OutputStream output) {
+        this.histoCollector = histoCollector;
         this.input = input;
         this.output = output;
+    }
+
+    @Override
+    public int[] process(boolean isCompressed, Search search, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
 
         int readEvents = 0;
         int totalEvents = 0;
@@ -40,7 +46,7 @@ public class SearchEventCollector implements EventCollector {
 
         String nextLine = reader.readLine();
         lengths.add(nextLine.length());
-        long guessTimeInterval = guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
+        long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long scanFilePos = 0;
 
         long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
@@ -65,7 +71,7 @@ public class SearchEventCollector implements EventCollector {
             // recalibrate the time interval as more line lengths are known
             if (nextLine != null) {
                 lengths.add(nextLine.length());
-                guessTimeInterval = guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
+                guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
                 scanFilePos += nextLine.length() + 2;
 
                 currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
@@ -74,28 +80,6 @@ public class SearchEventCollector implements EventCollector {
         }
         bos.flush();
         return new int[] { readEvents, totalEvents };
-    }
-
-    /**
-     * Fudge the time interval from the time-span and the size of the file - presume avg line fileLength is 1024 bytes.
-     * Hacky - but very fast.
-     *
-     * @param fromTime
-     * @param toTime
-     * @param fileLength
-     * @return
-     */
-    private long guessTimeInterval(boolean isCompressed, long fromTime, long toTime, long fileLength, long currentPos, LinkedList<Integer> lengths) {
-        if (isCompressed) {
-            fileLength *= 100;
-        }
-        if (lengths.size() > 100) lengths.pop();
-        // presume average line fileLength = 1024 bytes;
-        long recentLengthSum = lengths.stream().mapToInt(Integer::intValue).sum();
-        int avgRecentLength = (int) (recentLengthSum / lengths.size());
-        long guessedLineCount = avgRecentLength > 1024 ? (fileLength - currentPos) / avgRecentLength : 10;
-        if (guessedLineCount == 0) guessedLineCount = 10;
-        return (toTime - fromTime) / guessedLineCount;
     }
 
     @Override
@@ -113,6 +97,11 @@ public class SearchEventCollector implements EventCollector {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        try {
+            histoCollector.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

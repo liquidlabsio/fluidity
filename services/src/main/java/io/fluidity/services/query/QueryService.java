@@ -4,7 +4,7 @@ import io.fluidity.services.Lifecycle;
 
 import java.util.List;
 
-public interface FileMetaDataQueryService extends Lifecycle {
+public interface QueryService extends Lifecycle {
 
     void putList(List<FileMeta> fileMetas);
 

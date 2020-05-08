@@ -1,20 +1,24 @@
 package io.fluidity.services.fixture;
 
 import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
+import io.fluidity.services.query.QueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class FixturedFileMetaDataQueryService implements FileMetaDataQueryService {
+public class FixturedQueryService implements QueryService {
 
-    private final Logger log = LoggerFactory.getLogger(FixturedFileMetaDataQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(FixturedQueryService.class);
 
     public static final Map<String, FileMeta> storage = new HashMap<>();
 
-    public FixturedFileMetaDataQueryService() {
+    public FixturedQueryService() {
         log.info("Created");
     }
 

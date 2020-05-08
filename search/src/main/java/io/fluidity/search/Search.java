@@ -26,6 +26,10 @@ public class Search {
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 
+    public boolean isNormalSearch() {
+        return false;
+    }
+
     public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic, timeseries, groupby}
 
     @FormParam("origin")
@@ -86,7 +90,7 @@ public class Search {
 
     private transient FieldExtractor fieldExtractor;
 
-    public Pair<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
+    public Pair<String, Object> getFieldNameAndValue(String sourceName, String nextLine) {
         if (fieldExtractor == null) {
             fieldExtractor = new FieldExtractor(expression);
         }

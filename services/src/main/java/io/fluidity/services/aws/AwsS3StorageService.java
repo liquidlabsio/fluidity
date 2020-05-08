@@ -8,8 +8,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import io.fluidity.services.storage.Storage;
 import io.fluidity.services.query.FileMeta;
+import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
 import io.fluidity.util.UriUtil;
 import org.apache.commons.io.FileUtils;
@@ -20,8 +20,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,6 +62,20 @@ public class AwsS3StorageService implements Storage {
             PREFIX = ConfigProvider.getConfig().getValue("fluidity.prefix", String.class);
         }
         log.info("Created: PREFIX: {}", PREFIX);
+    }
+
+    @Override
+    public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
+        String bucketName = getBucketName(tenant);
+        AmazonS3 s3Client = getAmazonS3Client(region);
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, tenant + "/" + prefix);
+
+        while (objectListing.isTruncated()) {
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+            req.setContinuationToken(objectListing.getNextContinuationToken());
+            objectListing = s3Client.listObjectsV2(req);
+        }
     }
 
     /**
@@ -406,7 +433,7 @@ public class AwsS3StorageService implements Storage {
     public OutputStream getOutputStream(String region, String tenant, String filenameURL, int daysRetention) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
-            return new FileOutputStream(toS3) {
+            return new BufferedOutputStream(new FileOutputStream(toS3)) {
                 @Override
                 public void close() throws IOException {
                     try {

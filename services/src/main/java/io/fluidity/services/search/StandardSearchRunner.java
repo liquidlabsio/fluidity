@@ -1,14 +1,17 @@
 package io.fluidity.services.search;
 
-import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
-import io.fluidity.services.storage.Storage;
 import io.fluidity.search.Search;
+import io.fluidity.search.agg.events.EventCollector;
 import io.fluidity.search.agg.events.LineByLineEventAggregator;
 import io.fluidity.search.agg.events.SearchEventCollector;
+import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.search.agg.histo.HistoAggFactory;
 import io.fluidity.search.agg.histo.HistoAggregator;
+import io.fluidity.search.agg.histo.HistoCollector;
 import io.fluidity.search.agg.histo.SimpleHistoCollector;
+import io.fluidity.services.query.FileMeta;
+import io.fluidity.services.query.QueryService;
+import io.fluidity.services.storage.Storage;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +24,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-public class StandardSearchService implements SearchService {
+public class StandardSearchRunner implements SearchRunner {
     private long limitList = 5000;
-    private final Logger log = LoggerFactory.getLogger(StandardSearchService.class);
+    private final Logger log = LoggerFactory.getLogger(StandardSearchRunner.class);
 
-    public StandardSearchService() {
+    public StandardSearchRunner() {
         log.info("Created");
     }
 
     @Override
-    public FileMeta[] submit(Search search, FileMetaDataQueryService query) {
+    public FileMeta[] submit(Search search, QueryService query) {
         List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
@@ -42,17 +45,12 @@ public class StandardSearchService implements SearchService {
             String searchUrl = fileMeta.getStorageUrl();
             InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
 
-            String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
-            OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
 
-            String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
-            OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
-            int[] processedEventsAndTotal = new int[] {0,0};
+            int[] processedEventsAndTotal = new int[]{0, 0};
             try (
-                    SearchEventCollector searchProcessor = new SearchEventCollector();
-                    SimpleHistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))
+                    EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream, fileMeta, region)
             ) {
-                processedEventsAndTotal = searchProcessor.process(fileMeta.isCompressed(), histoCollector, search, inputStream, outputStream, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
+                processedEventsAndTotal = searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -61,6 +59,21 @@ public class StandardSearchService implements SearchService {
             e.printStackTrace();
             return new String[0];
         }
+    }
+
+    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, FileMeta fileMeta, String region) {
+        String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
+        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
+
+        String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
+        OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
+
+        HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search));
+        return new SearchEventCollector(histoCollector, inputStream, outputStream);
+    }
+
+    private StorageUtil getOutStreamFactory(Storage storage) {
+        return (region, tenant, fileUrl, daysRetention) -> storage.getOutputStream(region, tenant, fileUrl, daysRetention);
     }
 
     private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
@@ -79,19 +92,18 @@ public class StandardSearchService implements SearchService {
 
         long start = System.currentTimeMillis();
         String histoAggJsonData = "";
+
         try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.histoSuffix, 0), search)) {
             histoAggJsonData = histoAgg.process();
         } catch (Exception e) {
             e.printStackTrace();
         }
         log.info("HistoElapsed:{}", (System.currentTimeMillis() - start));
-
         return histoAggJsonData;
     }
 
     @Override
     public String[] finalizeEvents(Search search, long fromTime, int limit, String tenant, String region, Storage storage) {
-
         long start = System.currentTimeMillis();
 
         String[] eventAggs;

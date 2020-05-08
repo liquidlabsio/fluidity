@@ -6,6 +6,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.text.SimpleDateFormat;
+import java.util.LinkedList;
 
 public class DateUtil {
 	static int standardTZOffset = 0;//DateTimeZone.getDefault().getOffset(new DateTime());
@@ -156,24 +157,37 @@ public class DateUtil {
 	static String log4jFormatString = "yyyy-MM-dd HH:mm:ss,SSS";
 	public static DateTimeFormatter log4jFormat = DateTimeFormat.forPattern(log4jFormatString);
 
-	static String longDTFormat = "dd-MMM-yy HH:mm:ss,SSS";
-	public static DateTimeFormatter longDTFormatter = DateTimeFormat.forPattern(longDTFormat);
+    static String longDTFormat = "dd-MMM-yy HH:mm:ss,SSS";
+    public static DateTimeFormatter longDTFormatter = DateTimeFormat.forPattern(longDTFormat);
 
     public static DateTimeFormatter yearFirstDateFormat = DateTimeFormat.forPattern("yyyy-MM-dd");
 
-	public static long nearestMin(long from, int base) {
+    public static long nearestMin(long from, int base) {
         from = (Math.round(from / MINUTE)) * MINUTE;
         return ((from / (base * MINUTE)) * (base * MINUTE));
-	}
+    }
 
-//	static CachedDateTimeZone forZone = CachedDateTimeZone.forZone(CachedDateTimeZone.UTC);
-//    static CachedDateTimeZone localZone = CachedDateTimeZone.forZone(CachedDateTimeZone.getDefault());
-//
-//	public static long toUTC(long time) {
-//		return localZone.convertLocalToUTC(time, false);
-//	}
-//	public static long fromUTC(long time) {
-//		return forZone.convertUTCToLocal(time);
-//	}
-	
+
+    /**
+     * Fudge the time interval from the time-span and the size of the file - presume avg line fileLength is 1024 bytes.
+     * Hacky - but very fast.
+     *
+     * @param fromTime
+     * @param toTime
+     * @param fileLength
+     * @return
+     */
+    public static long guessTimeInterval(boolean isCompressed, long fromTime, long toTime, long fileLength, long currentPos, LinkedList<Integer> lengths) {
+        if (isCompressed) {
+            fileLength *= 100;
+        }
+        if (lengths.size() > 100) lengths.pop();
+        // presume average line fileLength = 1024 bytes;
+        long recentLengthSum = lengths.stream().mapToInt(Integer::intValue).sum();
+        int avgRecentLength = (int) (recentLengthSum / lengths.size());
+        long guessedLineCount = avgRecentLength > 1024 ? (fileLength - currentPos) / avgRecentLength : 10;
+        if (guessedLineCount == 0) guessedLineCount = 10;
+        return (toTime - fromTime) / guessedLineCount;
+    }
+
 }

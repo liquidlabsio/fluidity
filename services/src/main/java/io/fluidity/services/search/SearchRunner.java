@@ -1,14 +1,14 @@
 package io.fluidity.services.search;
 
-import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
-import io.fluidity.services.storage.Storage;
 import io.fluidity.search.Search;
+import io.fluidity.services.query.FileMeta;
+import io.fluidity.services.query.QueryService;
+import io.fluidity.services.storage.Storage;
 
-public interface SearchService {
+public interface SearchRunner {
 
 
-    FileMeta[] submit(Search search, FileMetaDataQueryService query);
+    FileMeta[] submit(Search search, QueryService query);
 
     /**
      *

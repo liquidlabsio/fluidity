@@ -1,4 +1,4 @@
-import io.fluidity.datagen.Templates
+import io.fluidity.datagen.DateUtil
 import io.fluidity.datagen.Templates.*
 import java.io.BufferedWriter
 import java.io.File
@@ -35,8 +35,8 @@ fun main() {
     var count = 0
     val generator = CorrelationTraceGenerator()
 
-    var timestamp = System.currentTimeMillis() - Templates.DAY
-    while (count++ < 10000) {
+    var timestamp = System.currentTimeMillis() - DateUtil.DAY
+    while (count++ < 1000) {
         val constMap = mutableMapOf("CORR_ID" to randomUUID().toString(), "FROM_USER" to generator.getUser(generator.fromUserList), "TO_USER" to generator.getUser(generator.toUserList))
 
         var currentTimeStamp = timestamp

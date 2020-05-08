@@ -3,7 +3,7 @@ package io.fluidity.services.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
+import io.fluidity.services.query.QueryService;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.rocksdb.FlushOptions;
 import org.rocksdb.Options;
@@ -25,17 +25,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class RocksDBFileMetaDataQueryService implements FileMetaDataQueryService {
+public class RocksDBQueryService implements QueryService {
     public static final String PRECOGNITO_FS_BASE_DIR = "fluidity.rocks.base.dir";
     private static final String NAME = "Rocks_FileMetas";
-    private final Logger log = LoggerFactory.getLogger(RocksDBFileMetaDataQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);
 
     private final String baseDir;
     private final File dbDir;
     private final ScheduledExecutorService scheduledThreadPool;
     private final RocksDB db;
 
-    public RocksDBFileMetaDataQueryService() {
+    public RocksDBQueryService() {
         log.info("Created");
         try {
 

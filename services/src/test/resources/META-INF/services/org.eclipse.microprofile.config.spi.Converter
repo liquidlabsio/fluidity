@@ -1,4 +1,3 @@
 io.fluidity.services.storage.StorageFactoryConverter
 io.fluidity.services.storage.IndexingFactoryConverter
 io.fluidity.services.query.QueryFactoryConverter
-io.fluidity.services.search.SearchFactoryConverter

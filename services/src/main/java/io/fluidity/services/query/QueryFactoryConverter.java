@@ -1,19 +1,20 @@
 package io.fluidity.services.query;
 
 import io.fluidity.services.aws.AWS;
-import io.fluidity.services.aws.AwsFileMetaDataQueryService;
-import io.fluidity.services.fixture.FixturedFileMetaDataQueryService;
-import io.fluidity.services.server.RocksDBFileMetaDataQueryService;
+import io.fluidity.services.aws.AwsQueryService;
+import io.fluidity.services.fixture.FixturedQueryService;
+import io.fluidity.services.server.RocksDBQueryService;
 import org.eclipse.microprofile.config.spi.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueryFactoryConverter implements Converter<FileMetaDataQueryService> {
+public class QueryFactoryConverter implements Converter<QueryService> {
 
     private final Logger log = LoggerFactory.getLogger(QueryFactoryConverter.class);
-    private static FileMetaDataQueryService queryService = null;
+    private static QueryService queryService = null;
+
     @Override
-    public FileMetaDataQueryService convert(String mode) {
+    public QueryService convert(String mode) {
 
         if (queryService != null) return queryService;
 
@@ -22,11 +23,11 @@ public class QueryFactoryConverter implements Converter<FileMetaDataQueryService
         log.info("Mode:" + mode);
 
         if (mode.equals("SERVER")) {
-            queryService = new RocksDBFileMetaDataQueryService();
+            queryService = new RocksDBQueryService();
         } else if (mode.equalsIgnoreCase(AWS.CONFIG)) {
-            queryService = new AwsFileMetaDataQueryService();
+            queryService = new AwsQueryService();
         } else {
-            queryService = new FixturedFileMetaDataQueryService();
+            queryService = new FixturedQueryService();
         }
         return queryService;
     }

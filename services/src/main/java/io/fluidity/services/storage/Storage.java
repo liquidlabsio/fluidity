@@ -34,4 +34,10 @@ public interface Storage extends Lifecycle {
     Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix, long fromTime);
 
     void stop();
+
+    void listBucketAndProcess(String region, String tenant, String prefix, Processor processor);
+
+    interface Processor {
+        String process(String region, String itemUrl, String itemName);
+    }
 }

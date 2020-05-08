@@ -65,7 +65,7 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        Pair<String, Object> seriesNameAndValue = search.getSeriesNameAndValue(sourceName, nextLine);
+        Pair<String, Object> seriesNameAndValue = search.getFieldNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
             String groupBy = search.applyGroupBy(tags, sourceName);
             seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());

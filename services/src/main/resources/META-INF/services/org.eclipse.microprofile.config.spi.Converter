@@ -3,7 +3,6 @@
 # quarkus:prod - The default profile when not running in development or test mode
 io.fluidity.services.storage.StorageFactoryConverter
 io.fluidity.services.query.QueryFactoryConverter
-io.fluidity.services.search.SearchFactoryConverter
 io.fluidity.services.storage.IndexingFactoryConverter
 
 

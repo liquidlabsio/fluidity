@@ -38,7 +38,7 @@ public class KvJsonPairExtractor implements Extractor {
                 // string mode - is different to numeric mode - the value is used in the KV - i.e. count how many users
                 int toIndex = nextLine.indexOf("\"", nextStringMarker+1);
                 String value = nextLine.substring(nextStringMarker+1, toIndex);
-                return Pair.create(value, 1);
+                return Pair.create(token, value);
             }
 
         } else {

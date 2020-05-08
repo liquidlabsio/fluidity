@@ -1,7 +1,7 @@
 package io.fluidity.services.fixture;
 
 import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.server.RocksDBFileMetaDataQueryService;
+import io.fluidity.services.server.RocksDBQueryService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -9,14 +9,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.fluidity.services.server.RocksDBFileMetaDataQueryService.PRECOGNITO_FS_BASE_DIR;
+import static io.fluidity.services.server.RocksDBQueryService.PRECOGNITO_FS_BASE_DIR;
 
-class RocksDBFileMetaDataQueryServiceTest {
+class RocksDBQueryServiceTest {
 
     @Test
     void putGetStuff() {
         System.setProperty(PRECOGNITO_FS_BASE_DIR, "./target/rocks-query" + System.currentTimeMillis());
-        RocksDBFileMetaDataQueryService db = new RocksDBFileMetaDataQueryService();
+        RocksDBQueryService db = new RocksDBQueryService();
         FileMeta fileMeta = new FileMeta("tenant", "server", "someTags", "thisMyFile.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         db.put(fileMeta);
         FileMeta fileMeta1 = db.find(fileMeta.tenant, fileMeta.filename);
@@ -34,7 +34,7 @@ class RocksDBFileMetaDataQueryServiceTest {
 
         System.setProperty(PRECOGNITO_FS_BASE_DIR, "./target/rocks-query-bulk" + System.currentTimeMillis());
 
-        RocksDBFileMetaDataQueryService db = new RocksDBFileMetaDataQueryService();
+        RocksDBQueryService db = new RocksDBQueryService();
         FileMeta fileMeta1 = new FileMeta("tenant", "server", "someTags", "thisMyFile1.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         FileMeta fileMeta2 = new FileMeta("tenant", "server", "someTags", "thisMyFile2.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         FileMeta fileMeta3 = new FileMeta("tenant", "server", "someTags", "thisMyFile3.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
