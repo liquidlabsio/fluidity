@@ -13,15 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-import static io.fluidity.dataflow.CorrelationRewriter.CORR_PREFIX;
+import static io.fluidity.dataflow.DataflowExtractor.CORR_PREFIX;
 
 /**
  * Propagates through the stages of building the dataflow model

@@ -1,6 +1,6 @@
 package io.fluidity.services.dataflow;
 
-import io.fluidity.dataflow.CorrelationRewriter;
+import io.fluidity.dataflow.DataflowExtractor;
 import io.fluidity.dataflow.DataflowModeller;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.events.StorageUtil;
@@ -41,7 +41,7 @@ public class DataflowBuilder {
 
             String status = "";
             try (
-                    CorrelationRewriter searchProcessor = new CorrelationRewriter(inputStream, getOutStreamFactory(storage), filePrefix, region, tenant)
+                    DataflowExtractor searchProcessor = new DataflowExtractor(inputStream, getOutStreamFactory(storage), filePrefix, region, tenant)
             ) {
                 status = searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
             } catch (Exception e) {
