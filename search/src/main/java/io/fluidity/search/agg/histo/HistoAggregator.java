@@ -32,7 +32,7 @@ import java.util.Map;
  *     }
  *   ]
  */
-public interface HistoAggregator extends AutoCloseable {
+public interface HistoAggregator<T> extends AutoCloseable {
     String process() throws Exception;
 
     boolean isForMe(String analytic);

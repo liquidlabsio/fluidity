@@ -1,22 +1,24 @@
 package io.fluidity.search.agg.histo;
 
+import org.graalvm.collections.Pair;
+
 import java.util.List;
 
-public interface Series {
+public interface Series<T> {
     String groupBy();
 
-    long get(long time);
+    T get(long time);
 
-    void update(long time, long value);
+    void update(long time, T value);
 
     int index(long time);
 
     boolean hasData();
 
-    List<long[]> data();
+    List<Pair<Long, T>> data();
 
     String name();
 
-    void merge(Series series);
+    void merge(Series<T> series);
 
 }

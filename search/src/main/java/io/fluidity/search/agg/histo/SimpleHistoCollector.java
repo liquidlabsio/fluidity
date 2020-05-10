@@ -43,18 +43,16 @@ import java.util.stream.StreamSupport;
 public class SimpleHistoCollector implements HistoCollector {
     private final long from;
     private final long to;
-    private final HistoFunction function;
+    private final HistoFunction<Long, Long> function;
     private final String sourceName;
     private OutputStream outputStream;
     private final String tags;
-    private final String storageUrl;
     private Search search;
-    private final EconomicMap<String, Series> seriesMap = EconomicMap.create();
+    private final EconomicMap<String, Series<Long>> seriesMap = EconomicMap.create();
 
-    public SimpleHistoCollector(OutputStream outputStream, String sourceName, String tags, String storageUrl, Search search, long from, long to, HistoFunction histoFunction) {
+    public SimpleHistoCollector(OutputStream outputStream, String sourceName, String tags, Search search, long from, long to, HistoFunction<Long, Long> histoFunction) {
         this.outputStream = outputStream;
         this.tags = tags;
-        this.storageUrl = storageUrl;
         this.search = search;
         this.sourceName = sourceName;
         this.from = from;
@@ -65,16 +63,19 @@ public class SimpleHistoCollector implements HistoCollector {
     @Override
     public void add(long currentTime, long position, String nextLine) {
 
-        Pair<String, Object> seriesNameAndValue = search.getFieldNameAndValue(sourceName, nextLine);
+        Pair<String, Long> seriesNameAndValue = search.getFieldNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
             String groupBy = search.applyGroupBy(tags, sourceName);
             seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());
-            Series series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
-            series.update(currentTime, function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, search.expression));
+            Series<Long> series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
+            Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, series.index(currentTime), search.expression);
+
+            series.update(currentTime, calculate
+            );
         }
     }
 
-    private Series getSeriesItem(String groupBy, String seriesName) {
+    private Series<Long> getSeriesItem(String groupBy, String seriesName) {
         if (!seriesMap.containsKey(seriesName)){
             seriesMap.put(seriesName, search.getTimeSeries(seriesName, groupBy, from, to));
         }
@@ -95,7 +96,7 @@ public class SimpleHistoCollector implements HistoCollector {
         }
     }
 
-    public EconomicMap<String, Series> series() {
+    public EconomicMap<String, Series<Long>> series() {
         return seriesMap;
     }
 }

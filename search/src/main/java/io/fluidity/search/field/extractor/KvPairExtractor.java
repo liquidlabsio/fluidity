@@ -20,7 +20,7 @@ public class KvPairExtractor implements Extractor {
     }
 
     @Override
-    public Pair<String, Object> getKeyAndValue(String sourceName, String nextLine) {
+    public Pair<String, Long> getKeyAndValue(String sourceName, String nextLine) {
         Matcher matcher = pattern.matcher(nextLine);
         if (matcher.matches()) {
             return Pair.create(matcher.group(1).trim(), Long.valueOf(matcher.group(2)));

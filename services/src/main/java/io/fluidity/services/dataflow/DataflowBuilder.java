@@ -10,11 +10,13 @@ import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
 import net.jpountz.lz4.LZ4FrameInputStream;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -55,7 +57,17 @@ public class DataflowBuilder {
     }
 
     private StorageUtil getOutStreamFactory(Storage storage) {
-        return (region, tenant, fileUrl, daysRetention) -> storage.getOutputStream(region, tenant, fileUrl, daysRetention);
+        StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
+            try {
+                // duplicate copy to local FS due to not knowing the name until finished
+                OutputStream storageOutputStream = storage.getOutputStream(region, tenant, filePath, daysRetention);
+                IOUtils.copy(inputStream, storageOutputStream);
+                storageOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        };
+        return outFactory;
     }
 
     private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {

@@ -43,8 +43,8 @@ public class FieldExtractor {
         }
     }
 
-    public Pair<String, Object> getSeriesNameAndValue(String sourceName, String nextLine) {
-        if (expressionPart.equals("*")) return Pair.create(sourceName, 1);
+    public Pair<String, Long> getSeriesNameAndValue(String sourceName, String nextLine) {
+        if (expressionPart.equals("*")) return Pair.create(sourceName, 1l);
         return extractor.getKeyAndValue(sourceName, nextLine);
     }
 }

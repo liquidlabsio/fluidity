@@ -4,7 +4,6 @@ import io.fluidity.search.Search;
 import io.fluidity.search.agg.events.EventCollector;
 import io.fluidity.search.agg.events.LineByLineEventAggregator;
 import io.fluidity.search.agg.events.SearchEventCollector;
-import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.search.agg.histo.HistoAggFactory;
 import io.fluidity.search.agg.histo.HistoAggregator;
 import io.fluidity.search.agg.histo.HistoCollector;
@@ -68,12 +67,8 @@ public class StandardSearchRunner implements SearchRunner {
         String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
         OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
 
-        HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, fileMeta.storageUrl, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search));
+        HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search));
         return new SearchEventCollector(histoCollector, inputStream, outputStream);
-    }
-
-    private StorageUtil getOutStreamFactory(Storage storage) {
-        return (region, tenant, fileUrl, daysRetention) -> storage.getOutputStream(region, tenant, fileUrl, daysRetention);
     }
 
     private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {

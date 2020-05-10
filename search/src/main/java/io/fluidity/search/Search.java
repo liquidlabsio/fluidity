@@ -90,7 +90,7 @@ public class Search {
 
     private transient FieldExtractor fieldExtractor;
 
-    public Pair<String, Object> getFieldNameAndValue(String sourceName, String nextLine) {
+    public Pair<String, Long> getFieldNameAndValue(String sourceName, String nextLine) {
         if (fieldExtractor == null) {
             fieldExtractor = new FieldExtractor(expression);
         }
@@ -105,7 +105,7 @@ public class Search {
     }
 
 
-    public Series getTimeSeries(String seriesName, String groupBy, long from, long to) {
+    public Series<Long> getTimeSeries(String seriesName, String groupBy, long from, long to) {
         String[] split = expression.split("\\|");
         String timeSeriesStyle = split.length > EXPRESSION_PARTS.timeseries.ordinal() ? split[EXPRESSION_PARTS.timeseries.ordinal()].trim() : "";
 

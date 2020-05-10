@@ -11,7 +11,7 @@ class TimeSeriesTest {
     public void testBuildSeriesAndGetStuff() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - DateUtil.HOUR;
-        Series series = new TimeSeries("someFile", "", from, last);
+        Series<Long> series = new TimeSeries("someFile", "", from, last);
 
         assertFalse(series.hasData());
 
@@ -27,13 +27,11 @@ class TimeSeriesTest {
         assertTrue(series.hasData());
     }
 
-    private void testBucket(String message, long time, Series series, boolean shouldFail) {
+    private void testBucket(String message, long time, Series<Long> series, boolean shouldFail) {
         long value = 1234;
         series.update(time, value);
-        long returnedValue = series.get(time);
-        if (shouldFail) {
-            assertEquals(0, returnedValue, message + " OutOfIndexBuckets default to 0");
-        } else {
+        Long returnedValue = series.get(time);
+        if (!shouldFail) {
             assertEquals(value, returnedValue, message);
         }
     }

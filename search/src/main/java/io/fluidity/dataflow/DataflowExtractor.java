@@ -21,11 +21,15 @@ import java.util.Map;
  */
 public class DataflowExtractor implements AutoCloseable {
     // correlation-start-end
-    public final static String CORR_FILE_FMT = "%s/corr-%s-%d-%d.log";
-
+    public final static String CORR_FILE_FMT = "%s/corr-%s-%d-%d-.log";
     public final static String CORR_PREFIX = "/corr-";
-    public final static String CORR_DAT_FMT = "%s/corr-%s-%d-%d.dat";
+
+    public final static String CORR_DAT_FMT = "%s/dat-%s-%d-%d-.dat";
+    public final static String CORR_DAT_PREFIX = "/dat-";
     private final Logger log = LoggerFactory.getLogger(DataflowExtractor.class);
+
+    public final static String CORR_FLOW_FMT = "%s/flow-%s-%d-%d-.dat";
+    public final static String CORR_FLOW_PREFIX = "/flow-";
 
     private final InputStream input;
     private final StorageUtil storageUtil;
@@ -69,7 +73,7 @@ public class DataflowExtractor implements AutoCloseable {
 
             while (nextLine != null) {
                 if (search.matches(nextLine)) {
-                    Pair<String, Object> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine);
+                    Pair<String, Long> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine);
                     String correlationId = fieldNameAndValue.getLeft();
                     if (correlationId != null) {
                         if (!currentCorrelation.equals(correlationId)) {
@@ -138,6 +142,10 @@ public class DataflowExtractor implements AutoCloseable {
         addToMap(extractorMap, new KvJsonPairExtractor("type"));
         // anthing else that is useful
         addToMap(extractorMap, new KvJsonPairExtractor("meta"));
+        // tag information
+        addToMap(extractorMap, new KvJsonPairExtractor("tag"));
+        // normal/error/warn information
+        addToMap(extractorMap, new KvJsonPairExtractor("behavior"));
         return extractorMap;
     }
 
@@ -148,7 +156,7 @@ public class DataflowExtractor implements AutoCloseable {
     private void getDatData(String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
-                Pair<String, Object> extracted = extractor.getKeyAndValue("none", nextLine);
+                Pair<String, Long> extracted = extractor.getKeyAndValue("none", nextLine);
                 if (extracted != null) {
                     datData.put(extractor.getToken(), extracted.getRight().toString());
                 }

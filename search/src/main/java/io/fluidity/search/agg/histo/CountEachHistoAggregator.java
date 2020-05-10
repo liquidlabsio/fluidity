@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CountEachHistoAggregator extends AbstractHistoAggregator {
+public class CountEachHistoAggregator extends AbstractHistoAggregator<Long> {
 
     public boolean isForMe(String analytic) {
         return analytic.equals("analytic.countEach()");
@@ -19,10 +19,10 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
     }
 
     @Override
-    List<Series> processSeries(Collection<Series> collectedSeries) {
+    List<Series<Long>> processSeries(Collection<Series<Long>> collectedSeries) {
         final Set<String> topSeries = getTopSeriesNames(collectedSeries, LIMIT);
 
-        Map<String, Series> results = new HashMap<>();
+        Map<String, Series<Long>> results = new HashMap<>();
 
         // collect top items
         collectedSeries.stream().filter(series -> topSeries.contains(series.name())).forEach(series -> {
@@ -42,13 +42,13 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
         return new ArrayList<>(results.values());
     }
 
-    private Set<String> getTopSeriesNames(Collection<Series> collectedSeries, int limit) {
+    private Set<String> getTopSeriesNames(Collection<Series<Long>> collectedSeries, int limit) {
         // count the total hits for the series
         Map<String, Long> countMap = new HashMap<>();
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(data -> {
             Long aLong = countMap.get(series.name());
             if (aLong == null || aLong == -1) aLong = 0L;
-            countMap.put(series.name(), add(aLong, data[1]));
+            countMap.put(series.name(), add(aLong, data.getRight()));
         }));
         // sort by number of hits
         List<Map.Entry<String, Long>> entryArrayList = new ArrayList<>(countMap.entrySet());
@@ -69,7 +69,13 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator {
     }
 
     @Override
-    public HistoFunction function() {
-        return (currentValue, newValue, nextLine, position, time, expression) ->  currentValue == -1? currentValue + 2 : currentValue + 1;
+    public HistoFunction<Long, Long> function() {
+        return (currentValue, newValue, nextLine, position, time, histoIndex, expression) -> currentValue == null ? 1 : currentValue.longValue() + 1;
+    }
+
+    protected long add(Long currentValue, Long newValue) {
+        currentValue = currentValue == null ? 0 : currentValue;
+        newValue = newValue == null ? 0 : newValue;
+        return currentValue.longValue() + newValue.longValue();
     }
 }

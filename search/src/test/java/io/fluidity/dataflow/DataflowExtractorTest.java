@@ -35,7 +35,6 @@ class DataflowExtractorTest {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         };
         DataflowExtractor rewriter = new DataflowExtractor(instream, outFactory, "filePrefix", "region", "tenant");
 

@@ -3,8 +3,11 @@ package io.fluidity.search.agg.histo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.fluidity.search.Search;
+import io.fluidity.util.PairDeserializer;
 import org.apache.commons.io.IOUtils;
+import org.graalvm.collections.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-abstract class AbstractHistoAggregator implements HistoAggregator {
+abstract class AbstractHistoAggregator<T> implements HistoAggregator<T> {
     protected final Map<String, InputStream> inputStreams;
     protected final Search search;
 
@@ -29,6 +32,9 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
 
         // TODO: implement reduce functionality between each of the series, i.e. avg/stats/min/max etc
         ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(Pair.class, new PairDeserializer());
+        objectMapper.registerModule(module);
         List<List> collectedSeriesList =
                 collectedJson.stream().map(json -> {
                     try {
@@ -42,7 +48,7 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
 
         List<Series> collectedSeriesWithPossibleDuplicateNames = (List<Series>) collectedSeriesList.stream().flatMap(list -> list.stream()).collect(Collectors.toList());
 
-        HashMap<String, Series> reducedSeries = new HashMap<>();
+        HashMap<String, Series<T>> reducedSeries = new HashMap<>();
         collectedSeriesWithPossibleDuplicateNames.forEach(series ->
         {
             if (reducedSeries.containsKey(series.name())) {
@@ -57,7 +63,7 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
 
     }
 
-    abstract List<Series> processSeries(Collection<Series> collectedSeries);
+    abstract List<Series<T>> processSeries(Collection<Series<T>> collectedSeries);
 
     private String readJson(InputStream inputStream) {
         try {
@@ -85,11 +91,4 @@ abstract class AbstractHistoAggregator implements HistoAggregator {
         });
 
     }
-
-    protected long add(long currentValue, long newValue) {
-        currentValue = currentValue == -1 ? 0 : currentValue;
-        newValue = newValue == -1 ? 0 : newValue;
-        return currentValue + newValue;
-    }
-
 }

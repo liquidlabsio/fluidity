@@ -148,6 +148,11 @@ public class FileSystemBasedStorageService implements Storage {
     }
 
     @Override
+    public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
+
+    }
+
+    @Override
     public OutputStream getOutputStream(String region, String tenant, String stagingFileResults, int daysRetention) {
         if (stagingFileResults.startsWith("s3://")) stagingFileResults = stagingFileResults.substring("s3://".length());
         File file = new File(stagingFileResults);
