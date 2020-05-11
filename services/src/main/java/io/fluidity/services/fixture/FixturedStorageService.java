@@ -5,8 +5,17 @@ import io.fluidity.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FixturedStorageService implements Storage {
@@ -78,6 +87,11 @@ public class FixturedStorageService implements Storage {
     @Override
     public void stop() {
 
+    }
+
+    @Override
+    public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
+        storage.keySet().forEach(item -> processor.process(region, tenant, item));
     }
 
     @Override

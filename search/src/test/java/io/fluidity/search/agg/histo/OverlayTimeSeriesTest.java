@@ -10,8 +10,12 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.fluidity.util.DateUtil.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static io.fluidity.util.DateUtil.HOUR;
+import static io.fluidity.util.DateUtil.MINUTE;
+import static io.fluidity.util.DateUtil.floorDay;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OverlayTimeSeriesTest {
 
@@ -30,7 +34,7 @@ class OverlayTimeSeriesTest {
 
         long from = today + dateTimeFormatter.parseDateTime("01:00.00").getMillis();
         long to = today + dateTimeFormatter.parseDateTime("15:45.00").getMillis();
-        Series<Long> series = new OverlayTimeSeries<>("someFile", "", from, to);
+        Series<Long> series = new OverlayTimeSeries<>("someFile", "", from, to, new Series.LongOps());
 
 
         DateTime localTime = dateTimeFormatter.parseDateTime("12:30.00");
@@ -58,7 +62,7 @@ class OverlayTimeSeriesTest {
     public void testStandardTimeSeries() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", "", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 
@@ -72,7 +76,7 @@ class OverlayTimeSeriesTest {
     public void testOutOfBoundsOverlay() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", "", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 
@@ -91,7 +95,7 @@ class OverlayTimeSeriesTest {
     public void testUpdateMatchesAcrossDifferentBounds() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someData", "", from, last);
+        Series series = new OverlayTimeSeries("someData", "", from, last, new Series.LongOps());
 
         long expectedFrom = DateUtil.ceilHour(last)-HOUR;
 

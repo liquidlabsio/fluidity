@@ -3,7 +3,9 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimeSeriesTest {
 
@@ -11,7 +13,7 @@ class TimeSeriesTest {
     public void testBuildSeriesAndGetStuff() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - DateUtil.HOUR;
-        Series<Long> series = new TimeSeries("someFile", "", from, last);
+        Series<Long> series = new TimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 

@@ -6,7 +6,11 @@ import org.graalvm.collections.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.fluidity.util.DateUtil.*;
+import static io.fluidity.util.DateUtil.DAY;
+import static io.fluidity.util.DateUtil.HOUR;
+import static io.fluidity.util.DateUtil.MINUTE;
+import static io.fluidity.util.DateUtil.TEN_MINS;
+import static io.fluidity.util.DateUtil.WEEK;
 
 /**
  * {
@@ -24,6 +28,7 @@ import static io.fluidity.util.DateUtil.*;
 public class TimeSeries<T> implements Series<T> {
 
     public String groupBy;
+    private Ops<T> ops;
     public String name;
     public List<Pair<Long, T>> data = new ArrayList();
     public long delta = DateUtil.MINUTE;
@@ -31,9 +36,10 @@ public class TimeSeries<T> implements Series<T> {
     public TimeSeries() {
     }
 
-    public TimeSeries(String filename, String groupBy, long from, long to) {
+    public TimeSeries(String filename, String groupBy, long from, long to, Ops<T> ops) {
         this.name = filename;
         this.groupBy = groupBy;
+        this.ops = ops;
         buildHistogram(DateUtil.floorMin(from), DateUtil.floorMin(to));
     }
 
@@ -96,19 +102,9 @@ public class TimeSeries<T> implements Series<T> {
     public void merge(Series<T> series) {
         series.data().stream()
                 .forEach(dataPoint ->
-                        this.update(dataPoint.getLeft(), add(this.get(dataPoint.getLeft()), dataPoint.getRight()))
+                        this.update(dataPoint.getLeft(), ops.add(this.get(dataPoint.getLeft()), dataPoint.getRight()))
                 );
     }
 
-    /**
-     * Cater for sentinal value of -1
-     * @param currentValue
-     * @param newValue
-     * @return
-     */
-    private T add(T currentValue, T newValue) {
-//        currentValue = currentValue == -1 ? 0 : currentValue;
-//        newValue = newValue == -1 ? 0 : newValue;
-        return newValue;//currentValue + newValue;
-    }
+
 }

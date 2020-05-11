@@ -7,7 +7,7 @@ import io.fluidity.dataflow.DataflowHistoCollector;
 import io.fluidity.dataflow.DataflowModeller;
 import io.fluidity.dataflow.FlowInfo;
 import io.fluidity.search.Search;
-import io.fluidity.search.agg.histo.HistoFunction;
+import io.fluidity.services.dataflow.histo.HistoAggregatorFun;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
@@ -22,7 +22,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static io.fluidity.dataflow.DataflowExtractor.CORR_PREFIX;
@@ -91,28 +96,7 @@ public class WorkflowRunnerV1 {
         // Stage 1. Rewrite dataflows by time-correlation (fan-out)
         stepOneExtractDataflowIntoStorage(search, submit);
 
-        HistoFunction<Long, FlowInfo> histoFunction = new HistoFunction<>() {
-            int count = 0;
-            // for given index
-            // emit client value
-            StatsDuration totalDuration = new StatsDuration();
-            StatsDuration op2OpLatency = new StatsDuration();
-            StatsDuration maxOpDuration = new StatsDuration();
-
-            @Override
-            public Long calculate(FlowInfo currentValue, FlowInfo newValue, String nextLine, long position, long time, int histoIndex, String expression) {
-                count++;
-                long duration = newValue.getDuration();
-                totalDuration.update(duration);
-
-                long[] minMaxOpIntervalWithOpDuration = newValue.getMinOp2OpLatency();
-                op2OpLatency.update(minMaxOpIntervalWithOpDuration[1]);
-
-                maxOpDuration.update(minMaxOpIntervalWithOpDuration[2]);
-                return 0l;
-            }
-        };
-        DataflowHistoCollector dataflowHistoCollector = new DataflowHistoCollector(search, histoFunction);
+        DataflowHistoCollector dataflowHistoCollector = new DataflowHistoCollector(search, new HistoAggregatorFun());
 
         // Stage 2.
         buildDataFlowIndexForCorrelations(modelPath, dataflowHistoCollector);

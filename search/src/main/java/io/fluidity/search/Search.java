@@ -109,8 +109,9 @@ public class Search {
         String[] split = expression.split("\\|");
         String timeSeriesStyle = split.length > EXPRESSION_PARTS.timeseries.ordinal() ? split[EXPRESSION_PARTS.timeseries.ordinal()].trim() : "";
 
-        if (timeSeriesStyle.equals("time.overlay()")) return new OverlayTimeSeries(seriesName, groupBy, from, to);
-        return new TimeSeries(seriesName, groupBy, from, to);
+        if (timeSeriesStyle.equals("time.overlay()"))
+            return new OverlayTimeSeries(seriesName, groupBy, from, to, new Series.LongOps());
+        return new TimeSeries(seriesName, groupBy, from, to, new Series.LongOps());
     }
 
     @Override

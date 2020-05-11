@@ -21,4 +21,17 @@ public interface Series<T> {
 
     void merge(Series<T> series);
 
+    interface Ops<V> {
+        V add(V t1, V t2);
+    }
+
+    class LongOps implements Ops<Long> {
+        @Override
+        public Long add(Long currentValue, Long newValue) {
+            currentValue = currentValue == null ? 0 : currentValue;
+            newValue = newValue == null ? 0 : newValue;
+            return currentValue + newValue;
+
+        }
+    }
 }

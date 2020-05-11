@@ -1,4 +1,4 @@
-package io.fluidity.services.dataflow;
+package io.fluidity.services.dataflow.histo;
 
 public class StatsDuration {
     long minTotalDuration = -1;

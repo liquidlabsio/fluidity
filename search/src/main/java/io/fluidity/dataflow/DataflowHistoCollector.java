@@ -41,7 +41,7 @@ public class DataflowHistoCollector {
 
     public DataflowHistoCollector(Search search, HistoFunction histoFunction) {
         this.function = histoFunction;
-        this.series = new TimeSeries("none", "", search.from, search.to);
+        this.series = new TimeSeries("none", "", search.from, search.to, new Series.LongOps());
     }
 
     public void add(long currentTime, FlowInfo value) {
