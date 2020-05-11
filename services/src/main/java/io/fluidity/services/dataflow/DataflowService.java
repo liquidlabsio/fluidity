@@ -3,11 +3,11 @@ package io.fluidity.services.dataflow;
 import io.fluidity.search.Search;
 
 public interface DataflowService {
-    String submit(String tenant, Search search, String serviceAddress);
+    String submit(String tenant, Search search, String modelname, String serviceAddress);
 
-    String status(String tenant, String session);
+    String status(String tenant, String session, String modelName);
 
-    String model(String tenant, String session);
+    String model(String tenant, String session, String modelName);
 
-    String rewriteCorrelationData(String tenant, String fileMetas, String modelPath, Search search);
+    String rewriteCorrelationData(String tenant, String session, String fileMetas, String modelPath, Search search);
 }

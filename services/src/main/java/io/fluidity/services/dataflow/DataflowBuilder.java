@@ -1,11 +1,9 @@
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.DataflowExtractor;
-import io.fluidity.dataflow.DataflowModeller;
+import io.fluidity.dataflow.LogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.events.StorageUtil;
-import io.fluidity.search.agg.histo.HistoAggFactory;
-import io.fluidity.search.agg.histo.HistoAggregator;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
@@ -14,12 +12,16 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+
+import static io.fluidity.dataflow.DataflowExtractor.CORR_HIST_PREFIX;
 
 public class DataflowBuilder {
     private long limitList = 5000;
@@ -29,14 +31,15 @@ public class DataflowBuilder {
         log.info("Created");
     }
 
-    public FileMeta[] submit(Search search, QueryService query) {
+    public FileMeta[] listFiles(Search search, QueryService query) {
         List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 
-    public String extractCorrelationData(FileMeta[] files, Search search, Storage storage, String region, String tenant, String filePrefix) {
+    public String extractCorrelationData(String session, FileMeta[] files, Search search, Storage storage, String region, String tenant, String filePrefix) {
         try {
             FileMeta fileMeta = files[0];
+            log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String searchUrl = fileMeta.getStorageUrl();
             InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
 
@@ -51,18 +54,19 @@ public class DataflowBuilder {
             }
             return status;
         } catch (Exception e) {
+            log.info(LogHelper.format(session, "builder", "extractFlow", "Error:" + e.toString()));
             log.warn("Failed to process:", e);
             return e.toString();
+        } finally {
+            log.info(LogHelper.format(session, "builder", "extractFlow", "Finished"));
         }
     }
 
     private StorageUtil getOutStreamFactory(Storage storage) {
         StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
-            try {
+            try (OutputStream storageOutputStream = storage.getOutputStream(region, tenant, filePath, daysRetention)) {
                 // duplicate copy to local FS due to not knowing the name until finished
-                OutputStream storageOutputStream = storage.getOutputStream(region, tenant, filePath, daysRetention);
                 IOUtils.copy(inputStream, storageOutputStream);
-                storageOutputStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -81,36 +85,27 @@ public class DataflowBuilder {
         return inputStream;
     }
 
-    public String finalizeHisto(Search search, String tenant, String region, Storage storage) {
+    public String status(String session, String modelName) {
+        return "dunno!";
+    }
 
-        long start = System.currentTimeMillis();
-        String histoAggJsonData = "";
-        if (search.isNormalSearch()) {
+    public String getModel(String region, String tenant, String session, String modelName, Storage storage) {
+        List<String> histoList = new ArrayList<>();
+        storage.listBucketAndProcess(region, tenant, modelName + "/" + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
+            histoList.add(itemUrl);
+            return null;
+        });
 
-            try (HistoAggregator histoAgg = new HistoAggFactory().get(storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.histoSuffix, 0), search)) {
-                histoAggJsonData = histoAgg.process();
-            } catch (Exception e) {
+        StringBuilder results = new StringBuilder();
+        histoList.stream().forEach(histoFileurl -> {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (InputStream inputStream = storage.getInputStream(region, tenant, histoFileurl)) {
+                IOUtils.copy(inputStream, baos);
+                results.append(baos.toString());
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            // dataflow model building
-            // we have a dataflow model-dir or stage-1 data ({ts}-correlation.log data
-            // stage 2 we run-lambdas to build the indexes
-            DataflowModeller dataflowModeller = new DataflowModeller("staging-dir", "http://gateway-api/");
-
-            dataflowModeller.buildCorrelationIndexes();
-            return dataflowModeller.buildModelFromIndexes(search);
-        }
-        log.info("HistoElapsed:{}", (System.currentTimeMillis() - start));
-
-        return histoAggJsonData;
-    }
-
-    public String status(String session) {
-        return null;
-    }
-
-    public String getModel(String session) {
-        return "";
+        });
+        return results.toString();
     }
 }
