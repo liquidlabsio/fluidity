@@ -31,6 +31,9 @@ public class DataflowExtractor implements AutoCloseable {
     public final static String CORR_FLOW_FMT = "%s/flow-%s-%d-%d-.dat";
     public final static String CORR_FLOW_PREFIX = "/flow-";
 
+    public final static String CORR_HIST_FMT = "%s/histo-%d-%d-.histo";
+    public final static String CORR_HIST_PREFIX = "/histo-";
+
     private final InputStream input;
     private final StorageUtil storageUtil;
     private String filePrefix;

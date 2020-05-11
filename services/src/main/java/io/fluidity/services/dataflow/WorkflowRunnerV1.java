@@ -2,12 +2,8 @@ package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.DataflowExtractor;
-import io.fluidity.dataflow.DataflowHistoCollector;
-import io.fluidity.dataflow.DataflowModeller;
-import io.fluidity.dataflow.FlowInfo;
+import io.fluidity.dataflow.*;
 import io.fluidity.search.Search;
-import io.fluidity.services.dataflow.histo.HistoAggregatorFun;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
@@ -22,13 +18,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.concurrent.*;
 
 import static io.fluidity.dataflow.DataflowExtractor.CORR_PREFIX;
 
@@ -56,13 +46,8 @@ public class WorkflowRunnerV1 {
     private final DataflowBuilder dfBuilder;
     private final ConcurrentLinkedQueue<Object> statusQueue;
     private final ScheduledExecutorService scheduler;
-
-    private Search search;
-    private String sessionId;
-
+    private String session;
     private String apiUrl;
-
-    private List<Future<?>> extractorTasks;
 
     public WorkflowRunnerV1(String tenant, DataflowBuilder dfBuilder, String modelPath, QueryService query, String apiUrl) {
         this.tenant = tenant;
@@ -79,32 +64,38 @@ public class WorkflowRunnerV1 {
         // write the queue to storage modelPath status file
         Object poll = statusQueue.poll();
         // write to storage
-        log.info("Got Message:" + poll);
+        log.info("Status:" + poll);
     }
 
     /**
      * @param search
-     * @param userSession
+     * @param session
      * @return
      */
-    public String run(Search search, String userSession) {
-        this.search = search;
-        this.sessionId = userSession;
+    public String run(Search search, String session) {
+        this.session = session;
+        log.info(LogHelper.format(session, "builder", "workflow", "Start"));
+        try {
 
-        FileMeta[] submit = dfBuilder.submit(search, query);
+            FileMeta[] filesToExtractFrom = dfBuilder.listFiles(search, query);
 
-        // Stage 1. Rewrite dataflows by time-correlation (fan-out)
-        stepOneExtractDataflowIntoStorage(search, submit);
+            // Stage 1. Rewrite dataflows by correlationId-timeFrom-timeTo =< fan-out
+            stepOneExtractDataflowIntoStorage(search, filesToExtractFrom);
 
-        DataflowHistoCollector dataflowHistoCollector = new DataflowHistoCollector(search, new HistoAggregatorFun());
+            DataflowHistoCollector dataflowHistoCollector = new DataflowHistoCollector(search);
 
-        // Stage 2.
-        buildDataFlowIndexForCorrelations(modelPath, dataflowHistoCollector);
+            // Stage 2. Build DataFlows info for each correlation-set, collect histogram from all correlation-filenames
+            buildDataFlowIndexForCorrelations(this.session, modelPath, dataflowHistoCollector);
 
-        // Stage 3.
-        buildFinalModel(modelPath);
+            // Stage 3. Write it off to disk
+            buildFinalModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
+        } catch (Exception ex) {
+            log.info(LogHelper.format(session, "builder", "workflow", "Failed:" + ex.toString()));
+        } finally {
+            log.info(LogHelper.format(session, "builder", "workflow", "Finish"));
+        }
 
-        return sessionId;
+        return this.session;
     }
 
     /**
@@ -113,10 +104,18 @@ public class WorkflowRunnerV1 {
      * percentile breakdown of min,max,avg, 95th percentile, 99th percentile data
      *
      * @param modelPath
+     * @param dataflowHistoCollector
      */
-    private void buildFinalModel(String modelPath) {
-
-
+    private void buildFinalModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
+        log.info(LogHelper.format(session, "builder", "buildFinalModel", "Start"));
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(DataflowExtractor.CORR_HIST_FMT, modelPath, start, end), 365)) {
+            String dataflowHistogram = new ObjectMapper().writeValueAsString(dataflowHistoCollector);
+            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram.getBytes()), outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            log.info(LogHelper.format(session, "builder", "buildFinalModel", "Finish"));
+        }
     }
 
     /**
@@ -124,11 +123,12 @@ public class WorkflowRunnerV1 {
      *
      * @param modelPath
      */
-    private void buildDataFlowIndexForCorrelations(String modelPath, DataflowHistoCollector histoCollector) {
+    private void buildDataFlowIndexForCorrelations(String session, String modelPath, DataflowHistoCollector histoCollector) {
         // storage.list files keeping track of each correlation
         List<Pair<Long, String>> correlationSet = new ArrayList<>();
         String currentCorrelationKey = "";
 
+        log.info(LogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
         storage.listBucketAndProcess(region, tenant, modelPath + CORR_PREFIX, (region, itemUrl, correlationFilename) -> {
             String[] split = correlationFilename.split("-");
@@ -147,8 +147,8 @@ public class WorkflowRunnerV1 {
             correlationSet.add(Pair.create(Long.parseLong(split[1]), correlationFilename));
             return null;
         });
+        log.info(LogHelper.format(session, "builder", "buildCorrelations", "Finish"));
         // flush the histo collector to storage
-
         statusQueue.add("Finished for Correlation Tasks");
     }
 
@@ -159,21 +159,23 @@ public class WorkflowRunnerV1 {
      * @param submit
      */
     private void stepOneExtractDataflowIntoStorage(Search search, FileMeta[] submit) {
+        log.info(LogHelper.format(session, "workflow", "extractFlows", "Start:" + search));
         ExecutorService pool = Executors.newFixedThreadPool(N_THREADS);
-        extractorTasks = Arrays.stream(submit).map(fileMeta -> pool.submit(() -> {
+        Arrays.stream(submit).map(fileMeta -> pool.submit(() -> {
             String status;
             try {
-                status = DataflowResource.rewriteCorrelationData(tenant, new FileMeta[]{fileMeta}, search, apiUrl, modelPath);
+                status = DataflowResource.rewriteCorrelationData(tenant, session, new FileMeta[]{fileMeta}, search, apiUrl, modelPath);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 status = "Failed:" + fileMeta + " " + e.toString();
             }
             statusQueue.add(status);
-        })).collect(Collectors.toList());
+        }));
         try {
             pool.awaitTermination(15, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        log.info(LogHelper.format(session, "workflow", "extractFlows", "Finish:" + search));
     }
 }

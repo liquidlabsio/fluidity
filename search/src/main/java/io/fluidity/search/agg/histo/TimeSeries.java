@@ -6,11 +6,7 @@ import org.graalvm.collections.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.fluidity.util.DateUtil.DAY;
-import static io.fluidity.util.DateUtil.HOUR;
-import static io.fluidity.util.DateUtil.MINUTE;
-import static io.fluidity.util.DateUtil.TEN_MINS;
-import static io.fluidity.util.DateUtil.WEEK;
+import static io.fluidity.util.DateUtil.*;
 
 /**
  * {
@@ -84,6 +80,7 @@ public class TimeSeries<T> implements Series<T> {
         int index = index(time);
         if (index < 0 || index >= data.size()) return;
         Pair<Long, T> current = data.get(index);
+        data.remove(index);
         data.add(index, Pair.create(current.getLeft(), value));
     }
 
