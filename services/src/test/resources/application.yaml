@@ -41,7 +41,7 @@ quarkus:
   log:
     console:
       enable: true
-      format: "%d{HH:mm:ss} %-5p [%c] %s%e%n"
+      format: "%d{HH:mm:ss.SSS} %-5p [%c] %s%e%n"
       level: TRACE
 
     # TRACE file logging
@@ -49,7 +49,7 @@ quarkus:
       enable: true
       path: /tmp/quarkus.log
       level: TRACE
-      format: "%d{HH:mm:ss} %-5p [%c{2.}]] (%t) %s%e%n"
+      format: "%d{HH:mm:ss.SSS} %-5p [%c{2.}]] (%t) %s%e%n"
 
     # custom loggers
     category:

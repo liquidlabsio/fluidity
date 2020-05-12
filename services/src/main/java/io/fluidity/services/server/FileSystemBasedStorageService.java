@@ -149,13 +149,14 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-
+        Collection<File> files = FileUtil.listDirs(this.baseDir, "*");
+        files.stream().filter(item -> FileUtil.fixPath(item.getPath()).contains(prefix)).forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath())));
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String stagingFileResults, int daysRetention) {
-        if (stagingFileResults.startsWith("s3://")) stagingFileResults = stagingFileResults.substring("s3://".length());
-        File file = new File(stagingFileResults);
+    public OutputStream getOutputStream(String region, String tenant, String fullFilePath, int daysRetention) {
+        if (fullFilePath.startsWith("s3://")) fullFilePath = fullFilePath.substring("s3://".length());
+        File file = new File(this.baseDir, fullFilePath);
         file.getParentFile().mkdirs();
         try {
             return new FileOutputStream(file);

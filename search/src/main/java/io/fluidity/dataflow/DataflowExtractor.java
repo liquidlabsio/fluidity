@@ -16,35 +16,26 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
+import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
+
 /**
  * Extract correlated data to relevant files and store on CloudStorage Dataflow model directory.
  */
 public class DataflowExtractor implements AutoCloseable {
-    // correlation-start-end
-    public final static String CORR_FILE_FMT = "%s/corr-%s-%d-%d-.log";
-    public final static String CORR_PREFIX = "/corr-";
-
-    public final static String CORR_DAT_FMT = "%s/dat-%s-%d-%d-.dat";
-    public final static String CORR_DAT_PREFIX = "/dat-";
     private final Logger log = LoggerFactory.getLogger(DataflowExtractor.class);
-
-    public final static String CORR_FLOW_FMT = "%s/flow-%s-%d-%d-.dat";
-    public final static String CORR_FLOW_PREFIX = "/flow-";
-
-    public final static String CORR_HIST_FMT = "%s/histo-%d-%d-.histo";
-    public final static String CORR_HIST_PREFIX = "/histo-";
 
     private final InputStream input;
     private final StorageUtil storageUtil;
-    private String filePrefix;
+    private String modelPath;
     private final String region;
     private final String tenant;
     private int logWarningCount = 0;
 
-    public DataflowExtractor(InputStream inputStream, StorageUtil storageUtil, String filePrefix, String region, String tenant) {
+    public DataflowExtractor(InputStream inputStream, StorageUtil storageUtil, String modelPath, String region, String tenant) {
         this.input = inputStream;
         this.storageUtil = storageUtil;
-        this.filePrefix = filePrefix;
+        this.modelPath = modelPath;
         this.region = region;
         this.tenant = tenant;
     }
@@ -53,11 +44,9 @@ public class DataflowExtractor implements AutoCloseable {
 
         DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
 
-        BufferedInputStream bis = new BufferedInputStream(input);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
-
         LinkedList<Integer> lengths = new LinkedList<>();
 
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input)));
         String nextLine = reader.readLine();
         lengths.add(nextLine.length());
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
@@ -77,13 +66,15 @@ public class DataflowExtractor implements AutoCloseable {
             while (nextLine != null) {
                 if (search.matches(nextLine)) {
                     Pair<String, Long> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine);
+
                     String correlationId = fieldNameAndValue.getLeft();
                     if (correlationId != null) {
                         if (!currentCorrelation.equals(correlationId)) {
                             if (bos != null) {
                                 bos.close();
-                                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, filePrefix, correlationId, startTime, currentTime), 365, currentTime);
-                                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, filePrefix, correlationId, startTime, currentTime), 365, currentTime);
+                                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
+                                currentFile.delete();
+                                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
                                 datData.clear();
                             }
                             currentCorrelation = correlationId;
@@ -91,11 +82,12 @@ public class DataflowExtractor implements AutoCloseable {
                             bos = new BufferedOutputStream(new FileOutputStream(currentFile));
                             startTime = currentTime;
                         }
-                    }
-                    getDatData(nextLine, datData, extractorMap);
-                    if (bos != null) {
-                        bos.write(nextLine.getBytes());
-                        bos.write('\n');
+
+                        getDatData(nextLine, datData, extractorMap);
+                        if (bos != null) {
+                            bos.write(nextLine.getBytes());
+                            bos.write('\n');
+                        }
                     }
                 }
 
@@ -113,10 +105,14 @@ public class DataflowExtractor implements AutoCloseable {
                 }
             }
         } finally {
+            if (reader != null) {
+                reader.close();
+            }
             if (bos != null) {
                 bos.close();
-                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, filePrefix, currentCorrelation, startTime, currentTime), 365, currentTime);
-                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, filePrefix, currentCorrelation, startTime, currentTime), 365, currentTime);
+                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, currentCorrelation, startTime, currentTime), 365, currentTime);
+                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, currentCorrelation, startTime, currentTime), 365, currentTime);
+                currentFile.delete();
             }
         }
         return "done";

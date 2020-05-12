@@ -14,7 +14,6 @@ public class DataflowModeller {
 
     }
 
-
     public FlowInfo getCorrelationFlow(String flowId, List<Pair<Long, String>> correlationSet) {
         List<Long[]> durations = getDurations(correlationSet);
         return new FlowInfo(flowId, getFlowFiles(correlationSet), durations);
@@ -23,7 +22,7 @@ public class DataflowModeller {
     private List<Long[]> getDurations(List<Pair<Long, String>> correlationSet) {
         List<Long[]> longs = correlationSet.stream().map(pair -> {
             String filename = pair.getRight();
-            String[] split = filename.split("-");
+            String[] split = filename.split(Model.DELIM);
             return new Long[]{Long.parseLong(split[2]), Long.parseLong(split[3])};
         }).collect(Collectors.toList());
         return longs;

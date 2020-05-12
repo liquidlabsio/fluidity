@@ -11,19 +11,11 @@ import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbEnhanced
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbTable;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Key;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Page;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.BatchWriteItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.CreateTableEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.DeleteItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.PutItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.ScanEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.WriteBatch;
+import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
@@ -35,7 +27,6 @@ import java.util.stream.Collectors;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.AttributeValues.stringValue;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryConditional.equalTo;
 
-@ApplicationScoped
 public class AwsQueryService implements QueryService {
     public static final int BATCH_LIMIT = 24;
 
@@ -55,6 +46,7 @@ public class AwsQueryService implements QueryService {
 
 
     public AwsQueryService() {
+        new RuntimeException().printStackTrace();
         log.info("Created");
     }
 

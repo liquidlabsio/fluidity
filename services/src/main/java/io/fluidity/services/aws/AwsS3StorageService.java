@@ -19,29 +19,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@ApplicationScoped
 public class AwsS3StorageService implements Storage {
 
     private static final long LIMIT = (long) (FileUtils.ONE_MB * 4.5);
@@ -53,7 +38,7 @@ public class AwsS3StorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageService.class);
 
     @ConfigProperty(name = "fluidity.prefix", defaultValue = "fluidity-")
-    private String PREFIX;
+    String PREFIX;
 
 
     public AwsS3StorageService() {

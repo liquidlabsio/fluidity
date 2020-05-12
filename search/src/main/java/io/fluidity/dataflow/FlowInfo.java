@@ -36,7 +36,7 @@ public class FlowInfo {
     public long[] getMinOp2OpLatency() {
         long min = Long.MAX_VALUE;
         long max = 0;
-        long maxOpDurtion = Long.MAX_VALUE;
+        long maxOpDuration = 0;
         for (int i = 0; i < durations.size(); i++) {
             if (i > 0) {
                 long interval = durations.get(i)[0] - durations.get(i - 1)[1];
@@ -44,9 +44,9 @@ public class FlowInfo {
                 if (interval > max) max = interval;
             }
             long duration = durations.get(i)[1] - durations.get(i)[0];
-            if (maxOpDurtion < duration) maxOpDurtion = duration;
+            if (maxOpDuration < duration) maxOpDuration = duration;
         }
-        return new long[]{min, max, maxOpDurtion};
+        return new long[]{min, max, maxOpDuration};
     }
 
 }

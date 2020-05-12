@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.fluidity.dataflow.DataflowExtractor.CORR_FILE_FMT;
+import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

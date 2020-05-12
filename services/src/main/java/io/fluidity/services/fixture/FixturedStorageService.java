@@ -5,23 +5,14 @@ import io.fluidity.services.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FixturedStorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(FixturedStorageService.class);
 
-    static Map<String, byte[]> storage = new HashMap<>();
+    private Map<String, byte[]> storage = new HashMap<>();
 
     public FixturedStorageService() {
         log.info("Created");
@@ -91,7 +82,7 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-        storage.keySet().forEach(item -> processor.process(region, tenant, item));
+        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey()));
     }
 
     @Override
@@ -109,5 +100,9 @@ public class FixturedStorageService implements Storage {
     @Override
     public String getBucketName(String tenant) {
         return "s3://" + tenant;
+    }
+
+    public Map<String, byte[]> getStorage() {
+        return storage;
     }
 }

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import static io.fluidity.dataflow.DataflowExtractor.CORR_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
 
 public class DataflowBuilder {
     private long limitList = 5000;
@@ -36,19 +36,19 @@ public class DataflowBuilder {
         return files.toArray(new FileMeta[0]);
     }
 
-    public String extractCorrelationData(String session, FileMeta[] files, Search search, Storage storage, String region, String tenant, String filePrefix) {
+    public String extractCorrelationData(String session, FileMeta[] files, Search search, Storage storage, String region, String tenant, String modelPath) {
         try {
             FileMeta fileMeta = files[0];
             log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
-            String searchUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+            String fileUrl = fileMeta.getStorageUrl();
+            InputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
 
 
             String status = "";
             try (
-                    DataflowExtractor searchProcessor = new DataflowExtractor(inputStream, getOutStreamFactory(storage), filePrefix, region, tenant)
+                    DataflowExtractor dataflowExtractor = new DataflowExtractor(inputStream, getOutStreamFactory(storage), modelPath, region, tenant)
             ) {
-                status = searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
+                status = dataflowExtractor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
             } catch (Exception e) {
                 e.printStackTrace();
             }

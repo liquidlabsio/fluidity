@@ -21,6 +21,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import static io.fluidity.dataflow.Model.CORR_PREFIX;
+
 /**
  * Builds a dataflow by fanning out to Lambdas, returning status on progress
  */
@@ -76,7 +78,12 @@ public class DataflowResource implements DataflowService {
         String sessionId = "123";
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         String serviceApiUrl = "somewhere";
-        WorkflowRunnerV1 runner = new WorkflowRunnerV1(tenant, dataflowBuilder, tenant + "/" + modelName, query, serviceApiUrl);
+        WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
+            @Override
+            String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
+                throw new RuntimeException("TODO: Run on faas runners");
+            }
+        };
         String userSession = runner.run(search, sessionId);
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         return userSession;
@@ -122,7 +129,7 @@ public class DataflowResource implements DataflowService {
             FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.debug("/file/{}", files[0].filename);
 
-            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath + "/corr-");
+            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath + CORR_PREFIX);
         } catch (Exception e) {
             log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
