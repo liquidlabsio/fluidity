@@ -19,6 +19,13 @@ public class StorageFactoryConverter implements Converter<Storage> {
 
         if (storage != null) return storage;
 
+        String mode1 = System.getProperty("mode", "not-set");
+        log.info(mode1);
+        if (!mode1.equals("not-set")) {
+            log.info("Overriding profile with system property:" + mode1);
+            mode = mode1;
+        }
+
         if (mode.equals("SERVER")) {
             storage = new FileSystemBasedStorageService();
         } else if (mode.equalsIgnoreCase(AWS.CONFIG)) {

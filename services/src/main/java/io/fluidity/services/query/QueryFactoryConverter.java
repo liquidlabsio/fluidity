@@ -18,7 +18,12 @@ public class QueryFactoryConverter implements Converter<QueryService> {
 
         if (queryService != null) return queryService;
 
-        log.info(System.getProperty("mode", "not-set"));
+        String mode1 = System.getProperty("mode", "not-set");
+        log.info(mode1);
+        if (!mode1.equals("not-set")) {
+            log.info("Overriding profile with system property:" + mode1);
+            mode = mode1;
+        }
 
         log.info("Mode:" + mode);
 

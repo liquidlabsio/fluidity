@@ -8,6 +8,7 @@ import io.fluidity.services.server.FileSystemBasedStorageService;
 import io.fluidity.services.server.RocksDBQueryService;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -16,7 +17,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@QuarkusTest
 class WorkflowRunnerTest {
+
+
+    /**
+     * To work against AWS uncomment the following service config to CDI create the services
+     * Run the test with sysprop: -Dmode=AWS
+     */
+//    @Inject
+//    DynamoDbClient dynamoDB;
+//
+//    @ConfigProperty(name = "fluidity.services.query")
+//    QueryService query;
+//
+//    @ConfigProperty(name = "fluidity.services.storage")
+//    Storage storage;
 
     QueryService query = new RocksDBQueryService();
 
@@ -24,9 +40,16 @@ class WorkflowRunnerTest {
 
     @Test
     void singleDataflowFileWithSingleCorrelation() {
+
+        /**
+         * Uncomment for AWS
+         */
+//        AwsQueryService awsQueryService = (AwsQueryService) query;
+//        awsQueryService.createTable();
+
         String tenant = "tenant";
         String modelPath = "modelPath";
-        String region = "";
+        String region = "eu-west-2";
         String session = "TEST-SESSION-ID";
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(corr)";
@@ -64,8 +87,11 @@ class WorkflowRunnerTest {
 
         assertTrue(collected.size() > 0, "Should have found a histogram model in the store");
 
+        // AWS uses bucket name unlike local alternatives
+        // String json = new String(storage.get(region, "s3://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
         String json = new String(storage.get(region, collected.get(0), 0));
-        System.out.println("Got:" + json);
+
+        System.out.println("Got Model:" + json);
         assertTrue(json.contains("totalDuration"), "Missing duration series");
         assertTrue(json.contains("op2OpLatency"), "Missing op2OpLatency series");
         assertTrue(json.contains("maxOpDuration"), "Missing maxOpDuration series");

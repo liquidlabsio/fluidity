@@ -5,7 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.rocksdb.*;
+import org.rocksdb.FlushOptions;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RocksDBQueryService implements QueryService {
     public static final String PRECOGNITO_FS_BASE_DIR = "fluidity.rocks.base.dir";
-    private static final String NAME = "Rocks_FileMetas";
+    private static final String NAME = "Rocks-FileMetas";
     private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);
 
     private final String baseDir;

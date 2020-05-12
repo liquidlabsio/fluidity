@@ -19,8 +19,21 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,12 +67,14 @@ public class AwsS3StorageService implements Storage {
         String bucketName = getBucketName(tenant);
         AmazonS3 s3Client = getAmazonS3Client(region);
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
-        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, tenant + "/" + prefix);
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
+
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
 
         while (objectListing.isTruncated()) {
-            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
         }
     }
 
@@ -90,9 +105,9 @@ public class AwsS3StorageService implements Storage {
         ArrayList<FileMeta> results = new ArrayList<>();
         results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
         while (objectListing.isTruncated() && results.size() < 200000 && scanCount++ < SCAN_COUNT_LIMIT_FOR_COST) {
-            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
+            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
         }
 
         log.info("Import finished, total:{} scanCount:{} - if scan limit is hit then specify a prefix", results.size(), scanCount);
@@ -427,7 +442,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
-                            writeFileToS3(region, toS3, getBucketName(tenant), UriUtil.getHostnameAndPath(filenameURL)[1], objectMetadata, daysRetention);
+                            writeFileToS3(region, toS3, getBucketName(tenant), filenameURL, objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

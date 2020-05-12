@@ -76,7 +76,7 @@ class DataflowExtractorTest {
         rewriter.process(false, search, 0, System.currentTimeMillis(), 1024, "");
         assertEquals(2, collected.size());
         String s = collected.values().iterator().next();
-        assertTrue(s.split("\n").length > 10, " Got bad text:" + s);
+        assertTrue(s.split("\n").length > 10, " Got bad text:" + s + " FileContentWas:" + fileContentAsString);
     }
 
     private StringBuilder makeFileContent() {
