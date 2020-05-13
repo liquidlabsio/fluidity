@@ -26,10 +26,6 @@ public class Search {
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 
-    public boolean isNormalSearch() {
-        return false;
-    }
-
     public enum EXPRESSION_PARTS {bucket, filename, record, field, analytic, timeseries, groupby}
 
     @FormParam("origin")

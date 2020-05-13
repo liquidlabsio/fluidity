@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -37,12 +38,15 @@ public class DataflowBuilder {
     }
 
     public String extractCorrelationData(String session, FileMeta[] files, Search search, Storage storage, String region, String tenant, String modelPath) {
+        Arrays.stream(files).forEach((item) -> extractCorrelationData(session, item, search, storage, region, tenant, modelPath));
+        return "done";
+    }
+
+    private String extractCorrelationData(String session, FileMeta fileMeta, Search search, Storage storage, String region, String tenant, String modelPath) {
         try {
-            FileMeta fileMeta = files[0];
             log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String fileUrl = fileMeta.getStorageUrl();
             InputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
-
 
             String status = "";
             try (
@@ -90,20 +94,21 @@ public class DataflowBuilder {
     }
 
     public String getModel(String region, String tenant, String session, String modelName, Storage storage) {
-        List<String> histoList = new ArrayList<>();
+        List<String> histoUrls = new ArrayList<>();
         storage.listBucketAndProcess(region, tenant, modelName + "/" + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
-            histoList.add(itemUrl);
+            histoUrls.add(itemUrl);
             return null;
         });
 
         StringBuilder results = new StringBuilder();
-        histoList.stream().forEach(histoFileurl -> {
+        histoUrls.stream().forEach(histoUrl -> {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (InputStream inputStream = storage.getInputStream(region, tenant, histoFileurl)) {
+            try (InputStream inputStream = storage.getInputStream(region, tenant, histoUrl)) {
                 IOUtils.copy(inputStream, baos);
                 results.append(baos.toString());
             } catch (IOException e) {
                 e.printStackTrace();
+                log.warn("Failed to get URL:" + histoUrl, e);
             }
         });
         return results.toString();

@@ -15,7 +15,12 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URLDecoder;
@@ -62,7 +67,7 @@ public class DataflowResource implements DataflowService {
      * @return
      * @throws JsonProcessingException
      */
-    public static String rewriteCorrelationData(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
+    public static String rewriteCorrelationDataS(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
         String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
         ResteasyClient client = new ResteasyClientBuilderImpl().build();
         ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
@@ -71,17 +76,22 @@ public class DataflowResource implements DataflowService {
     }
 
     @POST
-    @Path("/submit")
+    @Path("/submit/{tenant}/{serviceAddress}/{modelName}")
     @Override
-    public String submit(String tenant, Search search, String serviceAddress, String modelName) {
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public String submit(@PathParam("tenant") String tenant, @MultipartForm Search search, @PathParam("serviceAddress") String serviceAddress, @PathParam("modelName") String modelName) {
 
-        String sessionId = "123";
+        String sessionId = search.uid;
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
-        String serviceApiUrl = "somewhere";
         WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
-                throw new RuntimeException("TODO: Run on faas runners");
+                try {
+                    return rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress + "/dataflow/rewrite", modelPath);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    return e.toString();
+                }
             }
         };
         String userSession = runner.run(search, sessionId);
@@ -120,7 +130,7 @@ public class DataflowResource implements DataflowService {
 
     @Override
     @POST
-    @Path("/files/{tenant}/{session}/{files}")
+    @Path("/rewrite/{tenant}/{session}/{files}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     public String rewriteCorrelationData(@PathParam("tenant") String tenant, @PathParam("session") String session, @PathParam("files") String fileMetas, @PathParam("modelPath") String modelPath, @MultipartForm Search search) {
         search.decodeJsonFields();

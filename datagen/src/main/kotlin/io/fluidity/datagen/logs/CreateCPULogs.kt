@@ -5,6 +5,9 @@ import org.joda.time.format.DateTimeFormat
 import java.io.FileOutputStream
 import java.util.*
 
+/**
+ * Generate CPU log data
+ */
 fun main() {
 
     val prefix = "/Volumes/SSD2/logs/fluidity-logs/test-cpu-"
@@ -14,7 +17,7 @@ fun main() {
 
     var time: Long = System.currentTimeMillis() - DateUtil.DAY * 7
     val minutes = ((System.currentTimeMillis() - time) / DateUtil.MINUTE) as Int
-    val max = 100000
+
     for (i in 1 until minutes) {
         val cpu = i / minutes.toDouble() * 100.0 + 10 * Math.random()
         fos.write(String.format("%s INFO CPU:%d\n", dateTimeFormatter.print(time), java.lang.Double.valueOf(cpu).toInt()).toByteArray())
@@ -23,4 +26,3 @@ fun main() {
     fos.close()
 }
 
-class CreateCPULogs

@@ -1,5 +1,8 @@
 package io.fluidity.datagen
 
+/**
+ * Date constants used for time based calculations
+ */
 class DateUtil {
     companion object {
         // MILLIS_CALCULATIONS
