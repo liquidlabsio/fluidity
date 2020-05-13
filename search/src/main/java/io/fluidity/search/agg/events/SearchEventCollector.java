@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.search.agg.events;
 
 import io.fluidity.search.Search;
@@ -13,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.LinkedList;
+import java.util.Optional;
 
 /**
  * Note: lines must be written in following format: timestamp:filepos:data to the filtered view - the .event file
@@ -44,19 +56,19 @@ public class SearchEventCollector implements EventCollector {
 
         LinkedList<Integer> lengths = new LinkedList<>();
 
-        String nextLine = reader.readLine();
-        lengths.add(nextLine.length());
+        Optional<String> nextLine = Optional.ofNullable(reader.readLine());
+        if (nextLine.isPresent()) lengths.add(nextLine.get().length());
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long scanFilePos = 0;
 
         long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
 
-        while (nextLine != null) {
+        while (nextLine.isPresent()) {
 
-            if (currentTime > search.from && currentTime < search.to && search.matches(nextLine)) {
+            if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
                 byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
                 bos.write(bytes);
-                histoCollector.add(currentTime, position, nextLine);
+                histoCollector.add(currentTime, position, nextLine.get());
                 readEvents++;
                 readEvents++;// NL
 
@@ -65,14 +77,14 @@ public class SearchEventCollector implements EventCollector {
             }
 
             // keep calibrating fake time calc based on location
-            nextLine = reader.readLine();
+            nextLine = Optional.ofNullable(reader.readLine());
 
 
             // recalibrate the time interval as more line lengths are known
-            if (nextLine != null) {
-                lengths.add(nextLine.length());
+            if (nextLine.isPresent()) {
+                lengths.add(nextLine.get().length());
                 guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                scanFilePos += nextLine.length() + 2;
+                scanFilePos += nextLine.get().length() + 2;
 
                 currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
             }

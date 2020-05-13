@@ -59,7 +59,7 @@ public class DataflowExtractor implements AutoCloseable {
         LinkedList<Integer> lengths = new LinkedList<>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input)));
-        Optional<String> nextLine = Optional.of(reader.readLine());
+        Optional<String> nextLine = Optional.ofNullable(reader.readLine());
 
         if (nextLine.isPresent()) lengths.add(nextLine.get().length());
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
@@ -77,14 +77,14 @@ public class DataflowExtractor implements AutoCloseable {
 
             while (nextLine.isPresent()) {
                 if (search.matches(nextLine.get())) {
-                    Pair<String, Long> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine.get());
+                    Optional<Pair<String, Long>> fieldNameAndValue = Optional.ofNullable(search.getFieldNameAndValue("file-name-source", nextLine.get()));
 
-                    Optional<String> correlationId = Optional.of(fieldNameAndValue.getLeft());
-                    if (correlationId.isPresent()) {
+                    if (fieldNameAndValue.isPresent()) {
+                        String correlationId = fieldNameAndValue.get().getLeft();
                         if (!currentCorrelation.equals(correlationId)) {
-                            flushToStorage(bos, currentTime, currentFile, startTime, datData, correlationId.get());
-                            currentCorrelation = correlationId.get();
-                            currentFile = File.createTempFile(correlationId.get(), ".log");
+                            flushToStorage(bos, currentTime, currentFile, startTime, datData, correlationId);
+                            currentCorrelation = correlationId;
+                            currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
                             startTime = currentTime;
                         }
@@ -98,7 +98,7 @@ public class DataflowExtractor implements AutoCloseable {
                 }
 
                 // keep calibrating fake time calc based on location
-                nextLine = Optional.of(reader.readLine());
+                nextLine = Optional.ofNullable(reader.readLine());
 
                 // recalibrate the time interval as more line lengths are known
                 if (nextLine.isPresent()) {
@@ -162,7 +162,7 @@ public class DataflowExtractor implements AutoCloseable {
     private void getDatData(String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
-                Optional<Pair<String, Long>> extracted = Optional.of(extractor.getKeyAndValue("none", nextLine));
+                Optional<Pair<String, Long>> extracted = Optional.ofNullable(extractor.getKeyAndValue("none", nextLine));
                 if (extracted.isPresent()) {
                     datData.put(extractor.getToken(), extracted.get().getRight().toString());
                 }

@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.LogHelper;
@@ -25,9 +36,6 @@ class WorkflowRunnerTest {
      * To work against AWS uncomment the following service config to CDI create the services
      * Run the test with sysprop: -Dmode=AWS
      */
-//    @Inject
-//    DynamoDbClient dynamoDB;
-//
 //    @ConfigProperty(name = "fluidity.services.query")
 //    QueryService query;
 //
@@ -53,8 +61,8 @@ class WorkflowRunnerTest {
         String session = "TEST-SESSION-ID";
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(corr)";
-        search.from = System.currentTimeMillis() - DateUtil.HOUR;
         search.to = System.currentTimeMillis();
+        search.from = search.to - DateUtil.HOUR;
 
         final DataflowBuilder dfBuilder = new DataflowBuilder();
 
