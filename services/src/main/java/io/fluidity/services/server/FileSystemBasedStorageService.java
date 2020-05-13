@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -133,7 +132,7 @@ public class FileSystemBasedStorageService implements Storage {
     @Override
     public InputStream getInputStream(String region, String tenant, String storageUrl) {
         try {
-            return new FileInputStream(storageUrl);
+            return new LazyFileInputStream(storageUrl);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

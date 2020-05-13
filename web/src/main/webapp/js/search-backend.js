@@ -84,8 +84,8 @@ class SearchRest extends SearchInterface {
 
         // throttle when too many outstanding requests
         if (searchingFilesCount > 100) {
-            var waitPeriod = 500 + (searchingFilesCount);
-            console.log("Waiting2:" + searchingFilesCount + ": wait:" + waitPeriod + " file:" + fileMetasArray[0].filename)
+            var waitPeriod = 800 + (searchingFilesCount * 2);
+            console.log("Throttle Waiting:" + searchingFilesCount + ": wait:" + waitPeriod + " file:" + fileMetasArray[0].filename)
             await this.sleep(waitPeriod);
         }
 
