@@ -39,6 +39,7 @@ class SearchFixture extends SearchInterface {
     }
 }
 
+var searchingFilesCount = 0;
 
 class SearchRest extends SearchInterface {
 
@@ -73,7 +74,21 @@ class SearchRest extends SearchInterface {
             }
         });
     }
-    searchFile(search, fileMetasArray) {
+
+    sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async searchFile(search, fileMetasArray) {
+        searchingFilesCount++
+
+        // throttle when too many outstanding requests
+        if (searchingFilesCount > 100) {
+            var waitPeriod = 800 + (searchingFilesCount * 2);
+            console.log("Throttle Waiting:" + searchingFilesCount + ": wait:" + waitPeriod + " file:" + fileMetasArray[0].filename)
+            await this.sleep(waitPeriod);
+        }
+
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self = this;
         let formData = this.searchToForm(search);
@@ -89,10 +104,12 @@ class SearchRest extends SearchInterface {
             contentType: false,
             cache : false,
             success: function(response) {
+                searchingFilesCount--;
                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
                $.Topic(Fluidity.Search.Topics.setSearchFileResults).publish(response);
             },
             fail: function (xhr, ajaxOptions, thrownError) {
+                searchingFilesCount--;
                 console.log(xhr.status);
                 console.log(thrownError);
                 $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();

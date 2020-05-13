@@ -43,7 +43,7 @@ class Search {
         let self = this;
 
         $.Topic(Fluidity.Search.Topics.setSearchFiles).subscribe(function(returnedFileUrls) {
-            console.log("Got SearchFile URLS:" + returnedFileUrls)
+            console.log("Got SearchFile URLS:" + returnedFileUrls.length)
             self.setFileUrls(returnedFileUrls);
         })
         $.Topic(Fluidity.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
@@ -133,7 +133,7 @@ class Search {
         searchFileToOpenInfo.searchFileInfo = ""
     }
     setFileUrls(fileMetas) {
-        console.log("Got Files:" + fileMetas)
+        console.log("Got Files:" + fileMetas.length)
         let self = this;
         this.searchFileMetas = fileMetas;
         this.totalEvents = 0;

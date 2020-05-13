@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.search.agg.histo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -59,11 +70,10 @@ abstract class AbstractHistoAggregator<T> implements HistoAggregator<T> {
         }
         );
 
-        return objectMapper.writeValueAsString(processSeries(reducedSeries.values()));
-
+        return objectMapper.writeValueAsString(ClientFormatter.getHistoSeriesForClient(processSeries(reducedSeries.values())));
     }
 
-    abstract List<Series<T>> processSeries(Collection<Series<T>> collectedSeries);
+    abstract List<Series<Long>> processSeries(Collection<Series<T>> collectedSeries);
 
     private String readJson(InputStream inputStream) {
         try {
