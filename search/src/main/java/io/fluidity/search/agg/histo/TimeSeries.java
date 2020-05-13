@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.util.DateUtil;
@@ -6,7 +17,11 @@ import org.graalvm.collections.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.fluidity.util.DateUtil.*;
+import static io.fluidity.util.DateUtil.DAY;
+import static io.fluidity.util.DateUtil.HOUR;
+import static io.fluidity.util.DateUtil.MINUTE;
+import static io.fluidity.util.DateUtil.TEN_MINS;
+import static io.fluidity.util.DateUtil.WEEK;
 
 /**
  * {
@@ -26,7 +41,7 @@ public class TimeSeries<T> implements Series<T> {
     public String groupBy;
     private Ops<T> ops;
     public String name;
-    public List<Pair<Long, T>> data = new ArrayList();
+    public List<Pair<Long, T>> data = new ArrayList<>();
     public long delta = DateUtil.MINUTE;
 
     public TimeSeries() {
