@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +26,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 
 import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
 import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
@@ -47,15 +59,15 @@ public class DataflowExtractor implements AutoCloseable {
         LinkedList<Integer> lengths = new LinkedList<>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input)));
-        String nextLine = reader.readLine();
-        lengths.add(nextLine.length());
-        long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
-        long scanFilePos = 0;
+        Optional<String> nextLine = Optional.of(reader.readLine());
 
+        if (nextLine.isPresent()) lengths.add(nextLine.get().length());
+        long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
 
+        long scanFilePos = 0;
         File currentFile = null;
-        OutputStream bos = null;
+        Optional<OutputStream> bos = Optional.empty();
         String currentCorrelation = "nada";
         long startTime = 0;
 
@@ -63,59 +75,54 @@ public class DataflowExtractor implements AutoCloseable {
         Map<String, String> datData = new HashMap<>();
         try {
 
-            while (nextLine != null) {
-                if (search.matches(nextLine)) {
-                    Pair<String, Long> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine);
+            while (nextLine.isPresent()) {
+                if (search.matches(nextLine.get())) {
+                    Pair<String, Long> fieldNameAndValue = search.getFieldNameAndValue("file-name-source", nextLine.get());
 
-                    String correlationId = fieldNameAndValue.getLeft();
-                    if (correlationId != null) {
+                    Optional<String> correlationId = Optional.of(fieldNameAndValue.getLeft());
+                    if (correlationId.isPresent()) {
                         if (!currentCorrelation.equals(correlationId)) {
-                            if (bos != null) {
-                                bos.close();
-                                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
-                                currentFile.delete();
-                                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
-                                datData.clear();
-                            }
-                            currentCorrelation = correlationId;
-                            currentFile = File.createTempFile(correlationId, ".log");
-                            bos = new BufferedOutputStream(new FileOutputStream(currentFile));
+                            flushToStorage(bos, currentTime, currentFile, startTime, datData, correlationId.get());
+                            currentCorrelation = correlationId.get();
+                            currentFile = File.createTempFile(correlationId.get(), ".log");
+                            bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
                             startTime = currentTime;
                         }
 
-                        getDatData(nextLine, datData, extractorMap);
-                        if (bos != null) {
-                            bos.write(nextLine.getBytes());
-                            bos.write('\n');
+                        getDatData(nextLine.get(), datData, extractorMap);
+                        if (bos.isPresent()) {
+                            bos.get().write(nextLine.get().getBytes());
+                            bos.get().write('\n');
                         }
                     }
                 }
 
                 // keep calibrating fake time calc based on location
-                nextLine = reader.readLine();
-
+                nextLine = Optional.of(reader.readLine());
 
                 // recalibrate the time interval as more line lengths are known
-                if (nextLine != null) {
-                    lengths.add(nextLine.length());
+                if (nextLine.isPresent()) {
+                    lengths.add(nextLine.get().length());
                     guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                    scanFilePos += nextLine.length() + 2;
-
+                    scanFilePos += nextLine.get().length() + 2;
                     currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
                 }
             }
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
-            if (bos != null) {
-                bos.close();
-                storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, currentCorrelation, startTime, currentTime), 365, currentTime);
-                storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, currentCorrelation, startTime, currentTime), 365, currentTime);
-                currentFile.delete();
-            }
+            reader.close();
+            flushToStorage(bos, currentTime, currentFile, startTime, datData, currentCorrelation);
         }
         return "done";
+    }
+
+    private void flushToStorage(Optional<OutputStream> bos, long currentTime, File currentFile, long startTime, Map<String, String> datData, String correlationId) throws IOException {
+        if (bos.isPresent()) {
+            bos.get().close();
+            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
+            currentFile.delete();
+            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
+            datData.clear();
+        }
     }
 
     private InputStream makeDatFile(Map<String, String> datData) {
@@ -155,9 +162,9 @@ public class DataflowExtractor implements AutoCloseable {
     private void getDatData(String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
-                Pair<String, Long> extracted = extractor.getKeyAndValue("none", nextLine);
-                if (extracted != null) {
-                    datData.put(extractor.getToken(), extracted.getRight().toString());
+                Optional<Pair<String, Long>> extracted = Optional.of(extractor.getKeyAndValue("none", nextLine));
+                if (extracted.isPresent()) {
+                    datData.put(extractor.getToken(), extracted.get().getRight().toString());
                 }
             } catch (Exception e) {
                 if (logWarningCount++ < 10) {
