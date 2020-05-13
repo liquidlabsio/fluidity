@@ -20,12 +20,12 @@ class SimpleHistoCollectorTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         long to = System.currentTimeMillis();
         long from = to - DateUtil.HOUR;
-        SimpleHistoCollector collector = new SimpleHistoCollector(baos, "someFile", "tags", "s3://stuff", new Search(), from, to, HistoAggFactory.Count);
+        SimpleHistoCollector collector = new SimpleHistoCollector(baos, "someFile", "tags", new Search(), from, to, HistoAggFactory.Count);
         collector.add(from, 100, "Line");
         collector.add(from, 100, "Line");
         collector.add(from, 100, "Line");
         collector.close();
-        Series series = collector.series().getValues().iterator().next();
+        Series<Long> series = collector.series().getValues().iterator().next();
         long lineCountWithDefaultFunction = series.get(from);
         assertEquals(3, lineCountWithDefaultFunction);
 

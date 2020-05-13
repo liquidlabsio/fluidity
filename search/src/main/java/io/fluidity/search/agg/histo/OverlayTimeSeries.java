@@ -1,12 +1,15 @@
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.util.DateUtil;
+import org.graalvm.collections.Pair;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static io.fluidity.util.DateUtil.*;
+import static io.fluidity.util.DateUtil.DAY;
+import static io.fluidity.util.DateUtil.HOUR;
+import static io.fluidity.util.DateUtil.MINUTE;
 
 /**
  * {
@@ -28,27 +31,30 @@ import static io.fluidity.util.DateUtil.*;
  * ]
  * }
  */
-public class OverlayTimeSeries implements Series {
+public class OverlayTimeSeries<T> implements Series<T> {
 
     public String name;
     public String groupBy;
-    public List<long[]> data = new ArrayList();
+    private Ops<T> ops;
+    public List<Pair<Long, T>> data = new ArrayList();
     public long delta = MINUTE;
     private long from;
     private long to;
     private long duration;
 
-    public OverlayTimeSeries(){
+    public OverlayTimeSeries() {
 
     }
-    public OverlayTimeSeries(String seriesName, String groupBy, long from, long to) {
+
+    public OverlayTimeSeries(String seriesName, String groupBy, long from, long to, Ops<T> ops) {
         this.name = seriesName;
         this.groupBy = groupBy;
+        this.ops = ops;
         buildHistogram(from, to);
     }
 
     @Override
-    public List<long[]> data() {
+    public List<Pair<Long, T>> data() {
         return data;
     }
 
@@ -89,26 +95,27 @@ public class OverlayTimeSeries implements Series {
         }
 
         for (long time = this.from; time <= this.to; time += delta) {
-            data.add(new long[]{time, -1l});
+            data.add(Pair.create(time, null));
         }
         this.duration = this.to - this.from;
     }
 
     @Override
-    public long get(long time) {
+    public T get(long time) {
         int index = index(time);
-        if (index < 0 || index >= data.size()) return 0;
-        return data.get(index)[1];
+        if (index < 0 || index >= data.size()) return null;
+        return data.get(index).getRight();
     }
 
     @Override
-    public void update(long time, long value) {
+    public void update(long time, T value) {
         int index = index(time);
         if (index < 0 || index >= data.size()) {
             System.out.println("Bad time series index:" + index);
             return;
         }
-        data.get(index)[1] = value;
+        Pair<Long, T> current = data.get(index);
+        data.add(index, Pair.create(current.getLeft(), value));
     }
 
     @Override
@@ -146,27 +153,14 @@ public class OverlayTimeSeries implements Series {
 
     @Override
     public boolean hasData() {
-        return data.stream().filter(item -> item[1] > 0).count() > 0;
+        return data.stream().filter(item -> item.getRight() != null).count() > 0;
     }
-
 
     @Override
-    public void merge(Series series) {
+    public void merge(Series<T> series) {
         series.data().stream()
                 .forEach(dataPoint ->
-                        this.update(dataPoint[0], add(this.get(dataPoint[0]), dataPoint[1]))
+                        this.update(dataPoint.getLeft(), ops.add(this.get(dataPoint.getLeft()), dataPoint.getRight()))
                 );
-    }
-
-    /**
-     * Cater for sentinal value of -1
-     * @param currentValue
-     * @param newValue
-     * @return
-     */
-    private long add(long currentValue, long newValue) {
-        currentValue = currentValue == -1 ? 0 : currentValue;
-        newValue = newValue == -1 ? 0 : newValue;
-        return currentValue + newValue;
     }
 }

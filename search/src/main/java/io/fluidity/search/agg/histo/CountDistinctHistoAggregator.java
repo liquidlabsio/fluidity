@@ -16,7 +16,7 @@ import java.util.Map;
  * 1. Series.data[2] value needs to be an Object instead of a long value.
  * 2. Change to use HyperLogLog
  */
-public class CountDistinctHistoAggregator extends AbstractHistoAggregator {
+public class CountDistinctHistoAggregator extends AbstractHistoAggregator<Long> {
 
     public boolean isForMe(String analytic) {
         return analytic.equals("analytic.countDistinct()");
@@ -26,10 +26,10 @@ public class CountDistinctHistoAggregator extends AbstractHistoAggregator {
         super(inputStreams, search);
     }
 
-    List<Series> processSeries(Collection<Series> collectedSeries) {
-        Series count = search.getTimeSeries("distinct", "", search.from, search.to);
+    List<Series<Long>> processSeries(Collection<Series<Long>> collectedSeries) {
+        Series<Long> count = search.getTimeSeries("distinct", "", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
-            count.update(point[0], add(count.get(point[0]), point[1]));
+            count.update(point.getLeft(), add(count.get(point.getLeft()), point.getRight()));
         }));
         return Arrays.asList(count);
     }
@@ -40,16 +40,22 @@ public class CountDistinctHistoAggregator extends AbstractHistoAggregator {
     }
 
     @Override
-    public HistoFunction function() {
+    public HistoFunction<Long, Long> function() {
         Filter filter = new BloomFilter(100, 0.01);
-        return (currentValue, newValue, nextLine, position, time, expression) -> {
+        return (currentValue, newValue, nextLine, position, time, histoIndex, expression) -> {
             boolean present = filter.isPresent(newValue.toString());
             filter.add(newValue.toString());
             if (!present) {
-                return currentValue == -1 ? currentValue + 2 : +1;
+                return currentValue == null ? currentValue + 2 : +1;
             } else {
                 return currentValue;
             }
         };
+    }
+
+    protected long add(Long currentValue, Long newValue) {
+        currentValue = currentValue == null ? 0 : currentValue;
+        newValue = newValue == null ? 0 : newValue;
+        return currentValue.longValue() + newValue.longValue();
     }
 }

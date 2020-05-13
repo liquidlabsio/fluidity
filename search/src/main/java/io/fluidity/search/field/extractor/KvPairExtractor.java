@@ -11,14 +11,16 @@ import java.util.regex.Pattern;
 public class KvPairExtractor implements Extractor {
 
     private final Pattern pattern;
+    private final String expressionPart;
 
     public KvPairExtractor(String expressionPart) {
         String patternString = ".*(" + expressionPart + ")(\\d+).*";
+        this.expressionPart = expressionPart;
         pattern = Pattern.compile(patternString);
     }
 
     @Override
-    public Pair<String, Object> getKeyAndValue(String sourceName, String nextLine) {
+    public Pair<String, Long> getKeyAndValue(String sourceName, String nextLine) {
         Matcher matcher = pattern.matcher(nextLine);
         if (matcher.matches()) {
             return Pair.create(matcher.group(1).trim(), Long.valueOf(matcher.group(2)));

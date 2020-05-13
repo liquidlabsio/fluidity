@@ -1,10 +1,10 @@
 package io.fluidity.services.search;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
-import io.fluidity.services.storage.Storage;
 import io.fluidity.search.Search;
+import io.fluidity.services.query.FileMeta;
+import io.fluidity.services.query.QueryService;
+import io.fluidity.services.storage.Storage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  *     submitSearch(search)
@@ -30,16 +31,15 @@ public class SearchResource {
     String cloudRegion;
 
     @ConfigProperty(name = "fluidity.services.query")
-    FileMetaDataQueryService query;
+    QueryService query;
 
-    @ConfigProperty(name = "fluidity.services.search")
-    SearchService searchService;
+    SearchRunner searchRunner = new StandardSearchRunner();
 
     @ConfigProperty(name = "fluidity.services.storage")
     Storage storageService;
 
     @ConfigProperty(name = "fluidity.event.limit", defaultValue = "10000")
-    private int eventLimit;
+    int eventLimit;
 
     @GET
     @Path("/id")
@@ -52,7 +52,7 @@ public class SearchResource {
     @Path("/submit")
     public FileMeta[] submit(Search search) {
         log.info("/search/submit:{}", search);
-        return searchService.submit(search, query);
+        return searchRunner.submit(search, query);
     }
 
     @POST
@@ -63,9 +63,9 @@ public class SearchResource {
             search.decodeJsonFields();
 
             ObjectMapper objectMapper = new ObjectMapper();
-            FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas, "UTF-8"), FileMeta[].class);
+            FileMeta[] fileMetas1 = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.debug("/search/file/{}", fileMetas1[0].filename);
-            return searchService.searchFile(fileMetas1, search, storageService, cloudRegion, tenant);
+            return searchRunner.searchFile(fileMetas1, search, storageService, cloudRegion, tenant);
         } catch (Exception e) {
             log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             throw new RuntimeException(e);
@@ -85,7 +85,7 @@ public class SearchResource {
             long start = System.currentTimeMillis();
             try {
                 eventLimit = 10000;
-                return searchService.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storageService);
+                return searchRunner.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storageService);
             } finally {
                 log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
             }
@@ -107,7 +107,7 @@ public class SearchResource {
         long start = System.currentTimeMillis();
         try {
 
-            return searchService.finalizeHisto(search, tenant, cloudRegion, storageService);
+            return searchRunner.finalizeHisto(search, tenant, cloudRegion, storageService);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
         }

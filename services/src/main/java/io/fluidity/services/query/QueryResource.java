@@ -8,7 +8,14 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
@@ -22,7 +29,7 @@ import java.util.List;
  * Loads directly to S3 bucket, driven by a REST based client that does a multi-part, binary post.
  */
 @Path("/query")
-public class QueryResource implements FileMetaDataQueryService {
+public class QueryResource implements QueryService {
 
     private final Logger log = LoggerFactory.getLogger(QueryResource.class);
 
@@ -31,7 +38,7 @@ public class QueryResource implements FileMetaDataQueryService {
     String cloudRegion;
 
     @ConfigProperty(name = "fluidity.services.query")
-    FileMetaDataQueryService query;
+    QueryService query;
 
     @ConfigProperty(name = "fluidity.services.storage")
     Storage storage;

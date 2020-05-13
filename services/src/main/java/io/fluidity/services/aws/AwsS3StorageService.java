@@ -8,8 +8,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import io.fluidity.services.storage.Storage;
 import io.fluidity.services.query.FileMeta;
+import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
 import io.fluidity.util.UriUtil;
 import org.apache.commons.io.FileUtils;
@@ -19,16 +19,27 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@ApplicationScoped
 public class AwsS3StorageService implements Storage {
 
     private static final long LIMIT = (long) (FileUtils.ONE_MB * 4.5);
@@ -40,7 +51,7 @@ public class AwsS3StorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(AwsS3StorageService.class);
 
     @ConfigProperty(name = "fluidity.prefix", defaultValue = "fluidity-")
-    private String PREFIX;
+    String PREFIX;
 
 
     public AwsS3StorageService() {
@@ -49,6 +60,22 @@ public class AwsS3StorageService implements Storage {
             PREFIX = ConfigProvider.getConfig().getValue("fluidity.prefix", String.class);
         }
         log.info("Created: PREFIX: {}", PREFIX);
+    }
+
+    @Override
+    public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
+        String bucketName = getBucketName(tenant);
+        AmazonS3 s3Client = getAmazonS3Client(region);
+        ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
+        ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
+
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+
+        while (objectListing.isTruncated()) {
+            req.setContinuationToken(objectListing.getNextContinuationToken());
+            objectListing = s3Client.listObjectsV2(req);
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+        }
     }
 
     /**
@@ -78,9 +105,9 @@ public class AwsS3StorageService implements Storage {
         ArrayList<FileMeta> results = new ArrayList<>();
         results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
         while (objectListing.isTruncated() && results.size() < 200000 && scanCount++ < SCAN_COUNT_LIMIT_FOR_COST) {
-            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
+            results.addAll(addSummaries(tenant, includeFileMask, tags, bucketName, objectListing, sinceTimeMs, timeFormat));
         }
 
         log.info("Import finished, total:{} scanCount:{} - if scan limit is hit then specify a prefix", results.size(), scanCount);
@@ -406,7 +433,7 @@ public class AwsS3StorageService implements Storage {
     public OutputStream getOutputStream(String region, String tenant, String filenameURL, int daysRetention) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
-            return new FileOutputStream(toS3) {
+            return new BufferedOutputStream(new FileOutputStream(toS3)) {
                 @Override
                 public void close() throws IOException {
                     try {
@@ -415,7 +442,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
-                            writeFileToS3(region, toS3, getBucketName(tenant), UriUtil.getHostnameAndPath(filenameURL)[1], objectMetadata, daysRetention);
+                            writeFileToS3(region, toS3, getBucketName(tenant), filenameURL, objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

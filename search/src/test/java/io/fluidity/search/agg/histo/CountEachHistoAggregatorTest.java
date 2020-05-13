@@ -42,7 +42,7 @@ class CountEachHistoAggregatorTest {
 
     private void generateSeriesData(Search search, Map<String, InputStream> inputStreams, long to, long from, String seriesName) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "test-tags", "s3://blah", search, from, to, HistoAggFactory.Count);
+        SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, seriesName, "test-tags", search, from, to, HistoAggFactory.Count);
         histoCollector.add(from, 1000, "someLine");
         histoCollector.close();
 

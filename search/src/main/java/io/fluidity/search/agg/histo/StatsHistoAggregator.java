@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Calculates basic stats against incoming series. this version uses a moving average in the function. When aggregating across multiple sources the data is split to min/max/avg
  */
-public class StatsHistoAggregator extends AbstractHistoAggregator {
+public class StatsHistoAggregator extends AbstractHistoAggregator<Long> {
 
     public boolean isForMe(String analytic) {
         return analytic.equals("analytic.stats()");
@@ -19,15 +19,15 @@ public class StatsHistoAggregator extends AbstractHistoAggregator {
         super(inputStreams, search);
     }
 
-    List<Series> processSeries(Collection<Series> collectedSeries) {
+    List<Series<Long>> processSeries(Collection<Series<Long>> collectedSeries) {
 
-        Series min = search.getTimeSeries("min", "", search.from, search.to);
-        Series max = search.getTimeSeries("max", "", search.from, search.to);
-        Series avg = search.getTimeSeries("avg", "", search.from, search.to);
+        Series<Long> min = search.getTimeSeries("min", "", search.from, search.to);
+        Series<Long> max = search.getTimeSeries("max", "", search.from, search.to);
+        Series<Long> avg = search.getTimeSeries("avg", "", search.from, search.to);
         collectedSeries.stream().forEach(series -> series.data().stream().forEach(point -> {
-            avg.update(point[0], avg.get(point[0]) == -1 ? point[1] : (avg.get(point[0]) + point[1]) / 2);
-            min.update(point[0], min.get(point[0]) == -1 ? point[1] : Math.min(min.get(point[0]), point[1]));
-            max.update(point[0], avg.get(point[0]) == -1 && point[1] == -1 ? 0 : Math.max(max.get(point[0]), point[1]));
+            avg.update(point.getLeft(), avg.get(point.getLeft()) == -1 ? point.getRight() : (avg.get(point.getLeft()) + point.getRight()) / 2);
+            min.update(point.getLeft(), min.get(point.getLeft()) == -1 ? point.getRight() : Math.min(min.get(point.getLeft()), point.getRight()));
+            max.update(point.getLeft(), avg.get(point.getLeft()) == -1 && point.getRight() == -1 ? 0 : Math.max(max.get(point.getLeft()), point.getRight()));
         }));
 
         return Arrays.asList(min, max, avg);
@@ -39,20 +39,20 @@ public class StatsHistoAggregator extends AbstractHistoAggregator {
     }
 
     @Override
-    public HistoFunction function() {
-        HistoFunction histoFunction = new HistoFunction() {
+    public HistoFunction<Long, Long> function() {
+        HistoFunction<Long, Long> histoFunction = new HistoFunction<Long, Long>() {
             int movingAvgLength = 10;
             LinkedList<Long> values = new LinkedList<>();
 
             @Override
-            public long calculate(long currentValue, Object newValue, String nextLine, long position, long time, String expression) {
+            public Long calculate(Long currentValue, Long newValue, String nextLine, long position, long time, int histoIndex, String expression) {
                 if (newValue instanceof Long) {
-                    Long value = (Long) newValue;
+                    Long value = newValue;
                     values.add(value);
                     if (values.size() > movingAvgLength) values.pop();
                     return values.stream().collect(Collectors.summingLong(Long::longValue)) / values.size();
                 } else {
-                    return -1;
+                    return -1l;
                 }
             }
         };

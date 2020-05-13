@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class FixturedStorageService implements Storage {
     private final Logger log = LoggerFactory.getLogger(FixturedStorageService.class);
 
-    static Map<String, byte[]> storage = new HashMap<>();
+    private Map<String, byte[]> storage = new HashMap<>();
 
     public FixturedStorageService() {
         log.info("Created");
@@ -81,6 +81,11 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
+    public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
+        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+    }
+
+    @Override
     public OutputStream getOutputStream(String region, String tenant, String stagingFileResults, int daysRetention) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream() {
             @Override
@@ -95,5 +100,9 @@ public class FixturedStorageService implements Storage {
     @Override
     public String getBucketName(String tenant) {
         return "s3://" + tenant;
+    }
+
+    public Map<String, byte[]> getStorage() {
+        return storage;
     }
 }

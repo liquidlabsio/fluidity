@@ -3,7 +3,9 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimeSeriesTest {
 
@@ -11,7 +13,7 @@ class TimeSeriesTest {
     public void testBuildSeriesAndGetStuff() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - DateUtil.HOUR;
-        Series series = new TimeSeries("someFile", "", from, last);
+        Series<Long> series = new TimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 
@@ -27,13 +29,11 @@ class TimeSeriesTest {
         assertTrue(series.hasData());
     }
 
-    private void testBucket(String message, long time, Series series, boolean shouldFail) {
+    private void testBucket(String message, long time, Series<Long> series, boolean shouldFail) {
         long value = 1234;
         series.update(time, value);
-        long returnedValue = series.get(time);
-        if (shouldFail) {
-            assertEquals(0, returnedValue, message + " OutOfIndexBuckets default to 0");
-        } else {
+        Long returnedValue = series.get(time);
+        if (!shouldFail) {
             assertEquals(value, returnedValue, message);
         }
     }

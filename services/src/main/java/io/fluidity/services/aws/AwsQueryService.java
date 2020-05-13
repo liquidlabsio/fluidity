@@ -1,7 +1,7 @@
 package io.fluidity.services.aws;
 
 import io.fluidity.services.query.FileMeta;
-import io.fluidity.services.query.FileMetaDataQueryService;
+import io.fluidity.services.query.QueryService;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
@@ -23,7 +23,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
@@ -35,14 +34,16 @@ import java.util.stream.Collectors;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.AttributeValues.stringValue;
 import static software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryConditional.equalTo;
 
-@ApplicationScoped
-public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
+/**
+ * DynamoDB query service
+ */
+public class AwsQueryService implements QueryService {
     public static final int BATCH_LIMIT = 24;
 
     public static final int BATCH_PAUSE_MS = 50;
     public static final long READ_CAPACITY = 30L;
     public static final long WRITE_CAPACITY = 15L;
-    private final Logger log = LoggerFactory.getLogger(AwsFileMetaDataQueryService.class);
+    private final Logger log = LoggerFactory.getLogger(AwsQueryService.class);
 
     @Inject
     DynamoDbClient dynamoDbClient;
@@ -54,7 +55,7 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
     private DynamoDbEnhancedClient enhancedClient;
 
 
-    public AwsFileMetaDataQueryService() {
+    public AwsQueryService() {
         log.info("Created");
     }
 
@@ -311,6 +312,8 @@ public class AwsFileMetaDataQueryService implements FileMetaDataQueryService {
 
     @Override
     public void stop() {
-        dynamoDbClient.close();
+        if (dynamoDbClient != null) {
+            dynamoDbClient.close();
+        }
     }
 }

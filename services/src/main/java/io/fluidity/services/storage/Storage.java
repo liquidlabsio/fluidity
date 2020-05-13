@@ -27,11 +27,25 @@ public interface Storage extends Lifecycle {
 
     InputStream getInputStream(String region, String tenant, String storageUrl);
 
-    OutputStream getOutputStream(String region, String tenant, String stagingFileResultsUrl, int daysRetention);
+    OutputStream getOutputStream(String region, String tenant, String filePathUrl, int daysRetention);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls);
 
     Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filepathSuffix, long fromTime);
 
     void stop();
+
+    /**
+     * List in UTF-binary order
+     *
+     * @param region
+     * @param tenant
+     * @param prefix
+     * @param processor
+     */
+    void listBucketAndProcess(String region, String tenant, String prefix, Processor processor);
+
+    interface Processor {
+        String process(String region, String itemUrl, String itemName);
+    }
 }

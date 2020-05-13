@@ -1,7 +1,20 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.util;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import java.util.Optional;
 
 /**
  *
@@ -52,19 +65,19 @@ public class DateTimeExtractor {
         }
     }
 
-        private String getPrefix(String format) {
-            int indexFrom = "prefix[".length()+1;
-            int indexTo = format.indexOf("]");
-            return format.substring(indexFrom, indexTo);
-        }
+    private String getPrefix(String format) {
+        int indexFrom = "prefix[".length() + 1;
+        int indexTo = format.indexOf("]");
+        return format.substring(indexFrom, indexTo);
+    }
 
-    public long getTimeMaybe(long currentTime, long guessTimeInterval, String line) {
-        if (parser == null ) {
+    public long getTimeMaybe(long currentTime, long guessTimeInterval, Optional<String> line) {
+        if (parser == null) {
             return currentTime + guessTimeInterval;
         }
 
         try {
-            return parser.parseString(getStringSegment(line, parser.formatLength()));
+            return parser.parseString(getStringSegment(line.get(), parser.formatLength()));
         } catch (Exception ex) {
             parser = null;
             return currentTime + guessTimeInterval;
@@ -131,6 +144,7 @@ public class DateTimeExtractor {
 
     interface DateTimeParser {
         long parseString(String string);
+
         int formatLength();
     }
 }

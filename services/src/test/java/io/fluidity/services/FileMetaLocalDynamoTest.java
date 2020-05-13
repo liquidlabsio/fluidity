@@ -1,6 +1,6 @@
 package io.fluidity.services;
 
-import io.fluidity.services.aws.AwsFileMetaDataQueryService;
+import io.fluidity.services.aws.AwsQueryService;
 import io.fluidity.services.aws.LocalDynamoDbContainer;
 import io.fluidity.services.query.FileMeta;
 import io.quarkus.test.junit.QuarkusTest;
@@ -8,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
-import javax.inject.Inject;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -23,6 +22,8 @@ import static org.junit.Assert.assertNotNull;
 @QuarkusTest
 public class FileMetaLocalDynamoTest {
 
+    AwsQueryService metaDataService;
+    
     private static LocalDynamoDbContainer dynamoDB;
     private static DynamoDbClient dynamoTestClient;
 
@@ -40,6 +41,7 @@ public class FileMetaLocalDynamoTest {
 
     @BeforeEach
     void setUp() {
+        metaDataService = new AwsQueryService();
         metaDataService.setClient(dynamoTestClient);
     }
 
@@ -47,8 +49,6 @@ public class FileMetaLocalDynamoTest {
     void tearDown() {
     }
 
-    @Inject
-    AwsFileMetaDataQueryService metaDataService;
 
     @Test
     public void ormTest() throws IOException {

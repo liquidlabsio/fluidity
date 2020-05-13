@@ -22,8 +22,6 @@ fluidity:
       query: AWS
   quarkus:
     dynamodb:
-      sync-client:
-        type: apache
       aws:
         region: eu-west-2
         credentials:
@@ -33,8 +31,6 @@ fluidity:
 "%prod":
   quarkus:
     dynamodb:
-      sync-client:
-        type: apache
       aws:
         region: eu-west-2
         credentials:
@@ -49,9 +45,6 @@ fluidity:
 
 quarkus:
     dynamodb:
-      sync-client:
-        type: apache
-      #      endpoint-override: http://192.168.99.100:8000
       aws:
         credentials:
           type: default
@@ -60,7 +53,7 @@ quarkus:
       level: INFO
       console:
         enable: true
-        format: "%d{HH:mm:ss} %-5p [%c] %s%e%n"
+        format: "%d{HH:mm:ss.SSS} %-5p [%c] %s%e%n"
         level: TRACE
 
     # TRACE file logging
@@ -68,7 +61,7 @@ quarkus:
         enable: true
         path: /tmp/quarkus.log
         level: TRACE
-        format: "%d{HH:mm:ss} %-5p [%c{2.}]] (%t) %s%e%n"
+        format: "%d{HH:mm:ss.SSS} %-5p [%c{2.}]] (%t) %s%e%n"
 
 # custom loggers
       category:

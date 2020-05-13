@@ -1,6 +1,7 @@
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.util.DateUtil;
+import org.graalvm.collections.Pair;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -33,13 +34,13 @@ class OverlayTimeSeriesTest {
 
         long from = today + dateTimeFormatter.parseDateTime("01:00.00").getMillis();
         long to = today + dateTimeFormatter.parseDateTime("15:45.00").getMillis();
-        Series series = new OverlayTimeSeries("someFile", "", from, to);
+        Series<Long> series = new OverlayTimeSeries<>("someFile", "", from, to, new Series.LongOps());
 
 
         DateTime localTime = dateTimeFormatter.parseDateTime("12:30.00");
         long millis = today + localTime.getMillis();
 
-        series.update(millis, 100);
+        series.update(millis, 100l);
 
         long getTime = today + dateTimeFormatter.parseDateTime("15:30.00").getMillis();
 
@@ -47,12 +48,12 @@ class OverlayTimeSeriesTest {
 
         System.out.println("Got Data:" + series.data());
 
-        List<long[]> found = series.data().stream().filter(dataPair -> dataPair[1] > 0).collect(Collectors.toList());
+        List<Pair<Long, Long>> found = series.data().stream().filter(dataPair -> dataPair.getRight() != null).collect(Collectors.toList());
 
 
         assertEquals(1, found.size(), "Didn't get any hits!");
 
-        System.out.println("Got Hits at:" + dateTimeFormatter.print(found.get(0)[0]));
+        System.out.println("Got Hits at:" + dateTimeFormatter.print(found.get(0).getRight()));
 
         assertEquals(100, translatedHits);
     }
@@ -61,7 +62,7 @@ class OverlayTimeSeriesTest {
     public void testStandardTimeSeries() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", "", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 
@@ -75,7 +76,7 @@ class OverlayTimeSeriesTest {
     public void testOutOfBoundsOverlay() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someFile", "", from, last);
+        Series series = new OverlayTimeSeries("someFile", "", from, last, new Series.LongOps());
 
         assertFalse(series.hasData());
 
@@ -94,7 +95,7 @@ class OverlayTimeSeriesTest {
     public void testUpdateMatchesAcrossDifferentBounds() throws Exception {
         long last = System.currentTimeMillis();
         long from = last - HOUR;
-        Series series = new OverlayTimeSeries("someData", "", from, last);
+        Series series = new OverlayTimeSeries("someData", "", from, last, new Series.LongOps());
 
         long expectedFrom = DateUtil.ceilHour(last)-HOUR;
 
@@ -107,13 +108,11 @@ class OverlayTimeSeriesTest {
     }
 
 
-    private void testBucket(String message, long time, Series series, boolean shouldFail) {
+    private void testBucket(String message, long time, Series<Long> series, boolean shouldFail) {
         long value = 1234;
         series.update(time, value);
-        long returnedValue = series.get(time);
-        if (shouldFail) {
-            assertEquals(0, returnedValue, message + " OutOfIndexBuckets default to 0");
-        } else {
+        Long returnedValue = series.get(time);
+        if (!shouldFail) {
             assertEquals(value, returnedValue, message);
         }
     }

@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static io.fluidity.services.server.RocksDBFileMetaDataQueryService.PRECOGNITO_FS_BASE_DIR;
+import static io.fluidity.services.server.RocksDBQueryService.PRECOGNITO_FS_BASE_DIR;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class FileSystemBasedStorageServiceTest {

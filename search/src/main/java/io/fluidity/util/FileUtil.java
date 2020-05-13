@@ -57,4 +57,14 @@ public class FileUtil {
         });
         return files;
     }
+
+    /**
+     * Replace windows path delimiters with unix style
+     *
+     * @param path
+     * @return
+     */
+    public static String fixPath(String path) {
+        return path.replace('\\', '/');
+    }
 }
