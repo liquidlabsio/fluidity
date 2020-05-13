@@ -9,4 +9,4 @@ fluidity:
 
 quarkus:
   log:
-    level: TRACE
+    level: INFO

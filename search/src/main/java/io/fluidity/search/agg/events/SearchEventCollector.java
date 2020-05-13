@@ -62,58 +62,45 @@ public class SearchEventCollector implements EventCollector {
         long scanFilePos = 0;
 
         long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
+        try {
 
-        while (nextLine.isPresent()) {
+            while (nextLine.isPresent()) {
 
-            if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
-                byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
-                bos.write(bytes);
-                histoCollector.add(currentTime, position, nextLine.get());
-                readEvents++;
-                readEvents++;// NL
+                if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
+                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
+                    bos.write(bytes);
+                    histoCollector.add(currentTime, position, nextLine.get());
+                    readEvents++;
+                    readEvents++;// NL
 
-                // tracks the dest file offset - so it can be seek-to-offset for user actions (histogram click, or raw events click)
-                position += bytes.length;
+                    // tracks the dest file offset - so it can be seek-to-offset for user actions (histogram click, or raw events click)
+                    position += bytes.length;
+                }
+
+                // keep calibrating fake time calc based on location
+                nextLine = Optional.ofNullable(reader.readLine());
+
+
+                // recalibrate the time interval as more line lengths are known
+                if (nextLine.isPresent()) {
+                    lengths.add(nextLine.get().length());
+                    guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
+                    scanFilePos += nextLine.get().length() + 2;
+
+                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
+                }
+                totalEvents++;
             }
-
-            // keep calibrating fake time calc based on location
-            nextLine = Optional.ofNullable(reader.readLine());
-
-
-            // recalibrate the time interval as more line lengths are known
-            if (nextLine.isPresent()) {
-                lengths.add(nextLine.get().length());
-                guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                scanFilePos += nextLine.get().length() + 2;
-
-                currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
-            }
-            totalEvents++;
+            bos.flush();
+        } finally {
+            reader.close();
+            bos.close();
         }
-        bos.flush();
         return new int[] { readEvents, totalEvents };
     }
 
     @Override
-    public void close() {
-        if (input != null) {
-            try {
-                input.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        if (output != null) {
-            try {
-                output.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            histoCollector.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void close() throws Exception {
+        histoCollector.close();
     }
 }

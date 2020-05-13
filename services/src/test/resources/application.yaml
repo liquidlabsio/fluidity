@@ -37,21 +37,20 @@ quarkus:
     aws:
       credentials:
         type: default
-  # DEBUG console logging
+  # Logging
   log:
     console:
       enable: true
       format: "%d{HH:mm:ss.SSS} %-5p [%c] %s%e%n"
-      level: TRACE
+      level: INFO
 
-    # TRACE file logging
     file:
       enable: true
-      path: /tmp/quarkus.log
-      level: TRACE
+      path: ./logs/fluidity-test.log
+      level: INFO
       format: "%d{HH:mm:ss.SSS} %-5p [%c{2.}]] (%t) %s%e%n"
 
-    # custom loggers
+    # app category loggers
     category:
       "io.fluidity":
         level: DEBUG
