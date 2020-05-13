@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DataflowExtractorTest {
 
@@ -47,36 +46,7 @@ class DataflowExtractorTest {
         assertEquals(2, collected.size());
         List<Map.Entry<String, String>> datFile = collected.entrySet().stream().filter(entry -> entry.getKey().endsWith(".dat")).collect(Collectors.toList());
         String jsonDatData = datFile.iterator().next().getValue();
-        assertEquals(5, jsonDatData.split(":").length, "JSON spit by : didnt provide 5 segments json was:" + jsonDatData);
-    }
-
-    @Test
-    void process() throws IOException {
-        StringBuilder fileContentAsString = makeFileContent();
-        ByteArrayInputStream instream = new ByteArrayInputStream(fileContentAsString.toString().getBytes());
-        final Map<String, String> collected = new HashMap<>();
-
-        StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                IOUtils.copy(inputStream, baos);
-                collected.put(filePath, baos.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        };
-        DataflowExtractor rewriter = new DataflowExtractor(instream, outFactory, "filePrefix", "region", "tenant");
-
-        Search search = new Search();
-        search.expression = "*|*|*|field.getJsonPair(txn)";
-        search.from = 0;
-        search.to = System.currentTimeMillis();
-
-        rewriter.process(false, search, 0, System.currentTimeMillis(), 1024, "");
-        assertEquals(2, collected.size());
-        String s = collected.values().iterator().next();
-        assertTrue(s.split("\n").length > 10, " Got bad text:" + s + " FileContentWas:" + fileContentAsString);
+        assertEquals(5, jsonDatData.split(":").length, "JSON split by : didnt provide 5 segments json was:" + jsonDatData);
     }
 
     private StringBuilder makeFileContent() {
