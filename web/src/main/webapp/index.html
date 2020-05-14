@@ -123,6 +123,15 @@
                             Refinery
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="dataflowTab" href="#">
+                            <span data-feather="wind"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="dataflowTab" href="#">
+                            <span data-feather="wind"></span>
+                            Dataflow
+                        </a>
+                    </li>
 
 
                     <li class="nav-item">
@@ -360,7 +369,7 @@
                 <div class="normalSizeEditor" id="searchResultsEditor"></div>
             </div>
             <div class="mainPanelTab" id="refineryTab" style="display: none;">
-                <h1 class="h2">Refinery - Dataflow Model Building</h1>
+                <h1 class="h2">Refinery - dataflow model management</h1>
                 <hr>
                 <div id="refinery">
 
@@ -418,8 +427,8 @@
 
                             <b-form-group class="col-md-1">
                                 <label class="control-label">&nbsp;</label>
-                                <b-button v-on:click="refinerySubmit" variant="primary"><span
-                                        data-feather="search"></span></b-button>
+                                <b-button v-on:click="refinerySubmit" variant="primary">
+                                    <span data-feather="search"></span></b-button>
                             </b-form-group>
                             <b-form-text id="password-help-block">
                                 Complete all inputs to accurately match your data records. <b>Note</b>: the 'field'
@@ -463,6 +472,12 @@
             </div>
 
 
+            <div class="mainPanelTab" id="dataflowTab" style="display: none;">
+                <h1 class="h2">Dataflow - search and analysis</h1>
+                <hr>
+                <div id="dataflow">
+                </div>
+            </div>
             <div class="mainPanelTab" id="importTab" style="display: none;">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Import</h1>
@@ -807,12 +822,14 @@
 <script src="js/explorer.js"></script>
 
 <script src="js/refinery/refinery.js"></script>
+<script src="js/refinery/backend.js"></script>
+<script src="js/refinery/vue.js"></script>
 
 <script src="js/search/search-apexcharts-vue.js"></script>
-<script src="js/search/search-vue.js"></script>
+<script src="js/search/vue.js"></script>
 <script src="js/search/search-hoverlink.js"></script>
 <script src="js/search/search.js"></script>
-<script src="js/search/search-backend.js"></script>
+<script src="js/search/backend.js"></script>
 
 
 <script src="js/navigation.js"></script>

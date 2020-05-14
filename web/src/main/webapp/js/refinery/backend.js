@@ -1,47 +1,18 @@
-
 $(document).ready(function () {
-    searchBackendBinding()
+    refineryBackendBinding()
 
 });
 
-var searchFileUrls = [
-    "s3://bucket/path.txt", "s3://bucket/path2.txt"
-]
-var testFileUrls = [
-    "s3://bucket/path.txt", "s3://bucket/path2.txt"
-]
-var searchFileResults = [ "s3://file1.raw", "s3file1.histo_10m"]
-var fixturedFiles = new Map([
-        [testFiles[0].name, testFiles[0]],
-        [testFiles[1].name, testFiles[1]],
-    ]
-);
-
-class SearchInterface {
-    submitSearch(search) {
+class RefineryInterface {
+    submit(search) {
     }
-    searchFile(fileUrl, search) {
+    status(sessionid) {
     }
-    getFinalResult(searchId, searchedFiles) {
+    model(sessionid) {
     }
 }
 
-
-class SearchFixture extends SearchInterface {
-    submitSearch(search) {
-        $.Topic(Fluidity.Search.Topics.setSearchFiles).publish(searchFileUrls);
-    }
-    searchFile(search, fileUrl) {
-        $.Topic(Fluidity.Search.Topics.setSearchFileResults).publish(searchFileResults);
-    }
-    getFinalResult(search, searchedFiles) {
-        $.Topic(Fluidity.Search.Topics.setFinalResult).publish("We got results");
-    }
-}
-
-var searchingFilesCount = 0;
-
-class SearchRest extends SearchInterface {
+class RefineryRest extends RefineryInterface {
 
     searchToForm(search) {
         var formData = new FormData();
@@ -53,18 +24,22 @@ class SearchRest extends SearchInterface {
         return formData;
     }
 
-    submitSearch(search) {
+    submit(search, modelName) {
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         jQuery.ajax({
             type: 'POST',
-            url: SERVICE_URL + '/search/submit',
+            url: SERVICE_URL + '/dataflow/submit/'
+             + encodeURIComponent(DEFAULT_TENANT) + '/' +
+             + encodeURIComponent(SERVICE_URL) + '/' +
+             +  encodeURIComponent(modelname),
             contentType: 'application/json',
             data: JSON.stringify(search),
             dataType: 'json',
             success: function(response) {
-                                       $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-                                       $.Topic(Fluidity.Search.Topics.setSearchFiles).publish(response);
-                                   }
+                   $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+            // call on refinery
+                console.log("Got Stuff");
+           }
             ,
             fail: function (xhr, ajaxOptions, thrownError) {
                                    alert(xhr.status);
@@ -167,13 +142,17 @@ class SearchRest extends SearchInterface {
             }
         });
     }
+
+
 }
 
-function searchBackendBinding() {
+
+
+function refineryBackendBinding() {
 //     let backend = new SearchFixture();
     let backend = new SearchRest();
 
-    console.log("Backend is using:" + backend.constructor.name)
+    console.log("Refinery backend using:" + backend.constructor.name)
 
     $.Topic(Fluidity.Search.Topics.submitSearch).subscribe(function(search) {
         backend.submitSearch(search);
@@ -190,4 +169,3 @@ function searchBackendBinding() {
 
 
 }
-

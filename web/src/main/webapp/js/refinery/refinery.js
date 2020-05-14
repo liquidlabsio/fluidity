@@ -1,118 +1,46 @@
 
+// define pub-sub topics
+Fluidity.Refinery.Topics = {
+    submit: 'submit',
+    submitReply: 'submitReply'
+}
 
-Fluidity.Search.refinery = new Vue({
-    el: '#refinery',
-    components: {
-    },
-    data() {
-      return {
-        input: {
-            bucket: {
-                tag: '*',
-                tags: [],
-                autocompleteItems: [{
-                        text: '*',
-                      }, {
-                        text: 'bucket.equals(BUCKET_NAME)',
-                      }, {
-                        text: 'bucket.contains(TEXT_PATH)',
-                      }, {
-                        text: 'tags.contains(TEXT)',
-                      }]
-            },
-            filename: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
-                                text: '*',
-                              }, {
-                                text: 'filename.contains(TEXT)',
-                              }, {
-                                text: 'filename.equals(TEXT)',
-                         }]
-            },
-            filter: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
-                                text: '*',
-                              }, {
-                              text: 'record.contains(TEXT)',
-                              },{
-                                text: 'someTextThatMatches',
-                                },{
-                                text: 'findThis AND alsoThis',
-                                },{
-                                text: 'foundThis OR foundThat'
-                          }]
-            },
-             field: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
-                            text: '*',
-                          }, {
-                            text: 'field.getJsonPair(JsonName)',
-                          }, {
-                            text: 'field.getKVPair(TextKey)',
-                    }]
-            },
-        },
-        modelInterval: 1,
-        statusTable: {
-            items:  [
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
-                           ],
-           fields: [
-                     'name',
-                     'modified',
-                     'size'
-                   ]
-           },
-      }
-    },
-    computed: {
-        inputBucketFilteredItems() {
-          return this.input.bucket.autocompleteItems.filter(i => {
-            return i.text.toLowerCase().indexOf(this.input.bucket.tag.toLowerCase()) !== -1;
-          });
-        },
-        inputFilenameFilteredItems() {
-          return this.input.filename.autocompleteItems.filter(i => {
-            return i.text.toLowerCase().indexOf(this.input.filename.tag.toLowerCase()) !== -1;
-          });
-        },
-        inputFilterFilteredItems() {
-          return this.input.filter.autocompleteItems.filter(i => {
-            return i.text.toLowerCase().indexOf(this.input.filter.tag.toLowerCase()) !== -1;
-          });
-        },
-        inputFieldFilteredItems() {
-          return this.input.field.autocompleteItems.filter(i => {
-            return i.text.toLowerCase().indexOf(this.input.field.tag.toLowerCase()) !== -1;
-          });
+$(document).ready(function () {
+
+    Fluidity.Refinery.refinery = new Refinery();
+
+    Fluidity.Refinery.refinery.bind();
+
+});
+
+class Refinery {
+
+    constructor() {
+
+    try {
+        this.searchId = 0;
+        this.searchFileUrls = [];
+        this.searchedFileUrls = [];
+        this.duration = 60;
+
+        } catch (error) {
+            console.log(error)
         }
-
-
-    },
-    watch: {
-      show(newVal) {
-        console.log('Alert is now ' + (newVal ? 'visible' : 'hidden'))
-      }
-    },
-    methods: {
-      toggle() {
-        console.log('Toggle button clicked')
-        this.show = !this.show
-      },
-      dismissed() {
-        console.log('Alert dismissed')
-      }, refinerySubmit() {
-        console.log('Submit search')
-      }
     }
-})
+    bind() {
+
+    }
+    submit() {
+        console.log("Building search and submitting")
+         let search = {
+                    origin: 'username',
+                    uid: new Date().getTime(),
+                    expression: Fluidity.Search.searchInputBucket.query + '|' + Fluidity.Search.searchInputFilename.query + '|' + Fluidity.Search.searchInputRecord.query
+                                + '|' +  Fluidity.Search.searchInputField.query + '|' + Fluidity.Search.searchInputAnalytic.query
+                                + '|' + Fluidity.Search.searchTimeSeriesToggle.time + '|' + Fluidity.Search.searchInputGroupBy.query ,
+                    from: new Date().getTime() - searcher.duration * 60 * 1000,
+                    to: new Date().getTime()
+                }
+        search.expression =
+    }
+}
