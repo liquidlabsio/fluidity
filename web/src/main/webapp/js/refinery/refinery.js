@@ -58,9 +58,21 @@ Fluidity.Search.refinery = new Vue({
                     }]
             },
         },
-
-        name: 'BootstrapVue',
-        show: true
+        modelInterval: 1,
+        statusTable: {
+            items:  [
+                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
+                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
+                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
+                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
+                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
+                           ],
+           fields: [
+                     'name',
+                     'modified',
+                     'size'
+                   ]
+           },
       }
     },
     computed: {
@@ -99,6 +111,8 @@ Fluidity.Search.refinery = new Vue({
       },
       dismissed() {
         console.log('Alert dismissed')
+      }, refinerySubmit() {
+        console.log('Submit search')
       }
     }
 })

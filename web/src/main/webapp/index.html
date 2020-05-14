@@ -360,11 +360,11 @@
                 <div class="normalSizeEditor" id="searchResultsEditor"></div>
             </div>
             <div class="mainPanelTab" id="refineryTab" style="display: none;">
-                <h1 class="h2">Refinery - Correlation Model Building</h1>
+                <h1 class="h2">Refinery - Dataflow Model Building</h1>
                 <hr>
                 <div id="refinery">
 
-                    <b-input-group class="mt-3" prepend="Model">
+                    <b-input-group class="mt-3" prepend="Model Name">
                         <b-form-input></b-form-input>
                         <b-input-group-append>
                             <b-button variant="info">Save</b-button>
@@ -373,66 +373,92 @@
                     </b-input-group>
                     <br>
 
-                    <b-form inline>
-                        <b-form-group class="col-md-3" id="fieldset-1" label="Bucket/Tag" style="padding-left:0px">
-                            <vue-tags-input
-                                    :allow-edit-tags="true"
-                                    :autocomplete-items="inputBucketFilteredItems"
-                                    :tags="input.bucket.tags"
-                                    @tags-changed="newTags => input.bucket.tags = newTags"
-                                    v-model="input.bucket.tag"
-                            />
-                        </b-form-group>
+                    <b-card text-variant="grey" title="Source data">
+                        <!--                    <b-card bg-variant="light" header="Model Data source">-->
+                        <!--                        <b-card-text>Model data source</b-card-text>-->
+                        <b-form inline>
+                            <b-form-group class="col-md-3" label="Bucket | Tags" style="padding-left:0px">
+                                <vue-tags-input
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputBucketFilteredItems"
+                                        :tags="input.bucket.tags"
+                                        @tags-changed="newTags => input.bucket.tags = newTags"
+                                        v-model="input.bucket.tag"
+                                ></vue-tags-input>
+                            </b-form-group>
 
-                        <b-form-group class="col-md-3" id="fieldset-1" label="Filename">
-                            <vue-tags-input
-                                    :allow-edit-tags="true"
-                                    :autocomplete-items="inputFilenameFilteredItems"
-                                    :tags="input.filename.tags"
-                                    @tags-changed="newTags => input.filename.tags = newTags"
-                                    v-model="input.filename.tag"
-                            />
-                        </b-form-group>
-                        <b-form-group class="col-md-3" id="fieldset-1" label="Records">
-                            <vue-tags-input
-                                    :allow-edit-tags="true"
-                                    :autocomplete-items="inputFilterFilteredItems"
-                                    :tags="input.filter.tags"
-                                    @tags-changed="newTags => input.filter.tags = newTags"
-                                    v-model="input.filter.tag"
-                            />
-                        </b-form-group>
-                        <b-form-group class="col-md-3" id="fieldset-1" label="Field">
-                            <vue-tags-input
-                                    :allow-edit-tags="true"
-                                    :autocomplete-items="inputFieldFilteredItems"
-                                    :tags="input.field.tags"
-                                    @tags-changed="newTags => input.field.tags = newTags"
-                                    v-model="input.field.tag"
-                            />
-                        </b-form-group>
-                        <b-form-text id="password-help-block">
-                            Complete all inputs to accurately match your data records. <b>Note</b>: the 'field'
-                            entry is used to extract the correlation field
-                        </b-form-text>
-                    </b-form>
+                            <b-form-group class="col-md-2" label="Filename">
+                                <vue-tags-input
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFilenameFilteredItems"
+                                        :tags="input.filename.tags"
+                                        @tags-changed="newTags => input.filename.tags = newTags"
+                                        v-model="input.filename.tag"
+                                ></vue-tags-input>
+                            </b-form-group>
+                            <b-form-group class="col-md-3" label="Record Match">
+                                <vue-tags-input
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFilterFilteredItems"
+                                        :tags="input.filter.tags"
+                                        @tags-changed="newTags => input.filter.tags = newTags"
+                                        v-model="input.filter.tag"
+                                ></vue-tags-input>
+                            </b-form-group>
+                            <b-form-group class="col-md-3" label="Field for Correlation">
+                                <vue-tags-input
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFieldFilteredItems"
+                                        :tags="input.field.tags"
+                                        @tags-changed="newTags => input.field.tags = newTags"
+                                        v-model="input.field.tag"
+                                ></vue-tags-input>
+                            </b-form-group>
 
+
+                            <b-form-group class="col-md-1">
+                                <label class="control-label">&nbsp;</label>
+                                <b-button v-on:click="refinerySubmit" variant="primary"><span
+                                        data-feather="search"></span></b-button>
+                            </b-form-group>
+                            <b-form-text id="password-help-block">
+                                Complete all inputs to accurately match your data records. <b>Note</b>: the 'field'
+                                entry is used to extract the correlation field
+                            </b-form-text>
+                        </b-form>
+
+                    </b-card>
 
                     <br>
-                    <div>
-                        <b-button @click="toggle" size="sm">
-                            {{ show ? 'Hide' : 'Show' }} Alert
-                        </b-button>
-                        <b-alert
-                                @dismissed="dismissed"
-                                class="mt-3"
-                                dismissible
-                                v-model="show"
-                        >
-                            Yo {{ name }}!
-                        </b-alert>
 
-                    </div>
+                    <b-card bg-variant="light" title="Build interval">
+                        <b-col sm="3">
+                            <label>Hours</label>
+                        </b-col>
+                        <b-col sm="9">
+                            <b-form-input id="range-1" max="24" min="1" type="range"
+                                          v-model="modelInterval"></b-form-input>
+                            <div class="mt-2">Value: {{ modelInterval }}</div>
+                        </b-col>
+                    </b-card>
+                    <br>
+                    <b-card bg-variant="secondary" text-variant="white" title="Status">
+                        <b-card-text>
+                            Status @Time-XXXX
+                        </b-card-text>
+                        Finished at 12;40pm
+
+                    </b-card>
+                    <br>
+                    <b-card bg-variant="info" text-variant="white" title="Model data">
+                        <b-table
+                                :fields="statusTable.fields"
+                                :items="statusTable.items"
+                                responsive="sm"
+                        >
+                        </b-table>
+                    </b-card>
+
                 </div>
             </div>
 
