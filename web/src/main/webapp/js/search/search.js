@@ -62,7 +62,7 @@ class Search {
            let filename = self.fileLut[parseInt(parts[0])]
            let time = parseInt(parts[1]);
            let offset = parts[2];
-           searchFileToOpenInfo.searchFileInfo = filename + " @" + new Date(time).toLocaleString() + " - " + offset
+           Fluidity.Search.searchFileToOpenInfo.searchFileInfo = filename + " @" + new Date(time).toLocaleString() + " - " + offset
         })
         $.Topic(Fluidity.Search.Topics.prepareExplorerToOpen).subscribe(function(event) {
             // expecting; 3:1581603492991:19216:
@@ -125,15 +125,15 @@ class Search {
 
 
     submitSearch(search) {
-        console.log("Setting Search:"+ search)
+        console.log("submitSearch:"+ search)
         this.searchRequest = search;
         this.startTime =  new Date();
-        searchChart.series = [];
+        Fluidity.Search.searchChart.series = [];
         $.Topic(Fluidity.Search.Topics.submitSearch).publish(this.searchRequest);
-        searchFileToOpenInfo.searchFileInfo = ""
+        Fluidity.Search.searchFileToOpenInfo.searchFileInfo = ""
     }
     setFileUrls(fileMetas) {
-        console.log("Got Files:" + fileMetas.length)
+        console.log("setFileUrls:" + fileMetas.length)
         let self = this;
         this.searchFileMetas = fileMetas;
         this.totalEvents = 0;
@@ -147,7 +147,7 @@ class Search {
 
     setSearchFileResults(histoUrl, processedEventCount, totalEventCount) {
         let self = this;
-         searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " sources"
+        Fluidity.Search.searchStats.stats = "Processed " + this.searchedHistos.length + " of " + this.searchFileMetas.length + " sources"
 
         this.searchedEvents.push(parseInt(totalEventCount))
         this.searchedHistos.push(histoUrl)
@@ -156,7 +156,7 @@ class Search {
             this.totalEvents =  this.searchedEvents.reduce(function(a, b){
                         return a + b;
             }, 0);
-            searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length + " Total Events:" + this.totalEvents
+            Fluidity.Search.searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length + " Total Events:" + this.totalEvents
             $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
             $.Topic(Fluidity.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }
@@ -164,12 +164,12 @@ class Search {
 
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        searchStats.stats = "Display " + Fluidity.formatNumber(results[0]) + " events from: " + Fluidity.formatNumber(this.totalEvents) + " Elapsed: " + Fluidity.formatNumber(elapsed)
+        Fluidity.Search.searchStats.stats = "Display " + Fluidity.formatNumber(results[0]) + " events from: " + Fluidity.formatNumber(this.totalEvents) + " Elapsed: " + Fluidity.formatNumber(elapsed)
         this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }
     setFinalHisto(results) {
-        searchChart.series = results;
+        Fluidity.Search.searchChart.series = results;
     }
 
 }
