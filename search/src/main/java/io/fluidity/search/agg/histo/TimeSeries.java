@@ -75,7 +75,9 @@ public class TimeSeries<T> implements Series<T> {
         delta = MINUTE;
         if (duration >= 6 * HOUR) delta = MINUTE * 2;
         if (duration > 12 * HOUR) delta = MINUTE * 3;
-        if (duration >= DAY * 2) delta = MINUTE * 5;
+        if (duration > 24 * HOUR) delta = MINUTE * 4;
+        if (duration >= DAY * 2) delta = MINUTE * 10;
+        if (duration >= DAY * 5) delta = HOUR;
         if (duration > WEEK) delta = HOUR * 2;
         if (duration > WEEK * 2) delta = DAY;
         if (duration > WEEK * 8) delta = DAY / 2;

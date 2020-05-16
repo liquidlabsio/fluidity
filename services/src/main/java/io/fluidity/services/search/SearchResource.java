@@ -34,9 +34,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  *     submitSearch(search)
@@ -85,19 +83,14 @@ public class SearchResource {
     @POST
     @Path("/files/{tenant}/{files}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public List<String[]> file(@PathParam("tenant") String tenant, @PathParam("files") String fileMetas, @MultipartForm Search search) {
+    public List<Integer[]> file(@PathParam("tenant") String tenant, @PathParam("files") String fileMetas, @MultipartForm Search search) {
         try {
             search.decodeJsonFields();
 
             ObjectMapper objectMapper = new ObjectMapper();
             FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.info("/search/file/{}", files.length);
-            List<String[]> collect = Arrays.stream(files).map(fileMeta ->
-                    searchRunner.searchFile(fileMeta, search, storage, cloudRegion, tenant)
-            ).collect(Collectors.toList());
-
-
-            return collect;
+            return searchRunner.searchFile(files, search, storage, cloudRegion, tenant);
         } catch (Exception e) {
             log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             throw new RuntimeException(e);

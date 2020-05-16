@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,35 +53,42 @@ public class StandardSearchRunner implements SearchRunner {
     }
 
     @Override
-    public String[] searchFile(FileMeta fileMeta, Search search, Storage storage, String region, String tenant) {
-        try {
-            String searchUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+    public List<Integer[]> searchFile(FileMeta[] fileMetaBatch, Search search, Storage storage, String region, String tenant) {
 
 
-            int[] processedEventsAndTotal = new int[]{0, 0};
-            try (
-                    EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream, fileMeta, region)
-            ) {
-                processedEventsAndTotal = searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return new String[]{"histo", Integer.toString(processedEventsAndTotal[0]), Integer.toString(processedEventsAndTotal[1])};
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new String[0];
-        }
-    }
-
-    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, FileMeta fileMeta, String region) {
-        String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
-        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
-
-        String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
+        /**
+         * Use a single histo aggregator to the firstFile output stream - it can aggregate from others in the same batch - reducing the total number of files for later aggregation
+         */
+        FileMeta firstFile = fileMetaBatch[0];
+        String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), firstFile.getStorageUrl());
         OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
 
-        HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search));
+        List<Integer[]> results = new ArrayList<>();
+        try (HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))) {
+
+            for (FileMeta fileMeta : fileMetaBatch) {
+
+                String searchUrl = fileMeta.getStorageUrl();
+                InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+                histoCollector.updateFileInfo(fileMeta.filename, firstFile.tags);
+
+                try (
+                        EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream, fileMeta, region, histoCollector)
+                ) {
+                    results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, FileMeta fileMeta, String region, HistoCollector histoCollector) {
+        String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
+        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
         return new SearchEventCollector(histoCollector, inputStream, outputStream);
     }
 
@@ -123,5 +134,4 @@ public class StandardSearchRunner implements SearchRunner {
 
         return eventAggs;
     }
-
 }

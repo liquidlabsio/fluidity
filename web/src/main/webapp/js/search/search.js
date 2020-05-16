@@ -47,7 +47,7 @@ class Search {
             self.setFileUrls(returnedFileUrls);
         })
         $.Topic(Fluidity.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
-            fileResults.forEach(fileResult => self.setSearchFileResults(fileResult[0], fileResult[1], fileResult[2]))
+            fileResults.forEach(fileResult => self.setSearchFileResults("histoUrl", fileResult[0], fileResult[1]))
         })
         $.Topic(Fluidity.Search.Topics.setFinalEvents).subscribe(function(events) {
                 self.setFinalEvents(events)
@@ -149,7 +149,7 @@ class Search {
         var collected = []
         this.searchFileMetas.forEach(fileMeta => {
             collected.push(fileMeta)
-            if (collected.length > 4) {
+            if (collected.length > 7) {
                 console.log("BATCH:" + fileMeta + " size:" + collected.length)
                 $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, collected.slice())
                 collected.length = 0;
@@ -172,7 +172,7 @@ class Search {
             this.totalEvents =  this.searchedEvents.reduce(function(a, b){
                         return a + b;
             }, 0);
-            Fluidity.Search.searchStats.stats = "Search complete. Aggregating from:" + this.searchFileMetas.length + " sources., Events:" + this.totalEvents
+            Fluidity.Search.searchStats.stats = "Search complete. Aggregating from:" + this.searchFileMetas.length + " sources. Events:" + this.totalEvents
             $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
             $.Topic(Fluidity.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }

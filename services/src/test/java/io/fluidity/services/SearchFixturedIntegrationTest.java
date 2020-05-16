@@ -71,11 +71,11 @@ class SearchFixturedIntegrationTest {
 
         System.out.printf("Searching these files:%s%n", fileUrls);
 
-        String[] histoEventsStats = searchFile(fileUrls.get(0), search);
+        Integer[] histoEventsStats = searchFile(fileUrls.get(0), search);
 
         System.out.printf("Search results available here:%s%n", histoEventsStats[1]);
 
-        String[] eventResults = finalizeEvents(search, histoEventsStats[0], histoEventsStats[1]);
+        String[] eventResults = finalizeEvents(search);
 
         System.out.println("EventResults:" + Arrays.toString(eventResults));
 
@@ -83,7 +83,7 @@ class SearchFixturedIntegrationTest {
         // contains histo data
         assertTrue(eventResults[1].contains("this is some file 1"), "Contents of events not found");
 
-        String histoResults = finalizeHisto(search, histoEventsStats[0], histoEventsStats[1]);
+        String histoResults = finalizeHisto(search);
 
         System.out.println("Hist:" + histoResults.replace("],[", "],\n["));
         assertNotNull(histoResults);
@@ -102,18 +102,18 @@ class SearchFixturedIntegrationTest {
         return search;
     }
 
-    private String[] finalizeEvents(Search search, String histo, String events) {
+    private String[] finalizeEvents(Search search) {
 
         String[] results = searchResource.finaliseEvents(TENANT, search, 0);
         assertTrue(results.length > 0);
         return results;
     }
 
-    private String finalizeHisto(Search search, String histo, String events) {
+    private String finalizeHisto(Search search) {
         return searchResource.finaliseHisto(TENANT, search);
     }
 
-    private String[] searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
+    private Integer[] searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
         FileMeta[] fileMetas = {fileMeta};
         String fileMetaJson = new ObjectMapper().writeValueAsString(fileMetas);
 
