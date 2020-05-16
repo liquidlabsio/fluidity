@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -36,8 +39,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.fluidity.dataflow.Model.CORR_PREFIX;
-
 /**
  * API to build, maintain, and access dataflow models
  */
@@ -66,6 +67,18 @@ public class DataflowResource implements DataflowService {
     }
 
     /**
+     * Returns status JSON for client to show process
+     *
+     * @param session
+     * @return
+     */
+    @Override
+    public String status(String tenant, String session, String modelName) {
+        log.info("/status:{}", session);
+        return dataflowBuilder.status(session, modelName);
+    }
+
+    /**
      * Client call used to fan out on FaaS
      *
      * @param tenant
@@ -79,21 +92,30 @@ public class DataflowResource implements DataflowService {
         String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
         String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
         ResteasyClient client = new ResteasyClientBuilderImpl().build();
-        ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
-        DataflowService proxy = target.proxy(DataflowService.class);
-        return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPath, search);
+        try {
+            ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
+            DataflowService proxy = target.proxy(DataflowService.class);
+            return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPath, search);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("BO0000OOM:" + ex.toString() + " URL:" + apiUrl);
+            return ex.toString();
+        } finally {
+            client.close();
+        }
     }
 
-    /**
-     * Returns status JSON for client to show process
-     *
-     * @param session
-     * @return
-     */
     @Override
-    public String status(String tenant, String session, String modelName) {
-        log.info("/status:{}", session);
-        return dataflowBuilder.status(session, modelName);
+    public List<String> model(String tenant, String session, String modelName) {
+
+        log.info("/model:{}", session);
+
+        long start = System.currentTimeMillis();
+        try {
+            return dataflowBuilder.getModel(cloudRegion, tenant, session, modelName, storage);
+        } finally {
+            log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
+        }
     }
 
     @Override
@@ -106,10 +128,11 @@ public class DataflowResource implements DataflowService {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
                 try {
-                    String result = rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress + "/dataflow/rewrite", modelPath);
+                    String result = rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress, modelPath);
                     rewritten.incrementAndGet();
                     return result;
                 } catch (JsonProcessingException e) {
+                    log.info("Failed to invoke:" + serviceAddress + "/dataflow/rewrite");
                     e.printStackTrace();
                     return e.toString();
                 }
@@ -127,34 +150,24 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<String> model(String tenant, String session, String modelName) {
-
-        log.info("/model:{}", session);
-
-        long start = System.currentTimeMillis();
-        try {
-            return dataflowBuilder.getModel(cloudRegion, tenant, session, modelName, storage);
-        } finally {
-            log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
-        }
-    }
-
-    @Override
     public String rewriteCorrelationData(String tenant, String session, String fileMetas,
                                          String modelPath, Search search) {
-        search.decodeJsonFields();
+        log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
+
         try {
+            search.decodeJsonFields();
             ObjectMapper objectMapper = new ObjectMapper();
             FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
-            log.debug("/file/{}", files[0].filename);
+            log.info("/file/{}", files[0].filename);
 
-            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath + CORR_PREFIX);
+            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
+        } finally {
+            log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
     }
-
 
 }

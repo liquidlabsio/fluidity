@@ -1,7 +1,25 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.*;
+import io.fluidity.dataflow.DataflowHistoCollector;
+import io.fluidity.dataflow.DataflowModeller;
+import io.fluidity.dataflow.FlowInfo;
+import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.Model;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -17,10 +35,16 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.fluidity.dataflow.Model.*;
+import static io.fluidity.dataflow.Model.CORR_FLOW_FMT;
+import static io.fluidity.dataflow.Model.CORR_HIST_FMT;
+import static io.fluidity.dataflow.Model.CORR_PREFIX;
 
 /**
  * Propagates through the stages of building the dataflow model
@@ -65,7 +89,7 @@ public abstract class WorkflowRunner {
         String msg = "";
         while ((msg = statusQueue.poll()) != null) {
             // write to storage
-            log.info("====== Status:" + msg);
+            log.info("====== QUEUE-Status:" + msg);
         }
     }
 
@@ -80,7 +104,7 @@ public abstract class WorkflowRunner {
         try {
 
             FileMeta[] filesToExtractFrom = dfBuilder.listFiles(search, query);
-            log.info(LogHelper.format(session, "builder", "workflow", "Files:" + filesToExtractFrom.length));
+            log.info(LogHelper.format(session, "builder", "workflow", "FileToCorrelate:" + filesToExtractFrom.length));
 
             // Stage 1. Rewrite dataflows by correlationId-timeFrom-timeTo =< fan-out
             stepOneExtractDataflowIntoStorage(search, filesToExtractFrom);
@@ -142,7 +166,8 @@ public abstract class WorkflowRunner {
 
         log.info(LogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
-        storage.listBucketAndProcess(region, tenant, modelPath + CORR_PREFIX, (region, itemUrl, correlationFilename) -> {
+        storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename) -> {
+            if (!correlationFilename.contains(CORR_PREFIX)) return null;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);
             String correlationKey = split[1];

@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -23,7 +26,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -106,23 +108,12 @@ public class DataflowBuilder {
 
     public List<String> getModel(String region, String tenant, String session, String modelName, Storage storage) {
         List<String> histoUrls = new ArrayList<>();
-        storage.listBucketAndProcess(region, tenant, modelName + "/" + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
-            histoUrls.add(itemUrl);
+        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName) -> {
+            if (itemUrl.contains(CORR_HIST_PREFIX)) {
+                histoUrls.add(itemUrl);
+            }
             return null;
         });
-
-
-        List<String> results = histoUrls.stream().map(histoUrl -> {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (InputStream inputStream = storage.getInputStream(region, tenant, histoUrl)) {
-                IOUtils.copy(inputStream, baos);
-                return (baos.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-                log.warn("Failed to get URL:" + histoUrl, e);
-                return "Failed:" + histoUrl;
-            }
-        }).collect(Collectors.toList());
-        return results;
+        return histoUrls;
     }
 }

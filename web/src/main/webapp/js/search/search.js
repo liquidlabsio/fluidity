@@ -134,7 +134,7 @@ class Search {
         this.startTime =  new Date();
 
         Fluidity.Search.searchChart.series = [];
-        Fluidity.Search.searchStats.stats = "Starting"
+        Fluidity.Search.searchStats.stats = "Requesting data..."
         $.Topic(Fluidity.Search.Topics.submitSearch).publish(this.searchRequest);
         Fluidity.Search.searchFileToOpenInfo.searchFileInfo = ""
     }
