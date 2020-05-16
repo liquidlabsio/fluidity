@@ -134,9 +134,9 @@ class Search {
         this.startTime =  new Date();
 
         Fluidity.Search.searchChart.series = [];
+        Fluidity.Search.searchStats.stats = "Starting"
         $.Topic(Fluidity.Search.Topics.submitSearch).publish(this.searchRequest);
         Fluidity.Search.searchFileToOpenInfo.searchFileInfo = ""
-        Fluidity.Search.searchStats.stats = "Starting"
     }
     setFileUrls(fileMetas) {
         console.log("setFileUrls:" + fileMetas.length)

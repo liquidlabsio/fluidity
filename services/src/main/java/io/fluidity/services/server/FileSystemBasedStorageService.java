@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -34,18 +37,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FileSystemBasedStorageService implements Storage {
-    public static final String PRECOGNITO_FS_BASE_DIR = "fluidity.fs.base.dir";
+    public static final String FLUIDITY_FS_BASE_DIR = "fluidity.fs.base.dir";
     private final Logger log = LoggerFactory.getLogger(FileSystemBasedStorageService.class);
 
     private final String baseDir;
 
     public FileSystemBasedStorageService() {
-        log.info("Created Working Dir");
-        Optional<String> value = ConfigProvider.getConfig().getOptionalValue(PRECOGNITO_FS_BASE_DIR, String.class);
+        log.info("Created Working Dir:" + new File(".").getAbsolutePath());
+        Optional<String> value = ConfigProvider.getConfig().getOptionalValue(FLUIDITY_FS_BASE_DIR, String.class);
         if (value.isPresent()) {
             this.baseDir = value.get();
         } else {
-            this.baseDir = "./storage/fs";
+            this.baseDir = "./target/storage/fs";
         }
         new File(baseDir).mkdirs();
         log.info("Using storage: {}", this.baseDir);
@@ -55,7 +58,7 @@ public class FileSystemBasedStorageService implements Storage {
     public FileMeta upload(String region, FileMeta upload) {
         log.info("uploading:" + upload);
 
-        String filenameAndPath = getFilename(upload.getTenant(), upload.getResource(), upload.getFilename());
+        String filenameAndPath = getFilename(upload.getResource(), upload.getFilename());
         try {
             FileUtil.writeFile(filenameAndPath, upload.fileContent);
         } catch (IOException e) {
@@ -66,7 +69,7 @@ public class FileSystemBasedStorageService implements Storage {
         return upload;
     }
 
-    private String getFilename(String tenant, String resource, String filename) {
+    private String getFilename(String resource, String filename) {
         return String.format("%s/%s/%s", this.baseDir, resource, filename);
     }
 
@@ -140,13 +143,8 @@ public class FileSystemBasedStorageService implements Storage {
     }
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
-        return urls.stream().collect(Collectors.toMap(url -> url, url -> getInputStream(region, tenant, url)));
-    }
-
-    @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String uid, String filenameExtension, long fromTime) {
-        Collection<File> files = FileUtil.listDirs(this.baseDir, filenameExtension, tenant, uid);
+    public Map<String, InputStream> getInputStreams(String region, String tenant, String prefix, String filenameExtension, long fromTime) {
+        Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, filenameExtension);
         // Note: s3 is used as a storage prefix
         return files.stream().collect(Collectors.toMap(file -> "s3://" + file.getPath(), file -> {
             try {
@@ -170,13 +168,16 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-        Collection<File> files = FileUtil.listDirs(this.baseDir, "*");
-        files.stream().filter(item -> FileUtil.fixPath(item.getPath()).contains(prefix)).forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath())));
+        Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, "*");
+        files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath())));
     }
 
     @Override
     public OutputStream getOutputStream(String region, String tenant, String fullFilePath, int daysRetention) {
         if (fullFilePath.startsWith("s3://")) fullFilePath = fullFilePath.substring("s3://".length());
+        if (fullFilePath.contains(baseDir)) {
+            fullFilePath = fullFilePath.substring(fullFilePath.indexOf(baseDir) + baseDir.length());
+        }
         File file = new File(this.baseDir, fullFilePath);
         file.getParentFile().mkdirs();
         try {
@@ -189,6 +190,6 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public String getBucketName(String tenant) {
-        return String.format("%s/%s", this.baseDir, tenant);
+        return String.format("%s", this.baseDir);
     }
 }

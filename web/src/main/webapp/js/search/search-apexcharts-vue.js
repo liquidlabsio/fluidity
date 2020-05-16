@@ -10,7 +10,7 @@ Fluidity.Search.searchChart = new Vue({
 //                console.log("series:" + searchChart.series[config.seriesIndex].name)
 //                console.log("time:" + point[0])
 //                console.log("value:" + point[1])
-                 searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
+                 Fluidity.Search.searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
                  searcher.startTime = new Date();
                 $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
 

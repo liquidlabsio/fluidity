@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -57,18 +71,21 @@ class SearchFixturedIntegrationTest {
 
         System.out.printf("Searching these files:%s%n", fileUrls);
 
-        List<String> histoEventsPair = searchFile(fileUrls.get(0), search);
+        String[] histoEventsStats = searchFile(fileUrls.get(0), search);
 
-        System.out.printf("Search results available here:%s%n", histoEventsPair);
+        System.out.printf("Search results available here:%s%n", histoEventsStats[1]);
 
-        String[] eventResults = finalizeEvents(search, histoEventsPair.get(0), histoEventsPair.get(1));
+        String[] eventResults = finalizeEvents(search, histoEventsStats[0], histoEventsStats[1]);
+
+        System.out.println("EventResults:" + Arrays.toString(eventResults));
 
         assertNotNull(eventResults[0]);
         // contains histo data
         assertTrue(eventResults[1].contains("this is some file 1"), "Contents of events not found");
 
-        String histoResults = finalizeHisto(search, histoEventsPair.get(0), histoEventsPair.get(1));
+        String histoResults = finalizeHisto(search, histoEventsStats[0], histoEventsStats[1]);
 
+        System.out.println("Hist:" + histoResults.replace("],[", "],\n["));
         assertNotNull(histoResults);
         assertTrue(histoResults.contains("count"), "didnt perform default count analytic");
     }
@@ -79,6 +96,7 @@ class SearchFixturedIntegrationTest {
         search.origin = "123";
         search.uid = "UID-"+ System.currentTimeMillis();
         search.expression = "*|*|*|*|*";
+        //search.expression = "tags.equals(cc)|*|WorkflowRunner|field.getJsonPair(corr)|analytic.countEach()|time.series()|*";
         search.from =  System.currentTimeMillis() - DateUtil.DAY;
         search.to = System.currentTimeMillis() + 1000;
         return search;
@@ -95,11 +113,11 @@ class SearchFixturedIntegrationTest {
         return searchResource.finaliseHisto(TENANT, search);
     }
 
-    private List<String> searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
+    private String[] searchFile(FileMeta fileMeta, Search search) throws JsonProcessingException {
         FileMeta[] fileMetas = {fileMeta};
         String fileMetaJson = new ObjectMapper().writeValueAsString(fileMetas);
 
-        return Arrays.asList(searchResource.file(TENANT, URLEncoder.encode(fileMetaJson), search));
+        return searchResource.file(TENANT, URLEncoder.encode(fileMetaJson), search).get(0);
     }
 
     private List<FileMeta> search(Search search) {
@@ -113,7 +131,7 @@ class SearchFixturedIntegrationTest {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
         FileMeta fileMeta = new FileMeta("ng-test", "IoTDevice",
-                "tag1, tag2", filename, bytes, System.currentTimeMillis() - 10000, System.currentTimeMillis(), "");
+                "cc", filename, bytes, System.currentTimeMillis() - DateUtil.HOUR, System.currentTimeMillis(), "");
 
         storageResource.uploadFile(fileMeta);
     }

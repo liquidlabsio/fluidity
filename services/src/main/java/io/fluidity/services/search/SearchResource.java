@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -51,12 +54,12 @@ public class SearchResource {
     String cloudRegion;
 
     @ConfigProperty(name = "fluidity.services.query")
-    QueryService query;
+    public QueryService query;
 
     SearchRunner searchRunner = new StandardSearchRunner();
 
     @ConfigProperty(name = "fluidity.services.storage")
-    Storage storageService;
+    public Storage storage;
 
     @ConfigProperty(name = "fluidity.event.limit", defaultValue = "10000")
     int eventLimit;
@@ -90,7 +93,7 @@ public class SearchResource {
             FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.info("/search/file/{}", files.length);
             List<String[]> collect = Arrays.stream(files).map(fileMeta ->
-                    searchRunner.searchFile(fileMeta, search, storageService, cloudRegion, tenant)
+                    searchRunner.searchFile(fileMeta, search, storage, cloudRegion, tenant)
             ).collect(Collectors.toList());
 
 
@@ -111,7 +114,7 @@ public class SearchResource {
             log.info(LogHelper.format(search.uid, "search", "finalizeEvents", "Start"));
             search.decodeJsonFields();
             eventLimit = 10000;
-            return searchRunner.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storageService);
+            return searchRunner.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storage);
         } catch (Throwable t) {
             t.printStackTrace();
             log.error("finalizeEventsFailed", t);
@@ -132,7 +135,7 @@ public class SearchResource {
             log.info(LogHelper.format(search.uid, "search", "finalizeHisto", "Start"));
             search.decodeJsonFields();
 
-            return searchRunner.finalizeHisto(search, tenant, cloudRegion, storageService);
+            return searchRunner.finalizeHisto(search, tenant, cloudRegion, storage);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
             log.info(LogHelper.format(search.uid, "search", "finalizeHisto", "End"));

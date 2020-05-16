@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -37,7 +40,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RocksDBQueryService implements QueryService {
-    public static final String PRECOGNITO_FS_BASE_DIR = "fluidity.rocks.base.dir";
+    public static final String FLUIDITY_FS_BASE_DIR = "fluidity.rocks.base.dir";
     private static final String NAME = "Rocks-FileMetas";
     private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);
 
@@ -50,7 +53,7 @@ public class RocksDBQueryService implements QueryService {
         log.info("Created");
         try {
 
-            Optional<String> value = ConfigProvider.getConfig().getOptionalValue(PRECOGNITO_FS_BASE_DIR, String.class);
+            Optional<String> value = ConfigProvider.getConfig().getOptionalValue(FLUIDITY_FS_BASE_DIR, String.class);
             if (value.isPresent()) {
                 this.baseDir = value.get();
             } else {
@@ -59,6 +62,7 @@ public class RocksDBQueryService implements QueryService {
             RocksDB.loadLibrary();
             final Options options = new Options();
             options.setCreateIfMissing(true);
+            options.setMaxBackgroundFlushes(1);
             dbDir = new File(baseDir, NAME);
             log.info("Using rocksDb: {}", this.baseDir);
 
@@ -69,11 +73,14 @@ public class RocksDBQueryService implements QueryService {
 
             db = RocksDB.open(options, dbDir.getAbsolutePath());
 
+
             scheduledThreadPool.scheduleWithFixedDelay(() -> {
                 FlushOptions flushOptions = new FlushOptions();
                 flushOptions.setAllowWriteStall(true).setWaitForFlush(true);
                 try {
+                    log.info("START ---- Flushing RocksDB");
                     db.flush(flushOptions);
+                    log.info("DONE ---- Flushing RocksDB");
                 } catch (RocksDBException e) {
                     e.printStackTrace();
                     log.error("Flush failed", e);
@@ -167,10 +174,11 @@ public class RocksDBQueryService implements QueryService {
     public List<FileMeta> query(String tenant, String filenamePart, String tagNamePart) {
 
         List<FileMeta> results = new ArrayList<>();
-        try {
-            ObjectMapper objectMapper = getObjectMapper();
+        ObjectMapper objectMapper = getObjectMapper();
 
-            RocksIterator iterator = db.newIterator();
+        RocksIterator iterator = db.newIterator();
+
+        try {
             iterator.seekToFirst();
             while (iterator.isValid()) {
                 String key = new String(iterator.key());
@@ -183,10 +191,11 @@ public class RocksDBQueryService implements QueryService {
                 }
                 iterator.next();
             }
-            iterator.close();
         } catch (Exception ex) {
             ex.printStackTrace();
             log.error("Failed to query", ex);
+        } finally {
+            iterator.close();
         }
         return results;
     }
