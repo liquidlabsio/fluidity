@@ -53,11 +53,11 @@ public class Search {
 
     @FormParam("from")
     @PartType(MediaType.TEXT_PLAIN)
-    public long from;
+    public Long from;
 
     @FormParam("to")
     @PartType(MediaType.TEXT_PLAIN)
-    public long to;
+    public Long to;
 
     transient PMatcher matcher;
 

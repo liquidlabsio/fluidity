@@ -57,8 +57,14 @@ Fluidity.Refinery.vue = new Vue({
                     }]
             },
         },
+        modelName: 'Not Set',
         modelInterval: 1,
-        statusTable: {
+        statuses:[
+                     '-'
+                   ],
+        statusMessage: '...',
+        modelDataUpdateStatus: '',
+        modelTable: {
             items:  [
                              { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
                              { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },

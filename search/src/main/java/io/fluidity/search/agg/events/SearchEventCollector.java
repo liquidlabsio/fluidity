@@ -67,7 +67,7 @@ public class SearchEventCollector implements EventCollector {
             while (nextLine.isPresent()) {
 
                 if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
-                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine).append('\n').toString().getBytes();
+                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine.get()).append('\n').toString().getBytes();
                     bos.write(bytes);
                     histoCollector.add(currentTime, position, nextLine.get());
                     readEvents++;

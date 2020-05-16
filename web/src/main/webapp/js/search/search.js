@@ -47,8 +47,7 @@ class Search {
             self.setFileUrls(returnedFileUrls);
         })
         $.Topic(Fluidity.Search.Topics.setSearchFileResults).subscribe(function(fileResults) {
-//            console.log("Set Bucket Results histo & raw:" + fileResults)
-            self.setSearchFileResults(fileResults[0], fileResults[1], fileResults[2])
+            fileResults.forEach(fileResult => self.setSearchFileResults(fileResult[0], fileResult[1], fileResult[2]))
         })
         $.Topic(Fluidity.Search.Topics.setFinalEvents).subscribe(function(events) {
                 self.setFinalEvents(events)
@@ -83,6 +82,9 @@ class Search {
         $('#searchInputForm input').on('focusout', function(arg){
             $(arg.target.parentElement).removeClass("big-input");
         });
+
+        // the autocomplete doesnt apply component class defenition to childs so we need to do this
+        $('#searchInputForm input').addClass('form-control-sm')
 
         $('.searchZoom').click(function(event){
                 let zoomDirection = $(event.currentTarget).data().zoom;
@@ -126,23 +128,37 @@ class Search {
 
     submitSearch(search) {
         console.log("submitSearch:"+ search)
+        this.uuid = new Fluidity.Util.UUID();
+        search.uid = this.uuid.valueOf();
         this.searchRequest = search;
         this.startTime =  new Date();
+
         Fluidity.Search.searchChart.series = [];
         $.Topic(Fluidity.Search.Topics.submitSearch).publish(this.searchRequest);
         Fluidity.Search.searchFileToOpenInfo.searchFileInfo = ""
+        Fluidity.Search.searchStats.stats = "Starting"
     }
     setFileUrls(fileMetas) {
         console.log("setFileUrls:" + fileMetas.length)
+        Fluidity.Search.searchStats.stats = "Matching files:" + fileMetas.length
         let self = this;
         this.searchFileMetas = fileMetas;
         this.totalEvents = 0;
         this.searchedEvents = []
         this.searchedHistos = []
-        this.searchFileMetas.forEach(function(fileMeta, index, arr){
-            //console.log("fileRequest:" + fileMeta + " index:" + index + " self:" + self)
-            $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, [fileMeta])
+        var collected = []
+        this.searchFileMetas.forEach(fileMeta => {
+            collected.push(fileMeta)
+            if (collected.length > 4) {
+                console.log("BATCH:" + fileMeta + " size:" + collected.length)
+                $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, collected.slice())
+                collected.length = 0;
+            }
         })
+        if (collected.length > 0) {
+            console.log("LAST: size:" + collected.length)
+            $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, collected)
+        }
     }
 
     setSearchFileResults(histoUrl, processedEventCount, totalEventCount) {
@@ -156,7 +172,7 @@ class Search {
             this.totalEvents =  this.searchedEvents.reduce(function(a, b){
                         return a + b;
             }, 0);
-            Fluidity.Search.searchStats.stats = "Got all results! Aggregating results:" + this.searchFileMetas.length + " Total Events:" + this.totalEvents
+            Fluidity.Search.searchStats.stats = "Search complete. Aggregating from:" + this.searchFileMetas.length + " sources., Events:" + this.totalEvents
             $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(self.searchRequest, 0);
             $.Topic(Fluidity.Search.Topics.getFinalHisto).publish(self.searchRequest);
         }
@@ -164,7 +180,7 @@ class Search {
 
     setFinalEvents(results) {
         let elapsed = new Date().getTime() - this.startTime.getTime();
-        Fluidity.Search.searchStats.stats = "Display " + Fluidity.formatNumber(results[0]) + " events from: " + Fluidity.formatNumber(this.totalEvents) + " Elapsed: " + Fluidity.formatNumber(elapsed)
+        Fluidity.Search.searchStats.stats = "Displaying " + Fluidity.formatNumber(results[0]) + " events from: " + Fluidity.formatNumber(this.totalEvents) + " Elapsed: " + Fluidity.formatNumber(elapsed) + " Sources:" + this.searchedEvents.length
         this.fileLut = $.parseJSON(results[2]);
         this.searchEditor.setValue(results[1]);
     }

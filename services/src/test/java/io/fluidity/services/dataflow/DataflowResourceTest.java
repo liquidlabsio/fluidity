@@ -11,7 +11,9 @@
 
 package io.fluidity.services.dataflow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.fluidity.search.Search;
+import io.fluidity.services.query.FileMeta;
 import io.fluidity.util.DateUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.response.ExtractableResponse;
@@ -36,6 +38,26 @@ class DataflowResourceTest {
                 .statusCode(200)
                 .extract();
         System.out.println("Got:" + response);
+
+    }
+
+    @Test
+    void rewriteRestClientWorks() {
+        FileMeta[] fileMetas = new FileMeta[]{new FileMeta("tenant", "file", "tags", "someFile", "someContent".getBytes(), 100l, 200l, "")};
+        fileMetas[0].setStorageUrl("s3://bucket/somePath/to/file.log");
+        Search search = new Search();
+        search.origin = "123";
+        search.uid = "my-uid";
+        search.expression = "*|*|*|field.getJsonPair(corr)";
+        search.from = System.currentTimeMillis() - DateUtil.HOUR;
+        search.to = System.currentTimeMillis();
+
+        String url = "http://localhost:8081";
+        try {
+            DataflowResource.rewriteCorrelationDataS("someTenant", "session", fileMetas, search, url, "model");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
 
     }
 

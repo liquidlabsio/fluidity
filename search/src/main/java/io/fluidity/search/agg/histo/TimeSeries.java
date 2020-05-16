@@ -20,7 +20,6 @@ import java.util.List;
 import static io.fluidity.util.DateUtil.DAY;
 import static io.fluidity.util.DateUtil.HOUR;
 import static io.fluidity.util.DateUtil.MINUTE;
-import static io.fluidity.util.DateUtil.TEN_MINS;
 import static io.fluidity.util.DateUtil.WEEK;
 
 /**
@@ -71,12 +70,12 @@ public class TimeSeries<T> implements Series<T> {
     private void buildHistogram(long from, long to) {
         long duration = to - from;
         delta = MINUTE;
-        if (duration > HOUR) delta = TEN_MINS;
-        if (duration > DAY) delta = HOUR / 2;
-        if (duration > DAY * 2) delta = HOUR;
+        if (duration >= 6 * HOUR) delta = MINUTE * 2;
+        if (duration > 12 * HOUR) delta = MINUTE * 2;
+        if (duration >= DAY * 2) delta = MINUTE * 5;
         if (duration > WEEK) delta = HOUR * 2;
-        if (duration > WEEK * 4) delta = DAY;
-        if (duration > WEEK * 8) delta = DAY * 2;
+        if (duration > WEEK * 2) delta = DAY;
+        if (duration > WEEK * 8) delta = DAY / 2;
         if (duration > WEEK * 12) delta = WEEK;
         for (long time = from; time <= to; time += delta) {
             data.add(Pair.create(time, null));

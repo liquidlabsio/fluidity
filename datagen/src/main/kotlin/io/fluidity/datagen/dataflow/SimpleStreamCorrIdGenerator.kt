@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 import io.fluidity.datagen.DateUtil
 import io.fluidity.datagen.Templates.*
 import java.io.BufferedWriter
@@ -20,7 +31,7 @@ fun main() {
 
 //    val outputRoot = "datagen/target/lambda-datagen/"
     val outputRoot = "/Volumes/SSD2/logs/fluidity/"
-    val outputPath = "/single-path-correlation/logs/"
+    val outputPath = "/correlation-model-1/logs/"
 
     println("Running from:" + File(".").absolutePath)
     val templateDir = File("test-data/dataflow-models/single-event-stream/")
@@ -35,7 +46,7 @@ fun main() {
     var count = 0
     val generator = CorrelationTraceGenerator()
 
-    var timestamp = System.currentTimeMillis() - DateUtil.DAY
+    var timestamp = System.currentTimeMillis() - (DateUtil.HOUR * 6)
     while (count++ < 1000) {
         val constMap = mutableMapOf("CORR_ID" to randomUUID().toString(), "FROM_USER" to generator.getUser(generator.fromUserList), "TO_USER" to generator.getUser(generator.toUserList))
 
@@ -45,7 +56,8 @@ fun main() {
         // the set of templates represents a dataflow bound together by the correlationId
         templates.forEach { template ->
             run {
-                File(outDir + "corr-" + count + "-" + outfileNumber++ + ".log").bufferedWriter(Charset.defaultCharset()).use { writer ->
+                val fl = File(outDir + "corr-" + count + "-" + outfileNumber++ + ".log")
+                fl.bufferedWriter(Charset.defaultCharset()).use { writer ->
                     generator.applyTemplates(writer, template, currentTimeStamp, constMap)
                     // add latency between each step
                     currentTimeStamp += 100
@@ -55,9 +67,10 @@ fun main() {
                         currentTimeStamp += 5000
                     }
                 }
+                fl.setLastModified(currentTimeStamp)
             }
         }
-        timestamp += 100
+        timestamp += 20000
 
         if (count % 1000 == 0) {
             println("Count:" + count + " Time:" + Date(timestamp))

@@ -18,10 +18,11 @@ $(document).ready(function () {
 });
 
 Fluidity.Navigation = function () {
-  console.log("Navigation created")
-  setupNavigationActions();
-  setupNavigationHideShow();
+    console.log("Navigation created")
+    setupNavigationActions();
+    setupNavigationHideShow();
 
+    $("#compressNav").click()
 
     $("#tenantInfo").val(DEFAULT_TENANT)
     $("#restAPIInfo").val(SERVICE_URL)
@@ -39,9 +40,9 @@ Fluidity.Navigation = function () {
   function setupNavigationHideShow() {
         $(".compressed").hide();
         $("#compressNav").click(function(event){
+
             $(".expanded").hide();
             $(".compressed").show();
-
             $("#sideNav").addClass("navCompressed");
 
             // configure lhs padding of main panel

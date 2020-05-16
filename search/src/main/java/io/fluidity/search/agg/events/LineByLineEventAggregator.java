@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.search.agg.events;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,7 +20,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,8 +64,9 @@ public class LineByLineEventAggregator implements EventsAggregator {
         streams.entrySet().stream()
                 .forEach(entry -> {
                     try {
-                        if (entry != null) {
-                            nextLines.put(entry.getKey(), split(entry.getKey(), entry.getValue().readLine()));
+                        String nextLine = entry.getValue().readLine();
+                        if (nextLine != null) {
+                            nextLines.put(entry.getKey(), split(entry.getKey(), nextLine));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

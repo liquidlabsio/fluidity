@@ -2,13 +2,15 @@ SERVICE_URL = 'http://localhost:8080'
 DEFAULT_TENANT='tenant-data-1'
 
 function checkUserLogin(){
+    Fluidity.username = "unknown"
     if (window.location.pathname.endsWith("index.html")) {
         let auth = window.localStorage.getItem("fluidity-auth")
         if (auth == null || auth.length == 0) {
-//            alert("User is not logged in")
-//            window.location.href = "signin.html"
+            alert("User is not logged in")
+            window.location.href = "signin.html"
         } else {
             let timestamp = parseInt(auth.split(":")[0])
+            Fluidity.username = auth.split(":")[2]
             let sessionAgeHours = (new Date().getTime() - timestamp)/(1000 * 60 * 12);
             if (sessionAgeHours > 12 /** 12 hours old **/) {
                 alert("Session has expired")
@@ -21,7 +23,7 @@ function checkUserLogin(){
 if (typeof Fluidity == 'undefined') {
     console.log("Fluidity created")
 
-    checkUserLogin()
+
 
     // initialize bootstrap tooltips
     $('[data-toggle="tooltip"]').tooltip(
@@ -118,7 +120,6 @@ if (typeof Fluidity == 'undefined') {
         formatNumber: function(num) {
             return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
         },
-        Workspace: {},
         Components: {},
         Util: {
             UUID: function UUID() {
@@ -160,6 +161,7 @@ if (typeof Fluidity == 'undefined') {
     };
 
 
+    checkUserLogin()
 
     // create the jquery topics for this workspace..
     var topics = {};

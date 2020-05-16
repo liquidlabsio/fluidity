@@ -57,7 +57,7 @@ quarkus:
 
       file:
         enable: true
-        path: ./log/fluidity.log
+        path: ./logs/fluidity.log
         level: INFO
         format: "%d{HH:mm:ss.SSS} %-5p [%c{2.}]] (%t) %s%e%n"
 

@@ -19,32 +19,29 @@ import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.fluidity.dataflow.Model.CORR_PREFIX;
 
 /**
  * API to build, maintain, and access dataflow models
  */
-@Path("/dataflow")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+
 public class DataflowResource implements DataflowService {
 
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
@@ -80,25 +77,38 @@ public class DataflowResource implements DataflowService {
      */
     public static String rewriteCorrelationDataS(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
         String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
+        String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
         ResteasyClient client = new ResteasyClientBuilderImpl().build();
         ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
         DataflowService proxy = target.proxy(DataflowService.class);
-        return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaString, modelPath, search);
+        return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPath, search);
     }
 
-    @POST
-    @Path("/submit/{tenant}/{serviceAddress}/{modelName}")
+    /**
+     * Returns status JSON for client to show process
+     *
+     * @param session
+     * @return
+     */
     @Override
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String submit(@PathParam("tenant") String tenant, @MultipartForm Search search, @PathParam("serviceAddress") String serviceAddress, @PathParam("modelName") String modelName) {
+    public String status(String tenant, String session, String modelName) {
+        log.info("/status:{}", session);
+        return dataflowBuilder.status(session, modelName);
+    }
+
+    @Override
+    public String submit(String tenant, Search search, String modelName, String serviceAddress) {
 
         String sessionId = search.uid;
+        AtomicInteger rewritten = new AtomicInteger();
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
                 try {
-                    return rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress + "/dataflow/rewrite", modelPath);
+                    String result = rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress + "/dataflow/rewrite", modelPath);
+                    rewritten.incrementAndGet();
+                    return result;
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                     return e.toString();
@@ -109,31 +119,15 @@ public class DataflowResource implements DataflowService {
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
 
         try {
-            return new ObjectMapper().writeValueAsString(userSession);
+            return new ObjectMapper().writeValueAsString(userSession + " - rewritten:" + rewritten.toString());
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return "{ \"msg\": \"failed\"}";
     }
 
-    /**
-     * Returns status JSON for client to show process
-     *
-     * @param session
-     * @return
-     */
-    @GET
-    @Path("/status")
     @Override
-    public String status(String tenant, String session, String modelName) {
-        log.info("/status:{}", session);
-        return dataflowBuilder.status(session, modelName);
-    }
-
-    @GET
-    @Path("/model")
-    @Override
-    public String model(String tenant, String session, String modelName) {
+    public List<String> model(String tenant, String session, String modelName) {
 
         log.info("/model:{}", session);
 
@@ -146,10 +140,8 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    @POST
-    @Path("/rewrite/{tenant}/{session}/{files}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String rewriteCorrelationData(@PathParam("tenant") String tenant, @PathParam("session") String session, @PathParam("files") String fileMetas, @PathParam("modelPath") String modelPath, @MultipartForm Search search) {
+    public String rewriteCorrelationData(String tenant, String session, String fileMetas,
+                                         String modelPath, Search search) {
         search.decodeJsonFields();
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -158,9 +150,11 @@ public class DataflowResource implements DataflowService {
 
             return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath + CORR_PREFIX);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("/search/file:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
         }
     }
+
 
 }

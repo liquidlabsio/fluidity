@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.DataflowExtractor;
@@ -78,12 +89,12 @@ public class DataflowBuilder {
         return outFactory;
     }
 
-    private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
-        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
-        if (searchUrl.endsWith(".gz")) {
+    private InputStream getInputStream(Storage storage, String region, String tenant, String fileUrl) throws IOException {
+        InputStream inputStream = storage.getInputStream(region, tenant, fileUrl);
+        if (fileUrl.endsWith(".gz")) {
             inputStream = new GZIPInputStream(inputStream);
         }
-        if (searchUrl.endsWith(".lz4")) {
+        if (fileUrl.endsWith(".lz4")) {
             inputStream = new LZ4FrameInputStream(inputStream);
         }
         return inputStream;
@@ -93,24 +104,25 @@ public class DataflowBuilder {
         return "dunno!";
     }
 
-    public String getModel(String region, String tenant, String session, String modelName, Storage storage) {
+    public List<String> getModel(String region, String tenant, String session, String modelName, Storage storage) {
         List<String> histoUrls = new ArrayList<>();
         storage.listBucketAndProcess(region, tenant, modelName + "/" + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
             histoUrls.add(itemUrl);
             return null;
         });
 
-        StringBuilder results = new StringBuilder();
-        histoUrls.stream().forEach(histoUrl -> {
+
+        List<String> results = histoUrls.stream().map(histoUrl -> {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (InputStream inputStream = storage.getInputStream(region, tenant, histoUrl)) {
                 IOUtils.copy(inputStream, baos);
-                results.append(baos.toString());
+                return (baos.toString());
             } catch (IOException e) {
                 e.printStackTrace();
                 log.warn("Failed to get URL:" + histoUrl, e);
+                return "Failed:" + histoUrl;
             }
-        });
-        return results.toString();
+        }).collect(Collectors.toList());
+        return results;
     }
 }

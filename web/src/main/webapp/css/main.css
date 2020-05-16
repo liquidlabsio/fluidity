@@ -139,7 +139,10 @@ APP UI
 
 .apex-toolbar-icon {
   width: 20;
-    padding-left: 5px;
+  padding-left: 5px;
+}
+.ace_editor {
+  margin-right:5px;
 }
 
 
@@ -199,4 +202,12 @@ File upload UI
   -webkit-transition: all 0.5s ease;
   -moz-transition: all 0.5s ease;
   transition: all 0.5s ease;
+}
+
+# tag input component used on the Refinery page
+.form-group-no-padding {
+    padding-left: 5px !important;
+    padding-inline-start: 5px !important;
+    padding-right: 5px!important;
+    padding-inline-end: 5px !important;
 }

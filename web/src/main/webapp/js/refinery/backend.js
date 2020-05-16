@@ -4,11 +4,11 @@ $(document).ready(function () {
 });
 
 class RefineryInterface {
-    submit(search) {
+    submit(search, serviceAddress, modelName) {
     }
-    status(sessionid) {
+    status(session, modelName) {
     }
-    model(sessionid) {
+    model(session, modelName) {
     }
 }
 
@@ -25,146 +25,79 @@ class RefineryRest extends RefineryInterface {
     }
 
     submit(search, modelName) {
-        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
-        jQuery.ajax({
-            type: 'POST',
-            url: SERVICE_URL + '/dataflow/submit/'
-             + encodeURIComponent(DEFAULT_TENANT) + '/' +
-             + encodeURIComponent(SERVICE_URL) + '/' +
-             +  encodeURIComponent(modelname),
-            contentType: 'application/json',
-            data: JSON.stringify(search),
-            dataType: 'json',
-            success: function(response) {
-                   $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-            // call on refinery
-                console.log("Got Stuff");
-           }
-            ,
-            fail: function (xhr, ajaxOptions, thrownError) {
-                                   alert(xhr.status);
-                                   alert(thrownError);
-                                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-
-            }
-        });
-    }
-
-    sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async searchFile(search, fileMetasArray) {
-        searchingFilesCount++
-
-        // throttle when too many outstanding requests
-        if (searchingFilesCount > 100) {
-            var waitPeriod = 800 + (searchingFilesCount * 2);
-            console.log("Throttle Waiting:" + searchingFilesCount + ": wait:" + waitPeriod + " file:" + fileMetasArray[0].filename)
-            await this.sleep(waitPeriod);
-        }
-
-        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         let self = this;
-        let formData = this.searchToForm(search);
-
-        jQuery.ajax({
-            type: 'POST',
-            url: SERVICE_URL + '/search/files/'
-                + encodeURIComponent(DEFAULT_TENANT)
-                + "/"+ encodeURIComponent( JSON.stringify(fileMetasArray)),
-            contentType: 'multipart/form-data',
-            data: self.searchToForm(search),
-            processData: false,
-            contentType: false,
-            cache : false,
-            success: function(response) {
-                searchingFilesCount--;
-               $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-               $.Topic(Fluidity.Search.Topics.setSearchFileResults).publish(response);
-            },
-            fail: function (xhr, ajaxOptions, thrownError) {
-                searchingFilesCount--;
-                console.log(xhr.status);
-                console.log(thrownError);
-                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-            }
-        });
-    }
-    getFinalEvents(search, fromTime) {
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
-        let self = this;
-        let formData = this.searchToForm(search);
 
-        jQuery.ajax({
-            type: 'POST',
-            url: SERVICE_URL + '/search/finalizeEvents/'
-                    + encodeURIComponent(DEFAULT_TENANT)
-                    + "/"+ fromTime,
-            contentType: 'multipart/form-data',
-            data: self.searchToForm(search),
-            processData: false,
-            contentType: false,
-            cache : false,
-            success: function(response) {
-                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Fluidity.Search.Topics.setFinalEvents).publish(response);
-            },
-            fail: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
-                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-            }
-        });
+         jQuery.ajax({
+                    type: 'POST',
+                      url: SERVICE_URL + '/dataflow/submit/'
+                                 + encodeURIComponent(DEFAULT_TENANT) + '/'
+                                 + encodeURIComponent(modelName) + '/'
+                                  + encodeURIComponent(SERVICE_URL),
+                    data: self.searchToForm(search),
+                    processData: false,
+                    contentType: false,
+                    cache : false,
+                    success: function(response) {
+                       $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                       $.Topic(Fluidity.Refinery.Topics.submitReply).publish(response);
+                    },
+                    fail: function (xhr, ajaxOptions, thrownError) {
+                        console.log(xhr.status);
+                        console.log(thrownError);
+                        $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                    }
+                });
+
+
     }
-    getFinalHisto(search) {
+
+    status(session, modelName) {
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
-        let self = this;
-        let formData = this.searchToForm(search);
 
-        jQuery.ajax({
-            type: 'POST',
-            url: SERVICE_URL + '/search/finalizeHisto/'
-                    + encodeURIComponent(DEFAULT_TENANT),
-            contentType: 'multipart/form-data',
-            data: self.searchToForm(search),
-            processData: false,
-            contentType: false,
-            cache : false,
-            success: function(response) {
+         $.get(SERVICE_URL + '/dataflow/status',
+            {tenant:DEFAULT_TENANT, session: session, model: modelName},
+            function(response) {
                 $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-                $.Topic(Fluidity.Search.Topics.setFinalHisto).publish(response);
-            },
-            fail: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr.status);
-                console.log(thrownError);
+                $.Topic(Fluidity.Refinery.Topics.statusReply).publish(response);
+            })
+            .fail(function (xhr, ajaxOptions, thrownError) {
                 $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-            }
-        });
+                alert("Error status: " + xhr.status + " Msg: " + thrownError);
+            });
     }
+    model(session, modelName) {
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
+        $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
 
-
+         $.get(SERVICE_URL + '/dataflow/model',
+            {tenant:DEFAULT_TENANT, session: session, model: modelName},
+            function(response) {
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                $.Topic(Fluidity.Refinery.Topics.modelReply).publish(response);
+            })
+            .fail(function (xhr, ajaxOptions, thrownError) {
+                $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
+                alert("Error status: " + xhr.status + " Msg: " + thrownError);
+            });
+    }
 }
 
-
-
 function refineryBackendBinding() {
-//     let backend = new SearchFixture();
-    let backend = new SearchRest();
+
+
+    let backend = new RefineryRest();
 
     console.log("Refinery backend using:" + backend.constructor.name)
 
-    $.Topic(Fluidity.Search.Topics.submitSearch).subscribe(function(search) {
-        backend.submitSearch(search);
+    $.Topic(Fluidity.Refinery.Topics.submit).subscribe(function(search, modelName) {
+        backend.submit(search, modelName);
     })
-    $.Topic(Fluidity.Search.Topics.searchFile).subscribe(function(search, files) {
-        backend.searchFile(search, files);
+    $.Topic(Fluidity.Refinery.Topics.status).subscribe(function(session, modelName) {
+        backend.status(session, modelName);
     })
-    $.Topic(Fluidity.Search.Topics.getFinalEvents).subscribe(function(search, fromTime) {
-        backend.getFinalEvents(search, fromTime);
-    })
-    $.Topic(Fluidity.Search.Topics.getFinalHisto).subscribe(function(search) {
-        backend.getFinalHisto(search);
+    $.Topic(Fluidity.Refinery.Topics.model).subscribe(function(session, modelName) {
+        backend.model(session, modelName);
     })
 
 

@@ -52,7 +52,8 @@ Fluidity.Search.searchInputBucket = new Vue({
         '*',
         'bucket.equals(BUCKET_NAME)',
         'bucket.contains(TEXT_PART)',
-        'tags.contains(TEXT)'
+        'tags.contains(TEXT)',
+        'tags.equals(TEXT)'
       ]
     }
   }
@@ -158,7 +159,7 @@ Fluidity.Search.searchSubmit = new Vue({
     methods: {
       searchSubmit: function () {
         let search = {
-            origin: 'username',
+            origin: Fluidity.username,
             uid: new Date().getTime(),
             expression: Fluidity.Search.searchInputBucket.query + '|' + Fluidity.Search.searchInputFilename.query + '|' + Fluidity.Search.searchInputRecord.query
                         + '|' +  Fluidity.Search.searchInputField.query + '|' + Fluidity.Search.searchInputAnalytic.query

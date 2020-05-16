@@ -114,15 +114,7 @@
                             Search <span class="sr-only"></span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link compressed" data-target="refineryTab" href="#">
-                            <span data-feather="command"></span>
-                        </a>
-                        <a class="nav-link expanded" data-target="refineryTab" href="#">
-                            <span data-feather="command"></span>
-                            Refinery
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link compressed" data-target="dataflowTab" href="#">
                             <span data-feather="wind"></span>
@@ -133,36 +125,6 @@
                         </a>
                     </li>
 
-
-                    <li class="nav-item">
-                        <a class="nav-link compressed" data-target="importTab" href="#">
-                            <span data-feather="upload-cloud"></span>
-                        </a>
-                        <a class="nav-link expanded" data-target="importTab" href="#">
-                            <span data-feather="upload-cloud"></span>
-                            Import
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link compressed" href="#">
-                            <span data-feather="bar-chart-2"></span>
-                        </a>
-                        <a class="nav-link expanded" href="#">
-                            <span data-feather="bar-chart-2"></span>
-                            Reports
-                        </a>
-
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link compressed" href="#">
-                            <span data-feather="home"></span>
-                        </a>
-                        <a class="nav-link expanded" href="#">
-                            <span data-feather="home"></span>
-                            Integrations
-                        </a>
-
-                    </li>
                 </ul>
 
                 <h7 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted compressed">
@@ -177,7 +139,27 @@
                         <span class="expanded" data-feather="plus-circle"></span>
                     </a>
                 </h6>
+
                 <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="refineryTab" href="#">
+                            <span data-feather="command"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="refineryTab" href="#">
+                            <span data-feather="command"></span>
+                            Refinery
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="importTab" href="#">
+                            <span data-feather="upload-cloud"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="importTab" href="#">
+                            <span data-feather="upload-cloud"></span>
+                            Import
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link compressed" data-target="configuration" href="#">
                             <span data-feather="settings"></span>
@@ -343,8 +325,9 @@
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-1">
-                        <label class="control-label">&nbsp;</label>
-                        <button class="btn btn-primary form-control" id="searchSubmit" v-on:click="searchSubmit">
+                        <br>
+                        <button class="btn btn-primary btn-sm" id="searchSubmit" style="margin-top: 8px;"
+                                v-on:click="searchSubmit">
                             <span data-feather="search"></span>
                         </button>
 
@@ -374,7 +357,7 @@
                 <div id="refinery">
 
                     <b-input-group class="mt-3" prepend="Model Name">
-                        <b-form-input></b-form-input>
+                        <b-form-input v-model="modelName"></b-form-input>
                         <b-input-group-append>
                             <b-button variant="info">Save</b-button>
                             <b-button variant="outline-success">Load</b-button>
@@ -383,8 +366,6 @@
                     <br>
 
                     <b-card text-variant="grey" title="Source data">
-                        <!--                    <b-card bg-variant="light" header="Model Data source">-->
-                        <!--                        <b-card-text>Model data source</b-card-text>-->
                         <b-form inline>
                             <b-form-group class="col-md-3" label="Bucket | Tags" style="padding-left:0px">
                                 <vue-tags-input
@@ -396,7 +377,7 @@
                                 ></vue-tags-input>
                             </b-form-group>
 
-                            <b-form-group class="col-md-2" label="Filename">
+                            <b-form-group class="col-md-3" label="Filename" style="padding-left:0px">
                                 <vue-tags-input
                                         :allow-edit-tags="true"
                                         :autocomplete-items="inputFilenameFilteredItems"
@@ -405,7 +386,7 @@
                                         v-model="input.filename.tag"
                                 ></vue-tags-input>
                             </b-form-group>
-                            <b-form-group class="col-md-3" label="Record Match">
+                            <b-form-group class="col-md-2" label="Record Match" style="padding-left:0px">
                                 <vue-tags-input
                                         :allow-edit-tags="true"
                                         :autocomplete-items="inputFilterFilteredItems"
@@ -414,7 +395,7 @@
                                         v-model="input.filter.tag"
                                 ></vue-tags-input>
                             </b-form-group>
-                            <b-form-group class="col-md-3" label="Field for Correlation">
+                            <b-form-group class="col-md-3" label="Field for Correlation" style="padding-left:0px">
                                 <vue-tags-input
                                         :allow-edit-tags="true"
                                         :autocomplete-items="inputFieldFilteredItems"
@@ -440,7 +421,7 @@
 
                     <br>
 
-                    <b-card bg-variant="light" title="Build interval">
+                    <b-card bg-variant="light" title="Build schedule">
                         <b-col sm="3">
                             <label>Hours</label>
                         </b-col>
@@ -452,17 +433,17 @@
                     </b-card>
                     <br>
                     <b-card bg-variant="secondary" text-variant="white" title="Status">
-                        <b-card-text>
-                            Status @Time-XXXX
-                        </b-card-text>
-                        Finished at 12;40pm
-
+                        {{statusMessage}}
+                        <li :key="status" v-for="status in statuses">
+                            {{ status }}
+                        </li>
                     </b-card>
                     <br>
                     <b-card bg-variant="info" text-variant="white" title="Model data">
+                        {{modelDataUpdateStatus}}
                         <b-table
-                                :fields="statusTable.fields"
-                                :items="statusTable.items"
+                                :fields="modelTable.fields"
+                                :items="modelTable.items"
                                 responsive="sm"
                         >
                         </b-table>
