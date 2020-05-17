@@ -28,10 +28,6 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -59,9 +55,6 @@ public class DataflowResource implements DataflowService {
     Storage storage;
 
 
-    @GET
-    @Path("/id")
-    @Produces(MediaType.TEXT_PLAIN)
     public String id() {
         return DataflowResource.class.getCanonicalName();
     }
