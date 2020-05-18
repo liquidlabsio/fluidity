@@ -166,7 +166,7 @@ public abstract class WorkflowRunner {
 
         log.info(LogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
-        storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename) -> {
+        storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified) -> {
             if (!correlationFilename.contains(CORR_PREFIX)) return null;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);

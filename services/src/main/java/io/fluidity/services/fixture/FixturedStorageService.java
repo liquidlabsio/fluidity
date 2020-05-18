@@ -100,7 +100,7 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey(), System.currentTimeMillis()));
     }
 
     @Override

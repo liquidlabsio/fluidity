@@ -58,6 +58,6 @@ public interface Storage extends Lifecycle {
     void listBucketAndProcess(String region, String tenant, String prefix, Processor processor);
 
     interface Processor {
-        String process(String region, String itemUrl, String itemName);
+        String process(String region, String itemUrl, String itemName, long modified);
     }
 }

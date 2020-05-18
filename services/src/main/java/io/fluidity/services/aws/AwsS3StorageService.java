@@ -83,12 +83,12 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
 
-        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
 
         while (objectListing.isTruncated()) {
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
-            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
         }
     }
 

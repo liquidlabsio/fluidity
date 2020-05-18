@@ -52,6 +52,10 @@ class Refinery {
         $.Topic(Fluidity.Refinery.Topics.modelReply).subscribe(function(reply) {
             console.log("Model Reply results:" + reply)
              Fluidity.Refinery.vue.modelDataUpdateStatus = 'Updated @' + new Date().toLocaleTimeString();
+             Fluidity.Refinery.vue.modelTable.items.length = 0;
+             reply.forEach(item => {
+                Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: '128k'} )
+             })
         })
 
     }

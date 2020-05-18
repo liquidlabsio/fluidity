@@ -169,7 +169,7 @@ public class FileSystemBasedStorageService implements Storage {
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
         Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, "*");
-        files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath())));
+        files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath()), item.lastModified()));
     }
 
     @Override

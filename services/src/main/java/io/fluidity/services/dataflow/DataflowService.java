@@ -26,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Map;
 
 @Path("/dataflow")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -50,8 +51,8 @@ public interface DataflowService {
 
     @GET
     @Path("/model")
-    List<String> model(@QueryParam("tenant") String tenant, @QueryParam("session") String session,
-                       @QueryParam("model") String modelName);
+    List<Map<String, String>> model(@QueryParam("tenant") String tenant, @QueryParam("session") String session,
+                                    @QueryParam("model") String modelName);
 
     @POST
     @Path("/rewrite/{tenant}/{session}/{files}/{modelPath}")

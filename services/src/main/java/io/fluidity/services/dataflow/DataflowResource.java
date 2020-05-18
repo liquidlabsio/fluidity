@@ -33,6 +33,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -99,7 +100,7 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<String> model(String tenant, String session, String modelName) {
+    public List<Map<String, String>> model(String tenant, String session, String modelName) {
 
         log.info("/model:{}", session);
 

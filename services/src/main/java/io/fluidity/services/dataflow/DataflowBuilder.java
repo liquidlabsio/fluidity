@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -106,11 +107,11 @@ public class DataflowBuilder {
         return "dunno!";
     }
 
-    public List<String> getModel(String region, String tenant, String session, String modelName, Storage storage) {
-        List<String> histoUrls = new ArrayList<>();
-        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName) -> {
+    public List<Map<String, String>> getModel(String region, String tenant, String session, String modelName, Storage storage) {
+        List<Map<String, String>> histoUrls = new ArrayList<>();
+        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName, modified) -> {
             if (itemUrl.contains(CORR_HIST_PREFIX)) {
-                histoUrls.add(itemUrl);
+                histoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified)));
             }
             return null;
         });
