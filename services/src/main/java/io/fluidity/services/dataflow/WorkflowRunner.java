@@ -140,8 +140,8 @@ public abstract class WorkflowRunner {
         log.info(LogHelper.format(session, "builder", "buildFinalModel", "Start"));
         AtomicInteger modelsWritten = new AtomicInteger();
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
-            String dataflowHistogram = new ObjectMapper().writeValueAsString(dataflowHistoCollector.results());
-            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram.getBytes()), outputStream);
+            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.results());
+            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
             modelsWritten.incrementAndGet();
         } catch (IOException e) {
             e.printStackTrace();

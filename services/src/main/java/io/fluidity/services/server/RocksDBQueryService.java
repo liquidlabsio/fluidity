@@ -57,7 +57,7 @@ public class RocksDBQueryService implements QueryService {
             if (value.isPresent()) {
                 this.baseDir = value.get();
             } else {
-                this.baseDir = "./target/storage/rocks-querystore";
+                this.baseDir = "./storage/rocks-querystore";
             }
             RocksDB.loadLibrary();
             final Options options = new Options();

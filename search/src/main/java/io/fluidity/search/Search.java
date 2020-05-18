@@ -144,7 +144,7 @@ public class Search {
         try {
             searchUrl = searchUrl.replace(" ", "%20");
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(searchUrl);
-            return "s3://" + bucketName + "/" + stagingPrefix() + "/" + hostnameAndPath[1];
+            return "storage://" + bucketName + "/" + stagingPrefix() + "/" + hostnameAndPath[1];
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

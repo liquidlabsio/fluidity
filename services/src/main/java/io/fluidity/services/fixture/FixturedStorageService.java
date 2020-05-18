@@ -44,7 +44,7 @@ public class FixturedStorageService implements Storage {
     @Override
     public FileMeta upload(String region, FileMeta upload) {
         log.info("uploading:" + upload);
-        upload.setStorageUrl("s3://fixtured-storage-bucket/" + upload.getResource() + "/" + upload.getFilename());
+        upload.setStorageUrl("storage://fixtured-storage-bucket/" + upload.getResource() + "/" + upload.getFilename());
 
         byte[] copy = new byte[upload.fileContent.length];
         System.arraycopy(upload.fileContent, 0, copy, 0, copy.length);
@@ -117,7 +117,7 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public String getBucketName(String tenant) {
-        return "s3://" + tenant;
+        return "storage://" + tenant;
     }
 
     public Map<String, byte[]> getStorage() {

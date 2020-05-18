@@ -81,7 +81,7 @@ class SearchResourceTest {
         search.expression = "this is a test";
 
         FileMeta fileMeta = new FileMeta();
-        fileMeta.storageUrl = "s3://fixtured-storage-bucket/resource/test-data/file-to-upload.txt";
+        fileMeta.storageUrl = "storage://fixtured-storage-bucket/resource/test-data/file-to-upload.txt";
         fileMeta.toTime = System.currentTimeMillis();
         fileMeta.filename = "yay";
 

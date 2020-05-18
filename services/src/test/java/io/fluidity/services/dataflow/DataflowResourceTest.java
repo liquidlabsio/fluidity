@@ -47,7 +47,7 @@ class DataflowResourceTest {
     @Test
     void rewriteRestClientWorks() {
         FileMeta[] fileMetas = new FileMeta[]{new FileMeta("tenant", "file", "tags", "someFile", "someContent".getBytes(), 100l, 200l, "")};
-        fileMetas[0].setStorageUrl("s3://bucket/somePath/to/file.log");
+        fileMetas[0].setStorageUrl("storage://bucket/somePath/to/file.log");
         Search search = new Search();
         search.origin = "123";
         search.uid = "my-uid";

@@ -48,7 +48,7 @@ public class FileSystemBasedStorageService implements Storage {
         if (value.isPresent()) {
             this.baseDir = value.get();
         } else {
-            this.baseDir = "./target/storage/fs";
+            this.baseDir = "./storage/fs";
         }
         new File(baseDir).mkdirs();
         log.info("Using storage: {}", this.baseDir);
@@ -75,7 +75,7 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public byte[] get(String region, String storageUrl, int offset) {
-        if (storageUrl.startsWith("s3://")) storageUrl = storageUrl.substring("s3://".length());
+        if (storageUrl.startsWith("storage://")) storageUrl = storageUrl.substring("storage://".length());
         byte[] bytes = new byte[0];
         try {
             bytes = FileUtil.readFileToByteArray(new File(storageUrl), -1);
@@ -146,7 +146,7 @@ public class FileSystemBasedStorageService implements Storage {
     public Map<String, InputStream> getInputStreams(String region, String tenant, String prefix, String filenameExtension, long fromTime) {
         Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, filenameExtension);
         // Note: s3 is used as a storage prefix
-        return files.stream().collect(Collectors.toMap(file -> "s3://" + file.getPath(), file -> {
+        return files.stream().collect(Collectors.toMap(file -> "storage://" + file.getPath(), file -> {
             try {
                 return new LazyFileInputStream(file);
             } catch (FileNotFoundException e) {
@@ -174,7 +174,7 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public OutputStream getOutputStream(String region, String tenant, String fullFilePath, int daysRetention) {
-        if (fullFilePath.startsWith("s3://")) fullFilePath = fullFilePath.substring("s3://".length());
+        if (fullFilePath.startsWith("storage://")) fullFilePath = fullFilePath.substring("storage://".length());
         if (fullFilePath.contains(baseDir)) {
             fullFilePath = fullFilePath.substring(fullFilePath.indexOf(baseDir) + baseDir.length());
         }

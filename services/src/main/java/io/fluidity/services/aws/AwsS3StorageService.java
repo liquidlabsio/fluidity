@@ -147,7 +147,7 @@ public class AwsS3StorageService implements Storage {
                             inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
                             objSummary.getLastModified().getTime(), timeFormat);
                     fileMeta.setSize(objSummary.getSize());
-                    fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
+                    fileMeta.setStorageUrl(String.format("storage://%s/%s", bucketName, objSummary.getKey()));
                     fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));
                     return fileMeta;
                 })
@@ -283,7 +283,7 @@ public class AwsS3StorageService implements Storage {
         } finally {
             file.delete();
         }
-        return String.format("s3://%s/%s", bucketName, filePath);
+        return String.format("storage://%s/%s", bucketName, filePath);
     }
 
     public String getBucketName(String tenant) {

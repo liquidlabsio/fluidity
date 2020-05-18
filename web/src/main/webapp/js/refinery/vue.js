@@ -113,6 +113,13 @@ Fluidity.Refinery.vue = new Vue({
        refinerySubmit() {
         console.log('Submit search')
         Fluidity.Refinery.refinery.submit()
+      },
+      loadHistogramData(therow) {
+        console.log('Load histogram data search:' + therow);
+        $.Topic(Fluidity.Explorer.Topics.setExplorerToOpen).publish([ "storage://" + therow[0].name, 0, 0 ])
+      },
+      refreshModel() {
+        Fluidity.Refinery.refinery.refreshModel()
       }
     }
 })
