@@ -42,7 +42,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DataflowResource implements DataflowService {
 
+
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
+
+
+    @ConfigProperty(name = "dataflow.prefix", defaultValue = "_MODEL_")
+    String modelPrefix;
 
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
@@ -69,7 +74,7 @@ public class DataflowResource implements DataflowService {
     @Override
     public String status(String tenant, String session, String modelName) {
         log.info("/status:{}", session);
-        return dataflowBuilder.status(session, modelName);
+        return dataflowBuilder.status(session, modelPrefix + modelName);
     }
 
     /**
@@ -101,6 +106,7 @@ public class DataflowResource implements DataflowService {
 
     @Override
     public List<Map<String, String>> model(String tenant, String session, String modelName) {
+        modelName = modelPrefix + modelName;
 
         log.info("/model:{}", session);
 
@@ -116,6 +122,7 @@ public class DataflowResource implements DataflowService {
     public String submit(String tenant, Search search, String modelName, String serviceAddress) {
 
         String sessionId = search.uid;
+        modelName = modelPrefix + modelName;
         AtomicInteger rewritten = new AtomicInteger();
         log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
@@ -163,5 +170,4 @@ public class DataflowResource implements DataflowService {
             log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
     }
-
 }
