@@ -109,7 +109,7 @@ class WorkflowRunnerIntegrationTest {
         assertTrue(json.contains("totalDuration"), "Missing duration series");
         assertTrue(json.contains("op2OpLatency"), "Missing op2OpLatency series");
         assertTrue(json.contains("maxOpDuration"), "Missing maxOpDuration series");
-        assertTrue(json.contains("\\\"right\\\":[180000,180000,180000,1]"), "Missing maxOpDuration data");
+        assertTrue(json.contains("\"right\":[180000,180000,180000,1]"), "Missing maxOpDuration data");
     }
 
     private void populateTestData(String region, String session, QueryService query, Storage storage, String tenant) {

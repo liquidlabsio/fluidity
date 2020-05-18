@@ -14,6 +14,8 @@
 
 package io.fluidity.dataflow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.Series;
 import io.fluidity.util.DateUtil;
@@ -28,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DataflowHistoCollectorTest {
 
     @Test
-    void add() {
+    void add() throws JsonProcessingException {
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(txn)";
         search.from = System.currentTimeMillis() - DateUtil.HOUR;
@@ -42,9 +44,12 @@ class DataflowHistoCollectorTest {
         Map<String, Series<Long[]>> results = dataflowHistoCollector.results();
         System.out.println(results);
         assertTrue(results.containsKey("totalDuration"));
-//        assertTrue(results.contains("[40,3500,3540,2]"), "Duration stats is missing");
-//
+
+
+        Series<Long[]> totalDuration = results.get("totalDuration");
+        assertTrue(new ObjectMapper().writeValueAsString(totalDuration).contains("[40,3500,3540,2]"), "Duration stats is missing");
+
         assertTrue(results.containsKey("op2OpLatency"));
-//        assertTrue(results.contains("maxOpDuration"));
+        assertTrue(results.containsKey("maxOpDuration"));
     }
 }

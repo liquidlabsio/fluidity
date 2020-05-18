@@ -14,7 +14,6 @@
 
 package io.fluidity.dataflow;
 
-import io.fluidity.search.Search;
 import org.graalvm.collections.Pair;
 
 import java.util.List;
@@ -44,15 +43,5 @@ public class DataflowModeller {
 
     private List<String> getFlowFiles(List<Pair<Long, String>> correlationSet) {
         return correlationSet.stream().map(pair -> pair.getRight()).collect(Collectors.toList());
-    }
-
-    /**
-     * Aggregqate all correlation.indexes to a timeseries histogram and store in the cloud
-     *
-     * @param search
-     * @return the histogram of the stored model
-     */
-    public String buildModelFromIndexes(Search search) {
-        return null;
     }
 }
