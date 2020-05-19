@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 @RegisterForReflection
 public class Search {
 
-    public static String searchStagingName = "_STAGE_";
+    public static String searchStagingName = "_STAGE_/";
     public static String histoSuffix = ".histo";
     public static String eventsSuffix = ".events";
 

@@ -35,7 +35,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FileSystemBasedStorageService implements Storage {
-    private String baseDir = System.getProperty("fluidity.fs.dir", "./data/fs");
+    public static final String FLUIDITY_FS_DIR = "fluidity.fs.dir";
+    private String baseDir = System.getProperty(FLUIDITY_FS_DIR, "./data/fs");
 
     private final Logger log = LoggerFactory.getLogger(FileSystemBasedStorageService.class);
 

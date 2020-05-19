@@ -38,7 +38,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RocksDBQueryService implements QueryService {
-    private String baseDir = System.getProperty("fluidity.rocks.dir", "./data/rocks-querystore");
+    public static final String FLUIDITY_ROCKS_DIR = "fluidity.rocks.dir";
+    private String baseDir = System.getProperty(FLUIDITY_ROCKS_DIR, "./data/rocks-querystore");
 
     private static final String NAME = "Rocks-FileMetas";
     private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);
@@ -94,7 +95,7 @@ public class RocksDBQueryService implements QueryService {
         ObjectMapper objectMapper = getObjectMapper();
         fileMetas.forEach(item -> {
             try {
-                writeBatch.put(item.filename.getBytes(), objectMapper.writeValueAsString(item).getBytes());
+                writeBatch.put((item.tenant + "/" + item.filename).getBytes(), objectMapper.writeValueAsString(item).getBytes());
             } catch (RocksDBException e) {
                 e.printStackTrace();
             } catch (JsonProcessingException e) {
@@ -118,7 +119,7 @@ public class RocksDBQueryService implements QueryService {
         log.info("save");
         try {
             fileMeta.setFileContent(new byte[0]);
-            db.put(fileMeta.filename.getBytes(), getObjectMapper().writeValueAsString(fileMeta).getBytes());
+            db.put((fileMeta.tenant + "/" + fileMeta.filename).getBytes(), getObjectMapper().writeValueAsString(fileMeta).getBytes());
         } catch (RocksDBException | JsonProcessingException e) {
             log.error("Error saving entry in RocksDB, cause: {}, message: {}", e.getCause(), e.getMessage());
         }
@@ -127,7 +128,7 @@ public class RocksDBQueryService implements QueryService {
     @Override
     public FileMeta find(String tenant, String filename) {
         try {
-            byte[] bytes = db.get(filename.getBytes());
+            byte[] bytes = db.get((tenant + "/" + filename).getBytes());
             if (bytes == null) {
                 log.warn("Failed to load file: {}", filename);
                 return null;
@@ -153,7 +154,7 @@ public class RocksDBQueryService implements QueryService {
     @Override
     public FileMeta delete(String tenant, String filename) {
         try {
-            db.delete(filename.getBytes());
+            db.delete((tenant + "/" + filename).getBytes());
         } catch (RocksDBException e) {
             e.printStackTrace();
             log.error("Failed to delete {}", filename);

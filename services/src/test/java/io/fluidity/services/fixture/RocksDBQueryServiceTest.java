@@ -17,6 +17,7 @@ package io.fluidity.services.fixture;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.server.RocksDBQueryService;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -25,10 +26,16 @@ import java.util.List;
 class RocksDBQueryServiceTest {
     int tenantId;
 
+    @BeforeEach
+    public void before() {
+        System.setProperty(RocksDBQueryService.FLUIDITY_ROCKS_DIR, "./target/data/rocks-querystore-test" + tenantId++ + System.currentTimeMillis());
+    }
+
     @Test
     void putGetStuff() {
+
         RocksDBQueryService db = new RocksDBQueryService();
-        String tenant = tenantId++ + System.currentTimeMillis() + "";
+        String tenant = tenantId + System.currentTimeMillis() + "";
         FileMeta fileMeta = new FileMeta(tenant, "server", "someTags", "thisMyFile.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         db.put(fileMeta);
         FileMeta fileMeta1 = db.find(fileMeta.tenant, fileMeta.filename);
@@ -39,11 +46,12 @@ class RocksDBQueryServiceTest {
         db.delete(fileMeta.tenant, fileMeta.filename);
         List<FileMeta> list2 = db.list(tenant);
         Assert.assertTrue(list2.isEmpty());
+        db.stop();
     }
 
     @Test
     void batchOperations() {
-        String tenant = tenantId++ + System.currentTimeMillis() + "";
+        String tenant = tenantId + System.currentTimeMillis() + "";
         RocksDBQueryService db = new RocksDBQueryService();
         FileMeta fileMeta1 = new FileMeta(tenant, "server", "someTags", "thisMyFile1.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         FileMeta fileMeta2 = new FileMeta(tenant, "server", "someTags", "thisMyFile2.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
@@ -54,5 +62,6 @@ class RocksDBQueryServiceTest {
         List<FileMeta> list = db.list(tenant);
         Assert.assertEquals(3, list.size());
         Assert.assertEquals(fileMeta1.filename, list.get(0).filename);
+        db.stop();
     }
 }

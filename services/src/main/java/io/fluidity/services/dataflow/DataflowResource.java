@@ -46,7 +46,7 @@ public class DataflowResource implements DataflowService {
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
 
 
-    @ConfigProperty(name = "dataflow.prefix", defaultValue = "_MODEL_")
+    @ConfigProperty(name = "dataflow.prefix", defaultValue = "_MODEL_/")
     String modelPrefix;
 
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
