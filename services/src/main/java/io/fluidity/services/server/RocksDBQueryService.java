@@ -18,8 +18,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.rocksdb.*;
+import org.rocksdb.FlushOptions;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDB;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
+import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +38,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RocksDBQueryService implements QueryService {
-    @ConfigProperty(name = "fluidity.rocks.dir", defaultValue = "./data/rocks-querystore")
-    String baseDir;
+    private String baseDir = System.getProperty("fluidity.rocks.dir", "./data/rocks-querystore");
 
     private static final String NAME = "Rocks-FileMetas";
     private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);

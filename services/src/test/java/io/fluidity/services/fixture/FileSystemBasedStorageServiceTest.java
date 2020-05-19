@@ -17,6 +17,7 @@ package io.fluidity.services.fixture;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.server.FileSystemBasedStorageService;
 import io.fluidity.util.FileUtil;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@QuarkusTest
 class FileSystemBasedStorageServiceTest {
 
     @Test

@@ -19,11 +19,15 @@ import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
 import io.fluidity.util.FileUtil;
 import io.fluidity.util.LazyFileInputStream;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +35,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FileSystemBasedStorageService implements Storage {
-    @ConfigProperty(name = "fluidity.fs.dir", defaultValue = "./data/fs")
-    String baseDir;
+    private String baseDir = System.getProperty("fluidity.fs.dir", "./data/fs");
 
     private final Logger log = LoggerFactory.getLogger(FileSystemBasedStorageService.class);
 
