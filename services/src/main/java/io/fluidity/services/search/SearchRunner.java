@@ -24,7 +24,7 @@ import java.util.List;
 public interface SearchRunner {
 
 
-    FileMeta[] submit(Search search, QueryService query);
+    FileMeta[] submit(String tenant, Search search, QueryService query);
 
     /**
      * @param files   - set of files to search

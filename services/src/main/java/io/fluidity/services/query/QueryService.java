@@ -19,7 +19,7 @@ public interface QueryService extends Lifecycle {
 
     List<FileMeta> query(String tenant, String filenamePart, String tagNamePart);
 
-    List<FileMeta> list();
+    List<FileMeta> list(String tenant);
 
     void deleteList(List<FileMeta> removed);
 

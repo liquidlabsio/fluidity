@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SearchFixturedIntegrationTest {
 
     public static final String TENANT = "TENANT";
+    private String tenant;
 
     @BeforeEach
     void setUp() {
@@ -67,7 +68,7 @@ class SearchFixturedIntegrationTest {
         Search search = getSearch();
 
         System.out.printf("Executing: %s%n", search);
-        List<FileMeta> fileUrls = search(search);
+        List<FileMeta> fileUrls = search(search, tenant);
 
         System.out.printf("Searching these files:%s%n", fileUrls);
 
@@ -120,8 +121,8 @@ class SearchFixturedIntegrationTest {
         return searchResource.file(TENANT, URLEncoder.encode(fileMetaJson), search).get(0);
     }
 
-    private List<FileMeta> search(Search search) {
-        FileMeta[] files = searchResource.submit(search);
+    private List<FileMeta> search(Search search, String tenant) {
+        FileMeta[] files = searchResource.submit(tenant, search);
         assertNotNull(files);
         assertEquals("No files listed", 1, files.length);
         return Arrays.asList(files);
@@ -130,7 +131,8 @@ class SearchFixturedIntegrationTest {
     public void upload() throws Exception {
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
-        FileMeta fileMeta = new FileMeta("ng-test", "IoTDevice",
+        tenant = "ng-test";
+        FileMeta fileMeta = new FileMeta(tenant, "IoTDevice",
                 "cc", filename, bytes, System.currentTimeMillis() - DateUtil.HOUR, System.currentTimeMillis(), "");
 
         storageResource.uploadFile(fileMeta);

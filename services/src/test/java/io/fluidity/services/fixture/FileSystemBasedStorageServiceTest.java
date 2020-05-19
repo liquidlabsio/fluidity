@@ -24,14 +24,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static io.fluidity.services.server.FileSystemBasedStorageService.FLUIDITY_FS_BASE_DIR;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class FileSystemBasedStorageServiceTest {
 
     @Test
     void uploadAndGet() {
-        System.setProperty(FLUIDITY_FS_BASE_DIR, "target/test-data/storage" + System.currentTimeMillis());
         FileSystemBasedStorageService storage = new FileSystemBasedStorageService();
         byte[] fileContent = "Some bytes".getBytes();
 
@@ -49,11 +47,10 @@ class FileSystemBasedStorageServiceTest {
     void bulkOperations() throws IOException {
 
         String testDir = "./target/test-data/storage/bulk" + System.currentTimeMillis();
-        System.setProperty(FLUIDITY_FS_BASE_DIR, testDir);
 
-        FileUtil.writeFile(new File(System.getProperty(FLUIDITY_FS_BASE_DIR), "file1.log").getPath(), "data1".getBytes());
-        FileUtil.writeFile(new File(System.getProperty(FLUIDITY_FS_BASE_DIR), "file2.log").getPath(), "data2".getBytes());
-        FileUtil.writeFile(new File(System.getProperty(FLUIDITY_FS_BASE_DIR), "file3.log").getPath(), "data2".getBytes());
+        FileUtil.writeFile(new File(testDir, "file1.log").getPath(), "data1".getBytes());
+        FileUtil.writeFile(new File(testDir, "file2.log").getPath(), "data2".getBytes());
+        FileUtil.writeFile(new File(testDir, "file3.log").getPath(), "data2".getBytes());
 
         FileSystemBasedStorageService storage = new FileSystemBasedStorageService();
 

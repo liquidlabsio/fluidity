@@ -19,42 +19,39 @@ import io.fluidity.services.server.RocksDBQueryService;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.fluidity.services.server.RocksDBQueryService.FLUIDITY_FS_BASE_DIR;
-
 class RocksDBQueryServiceTest {
+    int tenantId;
 
     @Test
     void putGetStuff() {
-        System.setProperty(FLUIDITY_FS_BASE_DIR, "./target/rocks-query" + System.currentTimeMillis());
         RocksDBQueryService db = new RocksDBQueryService();
-        FileMeta fileMeta = new FileMeta("tenant", "server", "someTags", "thisMyFile.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
+        String tenant = tenantId++ + System.currentTimeMillis() + "";
+        FileMeta fileMeta = new FileMeta(tenant, "server", "someTags", "thisMyFile.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
         db.put(fileMeta);
         FileMeta fileMeta1 = db.find(fileMeta.tenant, fileMeta.filename);
         Assert.assertEquals(fileMeta, fileMeta1);
-        List<FileMeta> list = db.list();
+        List<FileMeta> list = db.list(tenant);
         Assert.assertEquals(fileMeta, list.get(0));
 
         db.delete(fileMeta.tenant, fileMeta.filename);
-        List<FileMeta> list2 = db.list();
+        List<FileMeta> list2 = db.list(tenant);
         Assert.assertTrue(list2.isEmpty());
     }
 
     @Test
-    void batchOperations() throws IOException {
-
-        System.setProperty(FLUIDITY_FS_BASE_DIR, "./target/rocks-query-bulk" + System.currentTimeMillis());
-
+    void batchOperations() {
+        String tenant = tenantId++ + System.currentTimeMillis() + "";
         RocksDBQueryService db = new RocksDBQueryService();
-        FileMeta fileMeta1 = new FileMeta("tenant", "server", "someTags", "thisMyFile1.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
-        FileMeta fileMeta2 = new FileMeta("tenant", "server", "someTags", "thisMyFile2.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
-        FileMeta fileMeta3 = new FileMeta("tenant", "server", "someTags", "thisMyFile3.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
+        FileMeta fileMeta1 = new FileMeta(tenant, "server", "someTags", "thisMyFile1.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
+        FileMeta fileMeta2 = new FileMeta(tenant, "server", "someTags", "thisMyFile2.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
+        FileMeta fileMeta3 = new FileMeta(tenant, "server", "someTags", "thisMyFile3.log", "stuff".getBytes(), 0, System.currentTimeMillis(), "");
 
         db.putList(Arrays.asList(fileMeta1, fileMeta2, fileMeta3));
-        List<FileMeta> list = db.list();
+
+        List<FileMeta> list = db.list(tenant);
         Assert.assertEquals(3, list.size());
         Assert.assertEquals(fileMeta1.filename, list.get(0).filename);
     }

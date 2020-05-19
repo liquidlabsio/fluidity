@@ -19,37 +19,25 @@ import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
 import io.fluidity.util.FileUtil;
 import io.fluidity.util.LazyFileInputStream;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FileSystemBasedStorageService implements Storage {
-    public static final String FLUIDITY_FS_BASE_DIR = "fluidity.fs.base.dir";
-    private final Logger log = LoggerFactory.getLogger(FileSystemBasedStorageService.class);
+    @ConfigProperty(name = "fluidity.fs.dir", defaultValue = "./data/fs")
+    String baseDir;
 
-    private final String baseDir;
+    private final Logger log = LoggerFactory.getLogger(FileSystemBasedStorageService.class);
 
     public FileSystemBasedStorageService() {
         log.info("Created Working Dir:" + new File(".").getAbsolutePath());
-        Optional<String> value = ConfigProvider.getConfig().getOptionalValue(FLUIDITY_FS_BASE_DIR, String.class);
-        if (value.isPresent()) {
-            this.baseDir = value.get();
-        } else {
-            this.baseDir = "./storage/fs";
-        }
         new File(baseDir).mkdirs();
         log.info("Using storage: {}", this.baseDir);
     }

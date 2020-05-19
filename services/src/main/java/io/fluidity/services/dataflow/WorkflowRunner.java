@@ -15,11 +15,7 @@
 package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.DataflowHistoCollector;
-import io.fluidity.dataflow.DataflowModeller;
-import io.fluidity.dataflow.FlowInfo;
-import io.fluidity.dataflow.LogHelper;
-import io.fluidity.dataflow.Model;
+import io.fluidity.dataflow.*;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -35,16 +31,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.fluidity.dataflow.Model.CORR_FLOW_FMT;
-import static io.fluidity.dataflow.Model.CORR_HIST_FMT;
-import static io.fluidity.dataflow.Model.CORR_PREFIX;
+import static io.fluidity.dataflow.Model.*;
 
 /**
  * Propagates through the stages of building the dataflow model
@@ -103,7 +93,7 @@ public abstract class WorkflowRunner {
         log.info(LogHelper.format(session, "builder", "workflow", "Start"));
         try {
 
-            FileMeta[] filesToExtractFrom = dfBuilder.listFiles(search, query);
+            FileMeta[] filesToExtractFrom = dfBuilder.listFiles(tenant, search, query);
             log.info(LogHelper.format(session, "builder", "workflow", "FileToCorrelate:" + filesToExtractFrom.length));
 
             // Stage 1. Rewrite dataflows by correlationId-timeFrom-timeTo =< fan-out

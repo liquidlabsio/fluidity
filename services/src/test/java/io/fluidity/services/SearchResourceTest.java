@@ -59,9 +59,10 @@ class SearchResourceTest {
         Search search = new Search();
         search.expression = "this is a test";
         ExtractableResponse<Response> response = given().contentType("application/json")
+                .pathParam("tenant", "tenant")
                 .body(search)
                 .when()
-                .post("/search/submit")
+                .post("/search/submit/{tenant}")
                 .then()
                 .statusCode(200).extract();
         FileMeta[] as = response.body().as(FileMeta[].class);

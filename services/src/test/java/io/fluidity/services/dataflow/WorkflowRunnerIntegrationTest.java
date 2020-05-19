@@ -101,7 +101,7 @@ class WorkflowRunnerIntegrationTest {
         assertTrue(collected.size() > 0, "Should have found a histogram model in the store");
 
         // AWS uses bucket name unlike local alternatives
-        // String json = new String(storage.get(region, "s3://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
+        // String json = new String(storage.get(region, "storgage://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
         String json = new String(storage.get(region, collected.get(0), 0));
 
         System.out.println("Got Model:" + json);

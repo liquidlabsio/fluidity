@@ -22,14 +22,7 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
@@ -169,10 +162,10 @@ public class QueryResource implements QueryService {
     @GET
     @Path("/list")
     @Produces("application/json")
-    public List<FileMeta> list() {
+    public List<FileMeta> list(String tenant) {
 
         log.debug("list");
-        return query.list();
+        return query.list(tenant);
     }
 
     @Override

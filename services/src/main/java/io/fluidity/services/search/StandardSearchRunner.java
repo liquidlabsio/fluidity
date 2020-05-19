@@ -47,8 +47,8 @@ public class StandardSearchRunner implements SearchRunner {
     }
 
     @Override
-    public FileMeta[] submit(Search search, QueryService query) {
-        List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
+    public FileMeta[] submit(String tenant, Search search, QueryService query) {
+        List<FileMeta> files = query.list(tenant).stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 

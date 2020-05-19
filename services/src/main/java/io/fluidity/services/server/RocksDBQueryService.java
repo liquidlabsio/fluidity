@@ -18,14 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.rocksdb.FlushOptions;
-import org.rocksdb.Options;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
-import org.rocksdb.WriteBatch;
-import org.rocksdb.WriteOptions;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.rocksdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +28,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RocksDBQueryService implements QueryService {
-    public static final String FLUIDITY_FS_BASE_DIR = "fluidity.rocks.base.dir";
+    @ConfigProperty(name = "fluidity.rocks.dir", defaultValue = "./data/rocks-querystore")
+    String baseDir;
+
     private static final String NAME = "Rocks-FileMetas";
     private final Logger log = LoggerFactory.getLogger(RocksDBQueryService.class);
 
-    private final String baseDir;
+
     private final File dbDir;
     private final ScheduledExecutorService scheduledThreadPool;
     private final RocksDB db;
@@ -52,13 +47,6 @@ public class RocksDBQueryService implements QueryService {
     public RocksDBQueryService() {
         log.info("Created");
         try {
-
-            Optional<String> value = ConfigProvider.getConfig().getOptionalValue(FLUIDITY_FS_BASE_DIR, String.class);
-            if (value.isPresent()) {
-                this.baseDir = value.get();
-            } else {
-                this.baseDir = "./storage/rocks-querystore";
-            }
             RocksDB.loadLibrary();
             final Options options = new Options();
             options.setCreateIfMissing(true);
@@ -201,8 +189,8 @@ public class RocksDBQueryService implements QueryService {
     }
 
     @Override
-    public List<FileMeta> list() {
-        return query("", "", "");
+    public List<FileMeta> list(String tenant) {
+        return query(tenant, "", "");
     }
 
     @Override

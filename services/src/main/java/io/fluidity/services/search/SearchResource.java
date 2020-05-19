@@ -25,12 +25,7 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -70,11 +65,11 @@ public class SearchResource {
     }
 
     @POST
-    @Path("/submit")
-    public FileMeta[] submit(Search search) {
+    @Path("/submit/{tenant}")
+    public FileMeta[] submit(@PathParam("tenant") String tenant, Search search) {
         try {
             log.info(LogHelper.format(search.uid, "search", "submit", "Start:" + search.expression));
-            return searchRunner.submit(search, query);
+            return searchRunner.submit(tenant, search, query);
         } finally {
             log.info(LogHelper.format(search.uid, "search", "submit", "End"));
         }
