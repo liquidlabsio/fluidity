@@ -1,17 +1,21 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
 package io.fluidity.dataflow;
 
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.util.DateUtil;
 import org.apache.commons.io.IOUtils;
@@ -35,6 +39,7 @@ class DataflowExtractorTest {
     void processWithCorrelationEnhancements() throws IOException {
         StringBuilder fileContentAsString = makeFileContent();
         ByteArrayInputStream instream = new ByteArrayInputStream(fileContentAsString.toString().getBytes());
+        StorageInputStream inputStream1 = new StorageInputStream("someFile", System.currentTimeMillis(), instream.available(), instream);
         final Map<String, String> collected = new HashMap<>();
 
         StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
@@ -46,7 +51,7 @@ class DataflowExtractorTest {
                 e.printStackTrace();
             }
         };
-        DataflowExtractor rewriter = new DataflowExtractor(instream, outFactory, "filePrefix", "region", "tenant");
+        DataflowExtractor rewriter = new DataflowExtractor(inputStream1, outFactory, "filePrefix", "region", "tenant");
 
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(txn)";

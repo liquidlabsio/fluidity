@@ -15,12 +15,12 @@
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.util.DateUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +34,7 @@ class CountHistoAggregatorTest {
 
         Search search = new Search();
         search.expression = "*| *| *| *| *| *| groupBy(tag)";
-        Map<String, InputStream> inputStreams = new HashMap<>();
+        Map<String, StorageInputStream> inputStreams = new HashMap<>();
 
         /**
          * Map/Build a non-aggregated series for a single source
@@ -59,7 +59,7 @@ class CountHistoAggregatorTest {
 
         Search search = new Search();
         search.expression = "*|*|*|*|*|*";
-        Map<String, InputStream> inputStreams = new HashMap<>();
+        Map<String, StorageInputStream> inputStreams = new HashMap<>();
 
         /**
          * Map/Build a non-aggregated series for a single source
@@ -85,13 +85,15 @@ class CountHistoAggregatorTest {
         System.out.printf("Got: \n%s", histogram);
     }
 
-    private void generateSeriesData(Search search, Map<String, InputStream> inputStreams, long to, long from, String seriesName) throws Exception {
+    private void generateSeriesData(Search search, Map<String, StorageInputStream> inputStreams, long to, long from, String seriesName) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SimpleHistoCollector histoCollector = new SimpleHistoCollector(baos, search, from, to, HistoAggFactory.Count);
         histoCollector.updateFileInfo(seriesName, "tag-value");
         histoCollector.add(from, 1000, "someLine");
         histoCollector.close();
 
-        inputStreams.put(seriesName, new ByteArrayInputStream(baos.toByteArray()));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+        inputStreams.put(seriesName, new StorageInputStream(seriesName, System.currentTimeMillis(), baos.size(), inputStream));
+
     }
 }

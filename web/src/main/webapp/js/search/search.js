@@ -83,9 +83,6 @@ class Search {
             $(arg.target.parentElement).removeClass("big-input");
         });
 
-        // the autocomplete doesnt apply component class defenition to childs so we need to do this
-        $('#searchInputForm input').addClass('form-control-sm')
-
         $('.searchZoom').click(function(event){
                 let zoomDirection = $(event.currentTarget).data().zoom;
                 let normalClass = "normalSizeEditor";

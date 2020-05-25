@@ -15,6 +15,7 @@
 package io.fluidity.services.search;
 
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.EventCollector;
 import io.fluidity.search.agg.events.LineByLineEventAggregator;
 import io.fluidity.search.agg.events.SearchEventCollector;
@@ -69,13 +70,13 @@ public class StandardSearchRunner implements SearchRunner {
             for (FileMeta fileMeta : fileMetaBatch) {
 
                 String searchUrl = fileMeta.getStorageUrl();
-                InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+                StorageInputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
                 histoCollector.updateFileInfo(fileMeta.filename, firstFile.tags);
 
                 try (
-                        EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream, fileMeta, region, histoCollector)
+                        EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream.inputStream, region, histoCollector)
                 ) {
-                    results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat));
+                    results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, inputStream.lastModified, inputStream.length, fileMeta.timeFormat));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -86,19 +87,19 @@ public class StandardSearchRunner implements SearchRunner {
         return results;
     }
 
-    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, FileMeta fileMeta, String region, HistoCollector histoCollector) {
+    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, String region, HistoCollector histoCollector) {
         String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
         OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
         return new SearchEventCollector(histoCollector, inputStream, outputStream);
     }
 
-    private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
-        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
+    private StorageInputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
+        StorageInputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
         if (searchUrl.endsWith(".gz")) {
-            inputStream = new GZIPInputStream(inputStream);
+            inputStream = inputStream.copy(new GZIPInputStream(inputStream.inputStream));
         }
         if (searchUrl.endsWith(".lz4")) {
-            inputStream = new LZ4FrameInputStream(inputStream);
+            inputStream = inputStream.copy(new LZ4FrameInputStream(inputStream.inputStream));
         }
         return inputStream;
     }
@@ -124,7 +125,7 @@ public class StandardSearchRunner implements SearchRunner {
 
         String[] eventAggs;
 
-        Map<String, InputStream> inputStreams = storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime);
+        Map<String, StorageInputStream> inputStreams = storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime);
         try (LineByLineEventAggregator eventAggregator = new LineByLineEventAggregator(inputStreams, search)) {
             eventAggs = eventAggregator.process(fromTime, limit);
         } catch (Exception e) {

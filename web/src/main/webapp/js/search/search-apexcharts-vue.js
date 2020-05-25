@@ -111,7 +111,8 @@ Fluidity.Search.searchChart = new Vue({
                   categories: [
                   ],
                   labels: {
-                    rotate: -90
+                    rotate: -90,
+                    datetimeUTC: false,
                   }
                 },
                 tooltip: {

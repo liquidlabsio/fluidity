@@ -285,6 +285,7 @@
                                 :data="completes"
                                 placeholder="*"
                                 v-model="query"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-2" id="fileFilterWrapper">
@@ -293,6 +294,7 @@
                                 :data="completes"
                                 placeholder="*"
                                 v-model="query"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-2" id="recordFilterWrapper">
@@ -301,6 +303,7 @@
                                 :data="completes"
                                 placeholder="*"
                                 v-model="query"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-2" id="fieldExtractWrapper">
@@ -309,6 +312,7 @@
                                 :data="completes"
                                 placeholder="*"
                                 v-model="query"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-2" id="analyticExtractWrapper">
@@ -317,11 +321,13 @@
                                 v-model="query"
                                 :data="completes"
                                 placeholder="*"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
                     <div class="form-group col-md-1" id="groupByWrapper">
                         <label class="control-label">GroupBy</label>
                         <vue-bootstrap-typeahead
+                                size="sm"
                                 :data="completes"
                                 placeholder="*"
                                 v-model="query"
@@ -359,11 +365,17 @@
                 <hr>
                 <div id="refinery">
 
-                    <b-input-group class="mt-3" prepend="Model Name">
-                        <b-form-input v-model="modelName"></b-form-input>
+                    <b-input-group class="mt-3" prepend="Name">
+                        <vue-bootstrap-typeahead :data="modelNameInput.names" class="col-md-8"
+                                                 minMatchingChars="1"
+                                                 placeholder=""
+                                                 ref="modelNameTypeAhead"
+                                                 style="padding:0px;"
+                                                 v-model="modelNameInput.name"
+                        ></vue-bootstrap-typeahead>
                         <b-input-group-append>
-                            <b-button variant="info">Save</b-button>
-                            <b-button variant="outline-success">Load</b-button>
+                            <b-button v-on:click="saveModel" variant="info">Save</b-button>
+                            <b-button v-on:click="loadModel" variant="outline-success">Load</b-button>
                         </b-input-group-append>
                     </b-input-group>
                     <br>

@@ -14,10 +14,10 @@
 
 package io.fluidity.services.storage;
 
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.Lifecycle;
 import io.fluidity.services.query.FileMeta;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
@@ -39,11 +39,11 @@ public interface Storage extends Lifecycle {
 
     String getSignedDownloadURL(String region, String storageUrl);
 
-    InputStream getInputStream(String region, String tenant, String storageUrl);
+    StorageInputStream getInputStream(String region, String tenant, String storageUrl);
 
     OutputStream getOutputStream(String region, String tenant, String filePathUrl, int daysRetention);
 
-    Map<String, InputStream> getInputStreams(String region, String tenant, String prefix, String filepathSuffix, long fromTime);
+    Map<String, StorageInputStream> getInputStreams(String region, String tenant, String prefix, String filepathSuffix, long fromTime);
 
     void stop();
 

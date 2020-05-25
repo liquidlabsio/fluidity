@@ -29,9 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataflowResource implements DataflowService {
 
 
+    public static final String MODELS = "_MODELS_";
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
 
 
@@ -169,5 +173,39 @@ public class DataflowResource implements DataflowService {
         } finally {
             log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
+    }
+
+    @Override
+    public List<String> listModels(String tenant) {
+
+        List<String> results = new ArrayList<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, new Storage.Processor() {
+            @Override
+            public String process(String region, String itemUrl, String itemName, long modified) {
+                results.add(itemName);
+                return null;
+            }
+        });
+        return results;
+    }
+
+    @Override
+    public String loadModel(String tenant, String modelName) {
+        String modelNameUrl = MODELS + "/" + modelName;
+        return new String(storage.get(cloudRegion, modelNameUrl, 0));
+    }
+
+    @Override
+    public String saveModel(String tenant, String modelName, String modelData) {
+        String modelNameUrl = MODELS + "/" + modelName;
+
+        try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
+            fos.write(modelData.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.warn("Failed to save:", modelName, e);
+            return "Failed to save:" + e.toString();
+        }
+        return "Saved:" + modelData;
     }
 }

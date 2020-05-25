@@ -50,6 +50,18 @@ public interface DataflowService {
                   @QueryParam("model") String modelName);
 
     @GET
+    @Path("/model/list")
+    List<String> listModels(@QueryParam("tenant") String tenant);
+
+    @GET
+    @Path("/model/list")
+    String loadModel(@QueryParam("tenant") String tenant, @QueryParam("name") String modelName);
+
+    @GET
+    @Path("/model/list")
+    String saveModel(@QueryParam("tenant") String tenant, @QueryParam("name") String modelName, @QueryParam("data") String modelData);
+
+    @GET
     @Path("/model")
     List<Map<String, String>> model(@QueryParam("tenant") String tenant, @QueryParam("session") String session,
                                     @QueryParam("model") String modelName);

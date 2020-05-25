@@ -14,6 +14,7 @@
 
 package io.fluidity.services.server;
 
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -125,9 +125,10 @@ public class FileSystemBasedStorageService implements Storage {
     }
 
     @Override
-    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+    public StorageInputStream getInputStream(String region, String tenant, String storageUrl) {
         try {
-            return new LazyFileInputStream(storageUrl);
+            File file = new File(storageUrl);
+            return new StorageInputStream(file.getName(), file.lastModified(), file.length(), new LazyFileInputStream(file));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -135,12 +136,12 @@ public class FileSystemBasedStorageService implements Storage {
     }
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String prefix, String filenameExtension, long fromTime) {
+    public Map<String, StorageInputStream> getInputStreams(String region, String tenant, String prefix, String filenameExtension, long fromTime) {
         Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, filenameExtension);
         // Note: s3 is used as a storage prefix
         return files.stream().collect(Collectors.toMap(file -> "storage://" + file.getPath(), file -> {
             try {
-                return new LazyFileInputStream(file);
+                return new StorageInputStream(file.getName(), file.lastModified(), file.length(), new LazyFileInputStream(file));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

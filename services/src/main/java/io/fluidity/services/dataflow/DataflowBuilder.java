@@ -17,6 +17,7 @@ package io.fluidity.services.dataflow;
 import io.fluidity.dataflow.DataflowExtractor;
 import io.fluidity.dataflow.LogHelper;
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -27,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +60,7 @@ public class DataflowBuilder {
         try {
             log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String fileUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
+            StorageInputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
 
             String status = "";
             try (
@@ -92,13 +92,13 @@ public class DataflowBuilder {
         return outFactory;
     }
 
-    private InputStream getInputStream(Storage storage, String region, String tenant, String fileUrl) throws IOException {
-        InputStream inputStream = storage.getInputStream(region, tenant, fileUrl);
+    private StorageInputStream getInputStream(Storage storage, String region, String tenant, String fileUrl) throws IOException {
+        StorageInputStream inputStream = storage.getInputStream(region, tenant, fileUrl);
         if (fileUrl.endsWith(".gz")) {
-            inputStream = new GZIPInputStream(inputStream);
+            inputStream = inputStream.copy(new GZIPInputStream(inputStream.inputStream));
         }
         if (fileUrl.endsWith(".lz4")) {
-            inputStream = new LZ4FrameInputStream(inputStream);
+            inputStream = inputStream.copy(new LZ4FrameInputStream(inputStream.inputStream));
         }
         return inputStream;
     }

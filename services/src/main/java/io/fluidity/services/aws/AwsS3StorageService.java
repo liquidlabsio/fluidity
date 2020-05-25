@@ -22,6 +22,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
@@ -337,7 +338,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+    public StorageInputStream getInputStream(String region, String tenant, String storageUrl) {
         bind();
         try {
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
@@ -346,7 +347,9 @@ public class AwsS3StorageService implements Storage {
 
             AmazonS3 s3Client = getAmazonS3Client(region);
             S3Object s3object = s3Client.getObject(bucket, filename);
-            return copyToLocalTempFs(s3object.getObjectContent());
+            InputStream inputStream = copyToLocalTempFs(s3object.getObjectContent());
+            ObjectMetadata objectMetadata = s3object.getObjectMetadata();
+            return new StorageInputStream(filename, objectMetadata.getLastModified().getTime(), objectMetadata.getContentLength(), inputStream);
 
         } catch (Exception e) {
             log.error("Failed to retrieve {}", storageUrl, e);
@@ -355,7 +358,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension, long fromTime) {
+    public Map<String, StorageInputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension, long fromTime) {
         String bucketName = getBucketName(tenant);
         AmazonS3 s3Client = getAmazonS3Client(region);
 
@@ -364,7 +367,7 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(filePathPrefix).withMaxKeys(MAX_KEYS);
 
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(req);
-        Map<String, InputStream> results = new HashMap<>();
+        Map<String, StorageInputStream> results = new HashMap<>();
         results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing, fromTime));
         while (objectListing.isTruncated()) {
             objectListing = s3Client.listObjectsV2(req);
@@ -385,17 +388,20 @@ public class AwsS3StorageService implements Storage {
 
     }
 
-    private Map<String, InputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
+    private Map<String, StorageInputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
 
-        Map<String, InputStream> results = new ConcurrentHashMap<>();
+        Map<String, StorageInputStream> results = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(S3_REQ_THREADS);
 
         objectListing.getObjectSummaries().stream()
                 .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension) && objSummary.getLastModified().getTime() > fromTime)
                 .forEach(
                         objSummary -> executorService.submit(() -> {
-                            results.put(objSummary.getKey(), copyToLocalTempFs(s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
-                                    .getObjectContent()));
+                            InputStream inputStream = copyToLocalTempFs(s3Client.getObject(objSummary.getBucketName(),
+                                    objSummary.getKey()).getObjectContent());
+                            results.put(objSummary.getKey(),
+                                    new StorageInputStream(objSummary.getKey(), objSummary.getLastModified().getTime(),
+                                            objSummary.getSize(), inputStream));
                         })
                 );
 

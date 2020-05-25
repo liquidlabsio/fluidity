@@ -14,6 +14,7 @@
 
 package io.fluidity.services.fixture;
 
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import org.slf4j.Logger;
@@ -22,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,18 +72,19 @@ public class FixturedStorageService implements Storage {
     }
 
     @Override
-    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+    public StorageInputStream getInputStream(String region, String tenant, String storageUrl) {
         byte[] content = this.get(region, storageUrl, 0);
         if (content == null)
             throw new RuntimeException(String.format("Failed to find:%s Available:%s", storageUrl, storage.keySet()));
-        return new ByteArrayInputStream(content);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
+        return new StorageInputStream(storageUrl, System.currentTimeMillis(), content.length, inputStream);
     }
 
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String uid, String filenameExtension, long fromTime) {
+    public Map<String, StorageInputStream> getInputStreams(String region, String tenant, String uid, String filenameExtension, long fromTime) {
         List<String> fileUrls = storage.keySet().stream().filter(entry -> entry.contains(uid) && entry.endsWith(filenameExtension)).collect(Collectors.toList());
-        LinkedHashMap<String, InputStream> results = new LinkedHashMap<>();
+        LinkedHashMap<String, StorageInputStream> results = new LinkedHashMap<>();
         fileUrls.stream().forEach(url -> results.put(url, getInputStream(region, tenant, url)));
         return results;
     }

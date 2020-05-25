@@ -2,83 +2,83 @@
 Fluidity.Refinery.vue = new Vue({
     el: '#refinery',
     components: {
+        VueBootstrapTypeahead
     },
     data() {
       return {
-        input: {
-            bucket: {
-                tag: '*',
-                tags: [],
-                autocompleteItems: [{
-                        text: '*',
-                      }, {
-                        text: 'bucket.equals(BUCKET_NAME)',
-                      }, {
-                        text: 'bucket.contains(TEXT_PATH)',
-                      }, {
-                        text: 'tags.contains(TEXT)',
-                      }]
-            },
-            filename: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
-                                text: '*',
-                              }, {
-                                text: 'filename.contains(TEXT)',
-                              }, {
-                                text: 'filename.equals(TEXT)',
-                         }]
-            },
-            filter: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
-                                text: '*',
-                              }, {
-                              text: 'record.contains(TEXT)',
-                              },{
-                                text: 'someTextThatMatches',
-                                },{
-                                text: 'findThis AND alsoThis',
-                                },{
-                                text: 'foundThis OR foundThat'
-                          }]
-            },
-             field: {
-                        tag: '*',
-                        tags: [],
-                        autocompleteItems: [{
+            input: {
+                bucket: {
+                    tag: '*',
+                    tags: [],
+                    autocompleteItems: [{
                             text: '*',
                           }, {
-                            text: 'field.getJsonPair(JsonName)',
+                            text: 'bucket.equals(BUCKET_NAME)',
                           }, {
-                            text: 'field.getKVPair(TextKey)',
-                    }]
+                            text: 'bucket.contains(TEXT_PATH)',
+                          }, {
+                            text: 'tags.contains(TEXT)',
+                          }]
+                },
+                filename: {
+                            tag: '*',
+                            tags: [],
+                            autocompleteItems: [{
+                                    text: '*',
+                                  }, {
+                                    text: 'filename.contains(TEXT)',
+                                  }, {
+                                    text: 'filename.equals(TEXT)',
+                             }]
+                },
+                filter: {
+                            tag: '*',
+                            tags: [],
+                            autocompleteItems: [{
+                                    text: '*',
+                                  }, {
+                                  text: 'record.contains(TEXT)',
+                                  },{
+                                    text: 'someTextThatMatches',
+                                    },{
+                                    text: 'findThis AND alsoThis',
+                                    },{
+                                    text: 'foundThis OR foundThat'
+                              }]
+                },
+                 field: {
+                            tag: '*',
+                            tags: [],
+                            autocompleteItems: [{
+                                text: '*',
+                              }, {
+                                text: 'field.getJsonPair(JsonName)',
+                              }, {
+                                text: 'field.getKVPair(TextKey)',
+                        }]
+                },
             },
-        },
-        modelName: 'Not Set',
-        modelInterval: 1,
-        statuses:[
-                     '-'
-                   ],
-        statusMessage: '...',
-        modelDataUpdateStatus: '',
-        modelTable: {
-            items:  [
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k' },
-                             { name: 'histo-12343-111.log', modified: '1/12/2020', size: '128k'},
-                           ],
-           fields: [
-                     'name',
-                     'modified',
-                     'size'
-                   ]
-           },
-      }
+
+            modelInterval: 1,
+            statuses:[ '-' ],
+            statusMessage: '...',
+            modelDataUpdateStatus: '',
+            modelTable: {
+                items:  [ { name: '-----', modified: '-----', size: '---'} ],
+               fields: [ 'name', 'modified', 'size' ]
+               },
+            modelNameInput: {
+                name: "nothing",
+                names: [
+                    '*',
+                    'bucket.equals(BUCKET_NAME)',
+                    'bucket.contains(TEXT_PART)',
+                    'tags.contains(TEXT)',
+                    'tags.equals(TEXT)'
+                  ]
+            },
+
+        }
     },
     computed: {
         inputBucketFilteredItems() {
@@ -109,6 +109,9 @@ Fluidity.Refinery.vue = new Vue({
         console.log('Alert is now ' + (newVal ? 'visible' : 'hidden'))
       }
     },
+    mounted() {
+        this.listModels();
+      },
     methods: {
        refinerySubmit() {
         console.log('Submit search')
@@ -120,6 +123,36 @@ Fluidity.Refinery.vue = new Vue({
       },
       refreshModel() {
         Fluidity.Refinery.refinery.refreshModel()
-      }
+      },
+      listModels() {
+      			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+      			.then(res => res.json())
+      			.then(res => {
+      			        Fluidity.Refinery.vue.modelNameInput.names = []
+      			        res.results.forEach(result => {
+                            Fluidity.Refinery.vue.modelNameInput.names.push("  " + result.artistName)
+                        })
+      			});
+      		},
+      loadModel() {
+                fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+                .then(res => res.json())
+                .then(res => {
+                    this.results = res.results;
+               //     Fluidity.Refinery.vue.$refs.modelNameTypeAhead.inputValue = "Got results"
+                    this.noResults = this.results.length === 0;
+                });
+            },
+      saveModel() {
+      			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+      			.then(res => res.json())
+      			.then(res => {
+      				this.results = res.results;
+                 //   Fluidity.Refinery.vue.$refs.modelNameTypeAhead.inputValue = "Got results"
+      				this.noResults = this.results.length === 0;
+      			});
+      		},
+
+
     }
 })
