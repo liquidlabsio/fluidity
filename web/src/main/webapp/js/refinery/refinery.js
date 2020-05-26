@@ -39,6 +39,10 @@ class Refinery {
 
     bind() {
         let self = this;
+         $('#searchInputForm input').on('focusin', function(arg){
+                    $(arg.target.parentElement).addClass("big-input");
+                });
+
         $.Topic(Fluidity.Refinery.Topics.submitReply).subscribe(function(reply) {
             console.log("Status results:" + reply);
             Fluidity.Refinery.vue.statusMessage="Complete - status:" + reply;
@@ -90,6 +94,6 @@ class Refinery {
         this.addStatusMessage("Starting model query");
 
         Fluidity.Refinery.vue.statusMessage="Running:" + search.expression;
-        $.Topic(Fluidity.Refinery.Topics.submit).publish(search, Fluidity.Refinery.vue.modelName);
+        $.Topic(Fluidity.Refinery.Topics.submit).publish(search, Fluidity.Refinery.vue.modelNameInput.name);
     }
 }

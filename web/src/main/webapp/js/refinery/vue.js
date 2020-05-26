@@ -6,6 +6,8 @@ Fluidity.Refinery.vue = new Vue({
     },
     data() {
       return {
+            alertMessage: "",
+            alertVisible: false,
             input: {
                 bucket: {
                     tag: '*',
@@ -68,7 +70,7 @@ Fluidity.Refinery.vue = new Vue({
                fields: [ 'name', 'modified', 'size' ]
                },
             modelNameInput: {
-                name: "nothing",
+                name: "",
                 names: [
                     '*',
                     'bucket.equals(BUCKET_NAME)',
@@ -110,7 +112,7 @@ Fluidity.Refinery.vue = new Vue({
       }
     },
     mounted() {
-        this.listModels();
+        //this.listModels();
       },
     methods: {
        refinerySubmit() {
@@ -124,32 +126,63 @@ Fluidity.Refinery.vue = new Vue({
       refreshModel() {
         Fluidity.Refinery.refinery.refreshModel()
       },
-      listModels() {
-      			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+
+      fetchModels() {
+      			return fetch(SERVICE_URL + '/dataflow/model/list?'
+      			    + new URLSearchParams({ tenant: DEFAULT_TENANT })
+      			 )
       			.then(res => res.json())
-      			.then(res => {
-      			        Fluidity.Refinery.vue.modelNameInput.names = []
-      			        res.results.forEach(result => {
-                            Fluidity.Refinery.vue.modelNameInput.names.push("  " + result.artistName)
-                        })
-      			});
+      			 .then(res => {
+      			    console.log("Got:" + res);
+      			    return res;
+      			 });
       		},
-      loadModel() {
-                fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+      loadModel(name) {
+            return fetch(SERVICE_URL + '/dataflow/model/load?'
+                + new URLSearchParams(
+                        { tenant: DEFAULT_TENANT, model: name})
+                )
                 .then(res => res.json())
                 .then(res => {
-                    this.results = res.results;
-               //     Fluidity.Refinery.vue.$refs.modelNameTypeAhead.inputValue = "Got results"
-                    this.noResults = this.results.length === 0;
+                    let expr = res.query.split('|');
+                    Fluidity.Refinery.vue.input.bucket.tag = ""
+                    Fluidity.Refinery.vue.input.bucket.tags = [ { text: expr[0] } ];
+
+                    Fluidity.Refinery.vue.input.filename.tag = ""
+                    Fluidity.Refinery.vue.input.filename.tags =  [ { text: expr[1] } ];
+
+                    Fluidity.Refinery.vue.input.filter.tag = ""
+                    Fluidity.Refinery.vue.input.filter.tags =  [ { text: expr[2] } ];
+
+                    Fluidity.Refinery.vue.input.field.tag = ""
+                    Fluidity.Refinery.vue.input.field.tags =  [ { text: expr[3] } ];
+
                 });
             },
       saveModel() {
-      			fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(this.term)}&limit=10&media=music`)
+                let query = Fluidity.Refinery.vue.input.bucket.tags[0].text + '|'
+                            + Fluidity.Refinery.vue.input.filename.tags[0].text + '|'
+                            + Fluidity.Refinery.vue.input.filter.tags[0].text + '|'
+                            + Fluidity.Refinery.vue.input.field.tags[0].text;
+                let modelData = {
+                        name: Fluidity.Refinery.vue.modelNameInput.name,
+                        query: query,
+                        schedule: 1
+                };
+
+      			fetch(SERVICE_URL + '/dataflow/model/save?'
+          			+ new URLSearchParams({
+                            tenant: DEFAULT_TENANT,
+                            model: Fluidity.Refinery.vue.modelNameInput.name,
+                            data: JSON.stringify(modelData),
+                        })
+      			)
       			.then(res => res.json())
       			.then(res => {
-      				this.results = res.results;
-                 //   Fluidity.Refinery.vue.$refs.modelNameTypeAhead.inputValue = "Got results"
-      				this.noResults = this.results.length === 0;
+      			    Fluidity.Refinery.vue.alertVisible = true;
+      			    Fluidity.Refinery.vue.alertMessage = "Model was saved:" + res;
+      			    setTimeout(function(){ Fluidity.Refinery.vue.alertVisible = false; }, 3000);
+
       			});
       		},
 

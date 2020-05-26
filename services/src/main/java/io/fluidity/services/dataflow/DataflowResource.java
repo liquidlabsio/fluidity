@@ -35,6 +35,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataflowResource implements DataflowService {
 
 
-    public static final String MODELS = "_MODELS_";
+    public static final String MODELS = "_MODEL_";
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
 
 
@@ -179,33 +180,52 @@ public class DataflowResource implements DataflowService {
     public List<String> listModels(String tenant) {
 
         List<String> results = new ArrayList<>();
-        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, new Storage.Processor() {
-            @Override
-            public String process(String region, String itemUrl, String itemName, long modified) {
-                results.add(itemName);
-                return null;
+        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified) -> {
+            int from = itemName.indexOf(MODELS) + MODELS.length() + 1;
+            int to = itemName.indexOf('/', from);
+            if (from > 0 && to > from) {
+                results.add(itemName.substring(from, to));
             }
+            return null;
         });
         return results;
     }
 
     @Override
     public String loadModel(String tenant, String modelName) {
-        String modelNameUrl = MODELS + "/" + modelName;
-        return new String(storage.get(cloudRegion, modelNameUrl, 0));
+        String modelNameUrl = storage.getBucketName(tenant) + "/" + MODELS + "/" + modelName + "/model.json";
+        try {
+            byte[] bytes = storage.get(cloudRegion, modelNameUrl, 0);
+            return new String(bytes);
+        } catch (Throwable t) {
+            // default to create a new model
+            HashMap<Object, Object> model = new HashMap<>();
+            model.put("name", modelName);
+            model.put("query", "*|*|*|*");
+            try {
+                return new ObjectMapper().writeValueAsString(model);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to load:" + e.toString());
+                return e.toString();
+            }
+        }
     }
 
     @Override
     public String saveModel(String tenant, String modelName, String modelData) {
-        String modelNameUrl = MODELS + "/" + modelName;
+        String modelNameUrl = storage.getBucketName(tenant) + "/" + MODELS + "/" + modelName + "/model.json";
 
-        try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
-            fos.write(modelData.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.warn("Failed to save:", modelName, e);
-            return "Failed to save:" + e.toString();
+        try {
+            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
+                fos.write(modelData.getBytes());
+            } catch (IOException e) {
+                log.warn("Failed to save:", modelName, e);
+                return new ObjectMapper().writeValueAsString("Failed to save:" + e.toString());
+            }
+
+            return new ObjectMapper().writeValueAsString(modelName);
+        } catch (JsonProcessingException e) {
         }
-        return "Saved:" + modelData;
+        return "broken";
     }
 }

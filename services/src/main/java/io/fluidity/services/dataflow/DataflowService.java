@@ -54,12 +54,12 @@ public interface DataflowService {
     List<String> listModels(@QueryParam("tenant") String tenant);
 
     @GET
-    @Path("/model/list")
-    String loadModel(@QueryParam("tenant") String tenant, @QueryParam("name") String modelName);
+    @Path("/model/load")
+    String loadModel(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName);
 
     @GET
-    @Path("/model/list")
-    String saveModel(@QueryParam("tenant") String tenant, @QueryParam("name") String modelName, @QueryParam("data") String modelData);
+    @Path("/model/save")
+    String saveModel(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("data") String modelData);
 
     @GET
     @Path("/model")
