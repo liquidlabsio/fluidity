@@ -79,7 +79,7 @@ public class StandardSearchRunner implements SearchRunner {
                         results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, inputStream.lastModified, inputStream.length, fileMeta.timeFormat));
                     }
                 } catch (Exception e) {
-                    log.warn("Faild to process data:{}", fileMeta.filename, e);
+                    log.warn("Failed to process data:{}", fileMeta.filename, e);
                     results.add(new Integer[]{0, 0, 0});
                 }
             }

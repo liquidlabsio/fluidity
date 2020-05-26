@@ -116,7 +116,7 @@ Fluidity.Refinery.vue = new Vue({
       },
     methods: {
        refinerySubmit() {
-        console.log('Submit search')
+        console.log('Submit model build')
         Fluidity.Refinery.refinery.submit()
       },
       loadHistogramData(therow) {
@@ -157,6 +157,7 @@ Fluidity.Refinery.vue = new Vue({
                     Fluidity.Refinery.vue.input.field.tag = ""
                     Fluidity.Refinery.vue.input.field.tags =  [ { text: expr[3] } ];
 
+                    $.Topic(Fluidity.Refinery.Topics.model).publish("uid-123", Fluidity.Refinery.vue.modelNameInput.name);
                 });
             },
       saveModel() {

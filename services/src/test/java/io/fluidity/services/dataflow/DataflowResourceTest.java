@@ -55,9 +55,9 @@ class DataflowResourceTest {
         search.from = System.currentTimeMillis() - DateUtil.HOUR;
         search.to = System.currentTimeMillis();
 
-        String url = "http://localhost:8080";
+        String url = "http://localhost:8081";
         try {
-            DataflowResource.rewriteCorrelationDataS("someTenant", "session", fileMetas, search, url, "model");
+            DataflowResource.rewriteCorrelationDataS("someTenant", "sessionId-100", fileMetas, search, url, "model");
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

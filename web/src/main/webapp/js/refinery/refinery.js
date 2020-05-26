@@ -57,6 +57,8 @@ class Refinery {
             console.log("Model Reply results:" + reply)
              Fluidity.Refinery.vue.modelDataUpdateStatus = 'Updated @' + new Date().toLocaleTimeString();
              Fluidity.Refinery.vue.modelTable.items.length = 0;
+             // trigger refresh to update the UI
+             Fluidity.Refinery.vue.modelTable.items.pop();
              reply.forEach(item => {
                 Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: '128k'} )
              })
@@ -73,7 +75,8 @@ class Refinery {
 
     refreshModel() {
         Fluidity.Refinery.vue.modelDataUpdateStatus = 'Refreshing model list'
-        $.Topic(Fluidity.Refinery.Topics.model).publish(this.uuid.valueOf(), Fluidity.Refinery.vue.modelName);
+        Fluidity.Refinery.vue.modelTable.items.length = 0
+        $.Topic(Fluidity.Refinery.Topics.model).publish(this.uuid.valueOf(), Fluidity.Refinery.vue.modelNameInput.name);
 
     }
     submit() {

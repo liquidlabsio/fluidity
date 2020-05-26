@@ -386,7 +386,7 @@
                     </b-input-group>
                     <br>
 
-                    <b-card text-variant="grey" title="Source data">
+                    <b-card text-variant="grey" title="Source data extraction for model building">
                         <b-form inline>
                             <b-form-group class="col-md-3" label="Bucket | Tags" style="padding-left:0px">
                                 <vue-tags-input
@@ -417,7 +417,7 @@
                                         @tags-changed="newTags => input.filter.tags = newTags"
                                 ></vue-tags-input>
                             </b-form-group>
-                            <b-form-group class="col-md-3" label="Field for Correlation" style="padding-left:0px">
+                            <b-form-group class="col-md-3" label="JSON Field for Correlation" style="padding-left:0px">
                                 <vue-tags-input
                                         :tags="input.field.tags"
                                         v-model="input.field.tag"
@@ -431,7 +431,7 @@
                             <b-form-group class="col-md-1">
                                 <label class="control-label">&nbsp;</label>
                                 <b-button v-on:click="refinerySubmit" variant="primary">
-                                    <span data-feather="search"></span></b-button>
+                                    <span data-feather="aperture"></span></b-button>
                             </b-form-group>
                             <b-form-text id="help-block">
                                 Complete all inputs to accurately match your data records. <b>Note</b>: the 'field'

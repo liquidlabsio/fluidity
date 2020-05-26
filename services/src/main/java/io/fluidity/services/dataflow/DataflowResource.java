@@ -36,8 +36,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -48,6 +50,7 @@ public class DataflowResource implements DataflowService {
 
 
     public static final String MODELS = "_MODEL_";
+    public static final char PATH_SEP = '/';
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
 
 
@@ -95,15 +98,18 @@ public class DataflowResource implements DataflowService {
     public static String rewriteCorrelationDataS(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
         String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
         String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
+        String modelPathJson = URLEncoder.encode(modelPath, StandardCharsets.UTF_8);
+
         ResteasyClient client = new ResteasyClientBuilderImpl().build();
         try {
             ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
             DataflowService proxy = target.proxy(DataflowService.class);
-            return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPath, search);
+            return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPathJson, search);
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.out.println("BO0000OOM:" + ex.toString() + " URL:" + apiUrl);
-            return ex.toString();
+            String failedMessage = "Failed to call onto REST API:" + ex.toString() + " URL:" + apiUrl + "Files:" + fileMetas[0];
+            System.out.println(failedMessage);
+            return failedMessage;
         } finally {
             client.close();
         }
@@ -138,9 +144,9 @@ public class DataflowResource implements DataflowService {
                     rewritten.incrementAndGet();
                     return result;
                 } catch (JsonProcessingException e) {
-                    log.info("Failed to invoke:" + serviceAddress + "/dataflow/rewrite");
+                    log.warn("Failed to invoke:" + serviceAddress + "/dataflow/rewrite");
                     e.printStackTrace();
-                    return e.toString();
+                    return "Failed to dispatch to REST:" + e.toString();
                 }
             }
         };
@@ -157,19 +163,22 @@ public class DataflowResource implements DataflowService {
 
     @Override
     public String rewriteCorrelationData(String tenant, String session, String fileMetas,
-                                         String modelPath, Search search) {
+                                         String modelPathEnc, Search search) {
         log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
 
         try {
             search.decodeJsonFields();
             ObjectMapper objectMapper = new ObjectMapper();
+            String modelPath = URLDecoder.decode(modelPathEnc, StandardCharsets.UTF_8);
+
             FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.info("/file/{}", files[0].filename);
 
             return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath);
         } catch (Exception e) {
+
             e.printStackTrace();
-            log.error("/search/file:{} failed:{}", fileMetas, e.toString());
+            log.error("/rewriteCorrelation:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
         } finally {
             log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
@@ -179,21 +188,21 @@ public class DataflowResource implements DataflowService {
     @Override
     public List<String> listModels(String tenant) {
 
-        List<String> results = new ArrayList<>();
+        Set<String> results = new HashSet<>();
         storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified) -> {
             int from = itemName.indexOf(MODELS) + MODELS.length() + 1;
-            int to = itemName.indexOf('/', from);
+            int to = itemName.indexOf(PATH_SEP, from);
             if (from > 0 && to > from) {
                 results.add(itemName.substring(from, to));
             }
             return null;
         });
-        return results;
+        return new ArrayList<>(results);
     }
 
     @Override
     public String loadModel(String tenant, String modelName) {
-        String modelNameUrl = storage.getBucketName(tenant) + "/" + MODELS + "/" + modelName + "/model.json";
+        String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
         try {
             byte[] bytes = storage.get(cloudRegion, modelNameUrl, 0);
             return new String(bytes);
@@ -213,7 +222,7 @@ public class DataflowResource implements DataflowService {
 
     @Override
     public String saveModel(String tenant, String modelName, String modelData) {
-        String modelNameUrl = storage.getBucketName(tenant) + "/" + MODELS + "/" + modelName + "/model.json";
+        String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
 
         try {
             try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
