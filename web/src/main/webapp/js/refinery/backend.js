@@ -5,10 +5,13 @@ $(document).ready(function () {
 
 class RefineryInterface {
     submit(search, serviceAddress, modelName) {
+        console.log(search + serviceAddress + modelName);
     }
     status(session, modelName) {
+        console.log(session + modelName);
     }
     model(session, modelName) {
+        console.log(session + modelName);
     }
 }
 
