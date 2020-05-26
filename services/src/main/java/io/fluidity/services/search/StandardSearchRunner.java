@@ -68,21 +68,24 @@ public class StandardSearchRunner implements SearchRunner {
         try (HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))) {
 
             for (FileMeta fileMeta : fileMetaBatch) {
+                try {
+                    String searchUrl = fileMeta.getStorageUrl();
+                    StorageInputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+                    histoCollector.updateFileInfo(fileMeta.filename, firstFile.tags);
 
-                String searchUrl = fileMeta.getStorageUrl();
-                StorageInputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
-                histoCollector.updateFileInfo(fileMeta.filename, firstFile.tags);
-
-                try (
-                        EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream.inputStream, region, histoCollector)
-                ) {
-                    results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, inputStream.lastModified, inputStream.length, fileMeta.timeFormat));
+                    try (
+                            EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream.inputStream, region, histoCollector)
+                    ) {
+                        results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, inputStream.lastModified, inputStream.length, fileMeta.timeFormat));
+                    }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.warn("Faild to process data:{}", fileMeta.filename, e);
+                    results.add(new Integer[]{0, 0, 0});
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+
         }
         return results;
     }
