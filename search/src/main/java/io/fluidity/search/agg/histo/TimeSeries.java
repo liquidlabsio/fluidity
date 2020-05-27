@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -20,7 +23,6 @@ import java.util.List;
 import static io.fluidity.util.DateUtil.DAY;
 import static io.fluidity.util.DateUtil.HOUR;
 import static io.fluidity.util.DateUtil.MINUTE;
-import static io.fluidity.util.DateUtil.TEN_MINS;
 import static io.fluidity.util.DateUtil.WEEK;
 
 /**
@@ -71,12 +73,14 @@ public class TimeSeries<T> implements Series<T> {
     private void buildHistogram(long from, long to) {
         long duration = to - from;
         delta = MINUTE;
-        if (duration > HOUR) delta = TEN_MINS;
-        if (duration > DAY) delta = HOUR / 2;
-        if (duration > DAY * 2) delta = HOUR;
+        if (duration >= 6 * HOUR) delta = MINUTE * 2;
+        if (duration > 12 * HOUR) delta = MINUTE * 3;
+        if (duration > 24 * HOUR) delta = MINUTE * 4;
+        if (duration >= DAY * 2) delta = MINUTE * 10;
+        if (duration >= DAY * 5) delta = HOUR;
         if (duration > WEEK) delta = HOUR * 2;
-        if (duration > WEEK * 4) delta = DAY;
-        if (duration > WEEK * 8) delta = DAY * 2;
+        if (duration > WEEK * 2) delta = DAY;
+        if (duration > WEEK * 8) delta = DAY / 2;
         if (duration > WEEK * 12) delta = WEEK;
         for (long time = from; time <= to; time += delta) {
             data.add(Pair.create(time, null));

@@ -1,15 +1,33 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.search.agg.events;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import org.graalvm.collections.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -27,11 +45,11 @@ public class LineByLineEventAggregator implements EventsAggregator {
     private final Search search;
     private boolean splitLine = false;
 
-    public LineByLineEventAggregator(Map<String, InputStream> streams, Search search) {
+    public LineByLineEventAggregator(Map<String, StorageInputStream> streams, Search search) {
         this.streams = streams.entrySet().stream()
                 .collect(Collectors.toMap(
                         entry -> entry.getKey()
-                        , entry -> new BufferedReader(new InputStreamReader(entry.getValue()))
+                        , entry -> new BufferedReader(new InputStreamReader(entry.getValue().inputStream))
                         )
                 );
         this.fileLut = populateLut(streams.keySet());
@@ -49,8 +67,9 @@ public class LineByLineEventAggregator implements EventsAggregator {
         streams.entrySet().stream()
                 .forEach(entry -> {
                     try {
-                        if (entry != null) {
-                            nextLines.put(entry.getKey(), split(entry.getKey(), entry.getValue().readLine()));
+                        String nextLine = entry.getValue().readLine();
+                        if (nextLine != null) {
+                            nextLines.put(entry.getKey(), split(entry.getKey(), nextLine));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

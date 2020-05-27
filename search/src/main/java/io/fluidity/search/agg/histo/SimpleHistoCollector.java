@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,20 +58,24 @@ public class SimpleHistoCollector implements HistoCollector {
     private final long from;
     private final long to;
     private final HistoFunction<Long, Long> function;
-    private final String sourceName;
+    private String sourceName;
     private OutputStream outputStream;
-    private final String tags;
+    private String tags;
     private Search search;
     private final EconomicMap<String, Series<Long>> seriesMap = EconomicMap.create();
 
-    public SimpleHistoCollector(OutputStream outputStream, String sourceName, String tags, Search search, long from, long to, HistoFunction<Long, Long> histoFunction) {
+    public SimpleHistoCollector(OutputStream outputStream, Search search, long from, long to, HistoFunction<Long, Long> histoFunction) {
         this.outputStream = outputStream;
-        this.tags = tags;
         this.search = search;
-        this.sourceName = sourceName;
         this.from = from;
         this.to = to;
         this.function = histoFunction;
+    }
+
+    @Override
+    public void updateFileInfo(String filename, String tags) {
+        this.sourceName = filename;
+        this.tags = tags;
     }
 
     @Override
@@ -69,9 +87,7 @@ public class SimpleHistoCollector implements HistoCollector {
             seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());
             Series<Long> series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
             Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, series.index(currentTime), search.expression);
-
-            series.update(currentTime, calculate
-            );
+            series.update(currentTime, calculate);
         }
     }
 

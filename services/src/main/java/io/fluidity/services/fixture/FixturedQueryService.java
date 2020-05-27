@@ -5,11 +5,7 @@ import io.fluidity.services.query.QueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FixturedQueryService implements QueryService {
@@ -61,7 +57,7 @@ public class FixturedQueryService implements QueryService {
     }
 
     @Override
-    public List<FileMeta> list() {
+    public List<FileMeta> list(String tenant) {
         return new ArrayList<>(storage.values());
     }
 

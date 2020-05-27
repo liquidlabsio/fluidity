@@ -1,8 +1,23 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.DataflowExtractor;
 import io.fluidity.dataflow.LogHelper;
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -12,13 +27,12 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -32,8 +46,8 @@ public class DataflowBuilder {
         log.info("Created");
     }
 
-    public FileMeta[] listFiles(Search search, QueryService query) {
-        List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
+    public FileMeta[] listFiles(String tenant, Search search, QueryService query) {
+        List<FileMeta> files = query.list(tenant).stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 
@@ -46,7 +60,7 @@ public class DataflowBuilder {
         try {
             log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String fileUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
+            StorageInputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
 
             String status = "";
             try (
@@ -78,13 +92,13 @@ public class DataflowBuilder {
         return outFactory;
     }
 
-    private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
-        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
-        if (searchUrl.endsWith(".gz")) {
-            inputStream = new GZIPInputStream(inputStream);
+    private StorageInputStream getInputStream(Storage storage, String region, String tenant, String fileUrl) throws IOException {
+        StorageInputStream inputStream = storage.getInputStream(region, tenant, fileUrl);
+        if (fileUrl.endsWith(".gz")) {
+            inputStream = inputStream.copy(new GZIPInputStream(inputStream.inputStream));
         }
-        if (searchUrl.endsWith(".lz4")) {
-            inputStream = new LZ4FrameInputStream(inputStream);
+        if (fileUrl.endsWith(".lz4")) {
+            inputStream = inputStream.copy(new LZ4FrameInputStream(inputStream.inputStream));
         }
         return inputStream;
     }
@@ -93,24 +107,14 @@ public class DataflowBuilder {
         return "dunno!";
     }
 
-    public String getModel(String region, String tenant, String session, String modelName, Storage storage) {
-        List<String> histoUrls = new ArrayList<>();
-        storage.listBucketAndProcess(region, tenant, modelName + "/" + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
-            histoUrls.add(itemUrl);
+    public List<Map<String, String>> getModel(String region, String tenant, String session, String modelName, Storage storage) {
+        List<Map<String, String>> histoUrls = new ArrayList<>();
+        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName, modified) -> {
+            if (itemUrl.contains(CORR_HIST_PREFIX)) {
+                histoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified)));
+            }
             return null;
         });
-
-        StringBuilder results = new StringBuilder();
-        histoUrls.stream().forEach(histoUrl -> {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (InputStream inputStream = storage.getInputStream(region, tenant, histoUrl)) {
-                IOUtils.copy(inputStream, baos);
-                results.append(baos.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-                log.warn("Failed to get URL:" + histoUrl, e);
-            }
-        });
-        return results.toString();
+        return histoUrls;
     }
 }

@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -18,6 +21,7 @@ import io.fluidity.services.query.QueryService;
 import io.fluidity.services.server.FileSystemBasedStorageService;
 import io.fluidity.services.server.RocksDBQueryService;
 import io.fluidity.services.storage.Storage;
+import io.fluidity.test.IntegrationTest;
 import io.fluidity.util.DateUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
@@ -29,7 +33,8 @@ import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-class WorkflowRunnerTest {
+@IntegrationTest
+class WorkflowRunnerIntegrationTest {
 
 
     /**
@@ -56,7 +61,7 @@ class WorkflowRunnerTest {
 //        awsQueryService.createTable();
 
         String tenant = "tenant";
-        String modelPath = "modelPath";
+        String modelPath = "modelPath-" + System.currentTimeMillis();
         String region = "eu-west-2";
         String session = "TEST-SESSION-ID";
         Search search = new Search();
@@ -88,32 +93,37 @@ class WorkflowRunnerTest {
 
         ArrayList<String> collected = new ArrayList<>();
 
-        storage.listBucketAndProcess(region, tenant, modelPath + CORR_HIST_PREFIX, (region1, itemUrl, itemName) -> {
-            collected.add(itemUrl);
+        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified) -> {
+            if (itemName.contains(CORR_HIST_PREFIX)) collected.add(itemUrl);
             return null;
         });
 
         assertTrue(collected.size() > 0, "Should have found a histogram model in the store");
 
         // AWS uses bucket name unlike local alternatives
-        // String json = new String(storage.get(region, "s3://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
+        // String json = new String(storage.get(region, "storgage://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
         String json = new String(storage.get(region, collected.get(0), 0));
 
         System.out.println("Got Model:" + json);
+        System.out.println("Got Model:" + collected);
         assertTrue(json.contains("totalDuration"), "Missing duration series");
         assertTrue(json.contains("op2OpLatency"), "Missing op2OpLatency series");
         assertTrue(json.contains("maxOpDuration"), "Missing maxOpDuration series");
-        assertTrue(json.contains("\\\"right\\\":[10260,10260,10260,1]"), "Missing maxOpDuration data");
+        assertTrue(json.contains("\"right\":[180000,180000,180000,1]"), "Missing maxOpDuration data");
     }
 
     private void populateTestData(String region, String session, QueryService query, Storage storage, String tenant) {
+
         String testFilename = "testfile.log";
         StringBuilder testContent = new StringBuilder();
-        testContent.append(LogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
-        testContent.append(LogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
-        testContent.append(LogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
+        long startTime = System.currentTimeMillis() - DateUtil.MINUTE * 10;
 
-        FileMeta testFile = new FileMeta(tenant, "resource", "tags", testFilename, testContent.toString().getBytes(), System.currentTimeMillis() - DateUtil.MINUTE, System.currentTimeMillis(), "");
+        testContent.append("\"ts\":\"" + startTime + "\"," + LogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 2) + "\"," + LogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 3) + "\"," + LogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
+
+        String timeFormat = "prefix:[\"ts\":\"] LONG";
+        FileMeta testFile = new FileMeta(tenant, "resource", "tags", testFilename, testContent.toString().getBytes(), System.currentTimeMillis() - DateUtil.MINUTE, System.currentTimeMillis(), timeFormat);
         storage.upload(region, testFile);
         query.put(testFile);
     }

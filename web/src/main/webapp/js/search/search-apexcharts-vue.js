@@ -1,4 +1,4 @@
-searchChart = new Vue({
+Fluidity.Search.searchChart = new Vue({
         el: '#searchChart',
         components: {
           apexchart: VueApexCharts,
@@ -6,11 +6,11 @@ searchChart = new Vue({
          methods: {
               click(event, chartContext, config) {
                 if (config.seriesIndex == -1) return false;
-                let point = searchChart.series[config.seriesIndex].data[config.dataPointIndex];
+                let point = Fluidity.Search.searchChart.series[config.seriesIndex].data[config.dataPointIndex];
 //                console.log("series:" + searchChart.series[config.seriesIndex].name)
 //                console.log("time:" + point[0])
 //                console.log("value:" + point[1])
-                 searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
+                 Fluidity.Search.searchStats.stats = "Getting events from:" + new Date(point[0]).toLocaleString();
                  searcher.startTime = new Date();
                 $.Topic(Fluidity.Search.Topics.getFinalEvents).publish(searcher.searchRequest, point[0]);
 
@@ -64,7 +64,7 @@ searchChart = new Vue({
                                     title: 'Render as bar-chart',
                                     class: 'custom-icon',
                                     click: function (chart, options, e) {
-                                       searchChart.setChartStyle('bar')
+                                       Fluidity.Search.searchChart.setChartStyle('bar')
                                     }
                                 },
                                 {
@@ -73,7 +73,7 @@ searchChart = new Vue({
                                     title: 'Render as line-chart',
                                     class: 'custom-icon',
                                     click: function (chart, options, e) {
-                                       searchChart.setChartStyle('line')
+                                       Fluidity.Search.searchChart.setChartStyle('line')
                                     }
                                 },
                                  {
@@ -82,7 +82,7 @@ searchChart = new Vue({
                                         title: 'Render as area',
                                         class: 'custom-icon',
                                         click: function (chart, options, e) {
-                                           searchChart.setChartStyle('area')
+                                           Fluidity.Search.searchChart.setChartStyle('area')
                                        }
                                     }
                             ]
@@ -111,7 +111,8 @@ searchChart = new Vue({
                   categories: [
                   ],
                   labels: {
-                    rotate: -90
+                    rotate: -90,
+                    datetimeUTC: false,
                   }
                 },
                 tooltip: {

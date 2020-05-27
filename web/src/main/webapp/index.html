@@ -1,39 +1,59 @@
+<!--
+  ~
+  ~  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~
+  ~   See the License for the specific language governing permissions and  limitations under the License.
+  ~
+  -->
+
 <!--  - "https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"-->
 <!--  - "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"-->
 <!doctype html>
 <html lang="en">
-  <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <meta name="description" content="">
-      <meta name="author" content="Liquidlabs">
-      <title>Fluidity | Dataflow Analytics Platform</title>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <meta content="" name="description">
+    <meta content="Liquidlabs" name="author">
+    <title>Fluidity | Dataflow Analytics Platform</title>
 
-      <!-- Bootstrap core CSS -->
-      <link href="css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Bootstrap core CSS -->
+    <link crossorigin="anonymous" href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.css" rel="stylesheet" type="text/css"/>
 
-      <link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet"
-            crossorigin="anonymous">
+    <link href="https://unpkg.com/vue-simple-suggest/dist/styles.css" rel="stylesheet">
 
-
-      <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
-      <link rel="stylesheet" href="css/jquery.fileupload.css"  crossorigin="anonymous"/>
-      <link rel="stylesheet" href="css/jquery.fileupload-ui.css"  crossorigin="anonymous"/>
-
-<!--      <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
-      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.3.0/frappe-charts.min.css" crossorigin="anonymous">
-
-      <link href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" rel="stylesheet">
-
-      <!-- Favicons -->
-      <link rel="icon" href="img/favicon.ico">
-      <meta name="msapplication-config" content="img/favicons/browserconfig.xml">
-      <meta name="theme-color" content="#563d7c">
+    <link crossorigin="anonymous" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"
+          rel="stylesheet">
 
 
-      <style>
+    <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+    <link crossorigin="anonymous" href="css/jquery.fileupload.css" rel="stylesheet"/>
+    <link crossorigin="anonymous" href="css/jquery.fileupload-ui.css" rel="stylesheet"/>
+
+    <!--      <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+    <link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+          integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" rel="stylesheet">
+
+    <link crossorigin="anonymous"
+          href="https://cdnjs.cloudflare.com/ajax/libs/frappe-charts/1.3.0/frappe-charts.min.css"
+          rel="stylesheet">
+
+    <link href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" rel="stylesheet">
+
+    <!-- Favicons -->
+    <link href="img/favicon.ico" rel="icon">
+    <meta content="img/favicons/browserconfig.xml" name="msapplication-config">
+    <meta content="#563d7c" name="theme-color">
+
+
+    <style>
           .bd-placeholder-img {
               font-size: 1.125rem;
               text-anchor: middle;
@@ -48,603 +68,785 @@
                   font-size: 3.5rem;
               }
           }
-      </style>
-      <!-- Custom styles for this template -->
-      <link href="css/main.css" rel="stylesheet">
-  </head>
-  <body>
 
-    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://github.com/liquidlabsio/fluidity" target="_blank" style="padding:1px">
-            <img class="" src="img/fluidity-hor-clear.png" alt="" width="140">
-        </a>
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="css/main.css" rel="stylesheet">
+</head>
+<body>
 
-        <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
-        <ul class="navbar-nav px-3">
-            <li class="nav-item text-nowrap">
-                <a id="signout" class="nav-link" href="#">Sign out</a>
-            </li>
-        </ul>
-        <div id="spinnerHome">
-            <div class="spinner spinner-border text-primary"></div>
-        </div>
+<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="https://github.com/liquidlabsio/fluidity" style="padding:1px"
+       target="_blank">
+        <img alt="" class="" src="img/fluidity-hor-clear.png" width="140">
+    </a>
 
-    </nav>
+    <input aria-label="Search" class="form-control form-control-dark w-100" placeholder="Search" type="text">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="#" id="signout">Sign out</a>
+        </li>
+    </ul>
+    <div id="spinnerHome">
+        <div class="spinner spinner-border text-primary"></div>
+    </div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sideNav" class="col-md-2 d-none d-md-block bg-light sidebar">
-                <div class="sidebar-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active compressed explorer" href="#" data-target="explorerTab">
-                                <span data-feather="layers"></span>
-                                <span class="sr-only">(current)</span>
-                            </a>
-                            <a class="nav-link active expanded" href="#" data-target="explorerTab">
-                                <span data-feather="layers"></span>
-                                Explore <span class="sr-only">(current)</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active compressed" href="#" data-target="searchTab">
-                                <span data-feather="search"></span>
-                                <span class="sr-only"></span>
-                            </a>
-                            <a class="nav-link active expanded" href="#" data-target="searchTab">
-                                <span data-feather="search"></span>
-                                Search <span class="sr-only"></span>
-                            </a>
-                        </li>
+</nav>
 
-                        <li class="nav-item">
-                            <a class="nav-link compressed" href="#" data-target="importTab">
-                                <span data-feather="upload-cloud"></span>
-                            </a>
-                            <a class="nav-link expanded" href="#" data-target="importTab">
-                                <span data-feather="upload-cloud"></span>
-                                Import
-                            </a>
-
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link compressed" href="#">
-                                <span data-feather="bar-chart-2"></span>
-                            </a>
-                            <a class="nav-link expanded" href="#">
-                                <span data-feather="bar-chart-2"></span>
-                                Reports
-                            </a>
-
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link compressed" href="#">
-                                <span data-feather="home"></span>
-                            </a>
-                            <a class="nav-link expanded" href="#">
-                                <span data-feather="home"></span>
-                                Integrations
-                            </a>
-
-                        </li>
-                    </ul>
-
-                    <h7 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted compressed">
-                        <span class="compressed">...</span>
-                        <a class="d-flex align-items-center text-muted compressed" href="#" aria-label="Add a new report">
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar" id="sideNav">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active compressed explorer" data-target="explorerTab" href="#">
+                            <span data-feather="layers"></span>
+                            <span class="sr-only">(current)</span>
                         </a>
-                    </h7>
-
-                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted expanded">
-                        <span class="expanded">Configuration</span>
-                        <a class="d-flex align-items-center text-muted expanded" href="#" aria-label="Add a new report">
-                            <span class="expanded" data-feather="plus-circle"></span>
+                        <a class="nav-link active expanded" data-target="explorerTab" href="#">
+                            <span data-feather="layers"></span>
+                            Explore <span class="sr-only">(current)</span>
                         </a>
-                    </h6>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link compressed" href="#" data-target="configuration">
-                                <span data-feather="settings"></span>
-                            </a>
-                            <a class="nav-link expanded" href="#" data-target="configuration">
-                                <span data-feather="settings"></span>
-                                Installation
-                            </a>
-                        </li>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active compressed" data-target="searchTab" href="#">
+                            <span data-feather="search"></span>
+                            <span class="sr-only"></span>
+                        </a>
+                        <a class="nav-link active expanded" data-target="searchTab" href="#">
+                            <span data-feather="search"></span>
+                            Search <span class="sr-only"></span>
+                        </a>
+                    </li>
 
-                        <li class="nav-item">
-                            <a class="compressed" id="expandNav" href="#">
-                                <span data-feather="chevrons-right"></span>
-                            </a>
-                            <a class="expanded" id="compressNav" href="#">
-                                <span data-feather="chevrons-left"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="dataflowTab" href="#">
+                            <span data-feather="wind"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="dataflowTab" href="#">
+                            <span data-feather="wind"></span>
+                            Dataflow
+                        </a>
+                    </li>
 
-            <main role="main" id="mainPanel" class="col-md-10 ml-sm-auto col-lg-10 px-4">
-                <div id="explorerTab" class="mainPanelTab" style="display: none;">
-                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                        <h1 class="h2">Explore</h1>
+                </ul>
 
-                        <div class="btn-toolbar mb-2 mb-md-0">
-                            <div class="btn-group mr-2">
-                                <button id="refreshFiles" type="button" class="btn btn-sm btn-outline-secondary">Refresh</button>
-                                <button  type="button" class="btn btn-sm btn-outline-secondary">Upload</button>
-                                <button  type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                                <span data-feather="calendar"></span>
-                                This week
+                <h7 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted compressed">
+                    <span class="compressed">...</span>
+                    <a aria-label="Add a new report" class="d-flex align-items-center text-muted compressed" href="#">
+                    </a>
+                </h7>
+
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted expanded">
+                    <span class="expanded">Configuration</span>
+                    <a aria-label="Add a new report" class="d-flex align-items-center text-muted expanded" href="#">
+                        <span class="expanded" data-feather="plus-circle"></span>
+                    </a>
+                </h6>
+
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="refineryTab" href="#">
+                            <span data-feather="command"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="refineryTab" href="#">
+                            <span data-feather="command"></span>
+                            Refinery
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="importTab" href="#">
+                            <span data-feather="upload-cloud"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="importTab" href="#">
+                            <span data-feather="upload-cloud"></span>
+                            Import
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link compressed" data-target="configuration" href="#">
+                            <span data-feather="settings"></span>
+                        </a>
+                        <a class="nav-link expanded" data-target="configuration" href="#">
+                            <span data-feather="settings"></span>
+                            Installation
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="compressed" href="#" id="expandNav">
+                            <span data-feather="chevrons-right"></span>
+                        </a>
+                        <a class="expanded" href="#" id="compressNav">
+                            <span data-feather="chevrons-left"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-10 ml-sm-auto col-lg-10 px-4" id="mainPanel" role="main">
+            <div class="mainPanelTab" id="explorerTab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Explore</h1>
+
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <button class="btn btn-sm btn-outline-secondary" id="refreshFiles" type="button">Refresh
                             </button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button">Upload</button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button">Share</button>
                         </div>
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button">
+                            <span data-feather="calendar"></span>
+                            This week
+                        </button>
+                    </div>
 
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm" id="explorerFileListTable">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tags</th>
+                            <th>Resource</th>
+                            <th>Size</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+                <h5 id="explorerOpenFileName">Filename: []</h5>
+                <a class="zoomExplorer" data-zoom="in" href="#">
+                    <span data-feather="zoom-in"></span>
+                </a>
+                <a class="zoomExplorer" data-zoom="out" href="#">
+                    <span data-feather="zoom-out"></span>
+                </a>
+                <div class="normalSizeEditor" id="explorerEditor">
+                </div>
+            </div>
+
+            <div class="mainPanelTab" id="searchTab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Search</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0" id="searchToolbar">
+
+                        <vue-toggle :selected.sync="time" :values="styles"
+                                    default="time.series()" id="searchTimeSeriesSelection"></vue-toggle>
+
+                        <button aria-expanded="false" aria-haspopup="true"
+                                class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown"
+                                id="searchDurationSelector" type="button">
+                            <span data-feather="calendar"></span>
+                            Last hour
+                        </button>
+                        <div aria-labelledby="searchDurationSelector" class="dropdown-menu">
+                            <a class="search-duration-dropdown dropdown-item" data-duration="60" href="#">Last
+                                hour</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="120" href="#">2
+                                hours</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="360" href="#">6
+                                hours</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="720" href="#">12
+                                hours</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="1440" href="#">1
+                                day</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="2880" href="#">2
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="7200" href="#">5
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="10080" href="#">7
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="20160" href="#">14
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="43200" href="#">30
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="86400" href="#">60
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="129600" href="#">90
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="259200" href="#">180
+                                days</a>
+                            <a class="search-duration-dropdown dropdown-item" data-duration="2259200" href="#">All
+                                time</a>
+                        </div>
                     </div>
-                    <div class="table-responsive" >
-                        <table id="explorerFileListTable" class="table table-striped table-sm">
-                            <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Tags</th>
-                                <th>Resource</th>
-                                <th>Size</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                        </table>
-                    </div>
-                        <h5 id="explorerOpenFileName">Filename: []</h5>
-                        <a class="zoomExplorer" data-zoom="in" href="#">
-                            <span data-feather="zoom-in"></span>
-                        </a>
-                        <a class="zoomExplorer" data-zoom="out" href="#">
-                            <span data-feather="zoom-out"></span>
-                        </a>
-                  <div id="explorerEditor" class="normalSizeEditor">
-                  </div>
                 </div>
 
-                <div id="searchTab" class="mainPanelTab" style="display: none;">
-                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                        <h1 class="h2">Search</h1>
-                        <div id="searchToolbar" class="btn-toolbar mb-2 mb-md-0">
 
-                            <vue-toggle id="searchTimeSeriesSelection" :values="styles"
-                                        :selected.sync="time" default="time.series()"></vue-toggle>
-
-                            <button id="searchDurationSelector" type="button"
-                                    class="btn btn-sm btn-outline-secondary dropdown-toggle" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                <span data-feather="calendar"></span>
-                                Last hour
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="searchDurationSelector">
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="60">Last
-                                    hour</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="120">2
-                                    hours</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="360">6
-                                    hours</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="720">12
-                                    hours</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="1440">1
-                                    day</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2880">2
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="7200">5
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="10080">7
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="20160">14
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="43200">30
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="86400">60
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="129600">90
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="259200">180
-                                    days</a>
-                                <a class="search-duration-dropdown dropdown-item" href="#" data-duration="2259200">All
-                                    time</a>
-                            </div>
-                        </div>
+                <form class="form-row" id="searchInputForm">
+                    <div class="form-group col-md-2" id="bucketFilterWrapper">
+                        <label class="control-label">Bucket | Tags</label>
+                        <vue-bootstrap-typeahead
+                                :data="completes"
+                                placeholder="*"
+                                v-model="query"
+                                size="sm"
+                        ></vue-bootstrap-typeahead>
                     </div>
-
-
-                    <form id="searchInputForm" class="form-row">
-                        <div class="form-group col-md-2" id="bucketFilterWrapper">
-                            <label class="control-label">Bucket | Tags</label>
-                            <vue-bootstrap-typeahead
-                                    v-model="query"
-                                    :data="completes"
-                                    placeholder="*"
-                            ></vue-bootstrap-typeahead>
-                        </div>
-                        <div class="form-group col-md-2" id="fileFilterWrapper">
-                            <label class="control-label">Filename</label>
-                            <vue-bootstrap-typeahead
-                                    v-model="query"
-                                    :data="completes"
-                                    placeholder="*"
-                            ></vue-bootstrap-typeahead>
-                        </div>
-                        <div class="form-group col-md-2" id="recordFilterWrapper">
-                            <label class="control-label">Record Match</label>
-                            <vue-bootstrap-typeahead
-                                    v-model="query"
-                                    :data="completes"
-                                    placeholder="*"
-                            ></vue-bootstrap-typeahead>
-                        </div>
-                        <div class="form-group col-md-2" id="fieldExtractWrapper">
-                            <label class="control-label">Field Extract</label>
-                            <vue-bootstrap-typeahead
-                                    v-model="query"
-                                    :data="completes"
-                                    placeholder="*"
-                            ></vue-bootstrap-typeahead>
-                        </div>
-                        <div class="form-group col-md-2"  id="analyticExtractWrapper">
+                    <div class="form-group col-md-2" id="fileFilterWrapper">
+                        <label class="control-label">Filename</label>
+                        <vue-bootstrap-typeahead
+                                :data="completes"
+                                placeholder="*"
+                                v-model="query"
+                                size="sm"
+                        ></vue-bootstrap-typeahead>
+                    </div>
+                    <div class="form-group col-md-2" id="recordFilterWrapper">
+                        <label class="control-label">Record Match</label>
+                        <vue-bootstrap-typeahead
+                                :data="completes"
+                                placeholder="*"
+                                v-model="query"
+                                size="sm"
+                        ></vue-bootstrap-typeahead>
+                    </div>
+                    <div class="form-group col-md-2" id="fieldExtractWrapper">
+                        <label class="control-label">Field Extract</label>
+                        <vue-bootstrap-typeahead
+                                :data="completes"
+                                placeholder="*"
+                                v-model="query"
+                                size="sm"
+                        ></vue-bootstrap-typeahead>
+                    </div>
+                    <div class="form-group col-md-2" id="analyticExtractWrapper">
                         <label class="control-label">Analytic</label>
                         <vue-bootstrap-typeahead
                                 v-model="query"
                                 :data="completes"
                                 placeholder="*"
+                                size="sm"
                         ></vue-bootstrap-typeahead>
                     </div>
-                        <div class="form-group col-md-1"  id="groupByWrapper">
-                            <label class="control-label">GroupBy</label>
-                            <vue-bootstrap-typeahead
-                                    v-model="query"
-                                    :data="completes"
-                                    placeholder="*"
-                            ></vue-bootstrap-typeahead>
-                        </div>
-                        <div class="form-group col-md-1">
-                            <label class="control-label">&nbsp;</label>
-                            <button id="searchSubmit" class="btn btn-primary form-control" v-on:click="searchSubmit">
-                                <span data-feather="search"></span>
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                    <div id="searchResultStats">
-                        {{ stats }}
+                    <div class="form-group col-md-1" id="groupByWrapper">
+                        <label class="control-label">GroupBy</label>
+                        <vue-bootstrap-typeahead
+                                size="sm"
+                                :data="completes"
+                                placeholder="*"
+                                v-model="query"
+                        ></vue-bootstrap-typeahead>
                     </div>
-                    <div id="searchChart">
-                        <apexchart height="350" :options="chartOptions" :series="series" v-on:click="click"></apexchart>
-<!--                        <gchart-xy height="350" :type="type" :options="options" :series="series"></gchart-xy>-->
+                    <div class="form-group col-md-1">
+                        <br>
+                        <button class="btn btn-primary btn-sm" id="searchSubmit" style="margin-top: 8px;"
+                                v-on:click="searchSubmit">
+                            <span data-feather="search"></span>
+                        </button>
+
                     </div>
-                    <a class="searchZoom" data-zoom="in" href="#">
-                        <span data-feather="zoom-in"></span>
-                    </a>
-                    <a class="searchZoom" data-zoom="out" href="#">
-                        <span data-feather="zoom-out"></span>
-                    </a>
-                    <div id="searchFileInfo">{{ searchFileInfo }}</div>
-                    <div id="searchResultsEditor" class="normalSizeEditor"></div>
+
+                </form>
+
+                <div id="searchResultStats">
+                    {{ stats }}
                 </div>
+                <div id="searchChart">
+                    <apexchart :options="chartOptions" :series="series" height="350" v-on:click="click"></apexchart>
+                    <!--                        <gchart-xy height="350" :type="type" :options="options" :series="series"></gchart-xy>-->
+                </div>
+                <a class="searchZoom" data-zoom="in" href="#">
+                    <span data-feather="zoom-in"></span>
+                </a>
+                <a class="searchZoom" data-zoom="out" href="#">
+                    <span data-feather="zoom-out"></span>
+                </a>
+                <div id="searchFileInfo">{{ searchFileInfo }}</div>
+                <div class="normalSizeEditor" id="searchResultsEditor"></div>
+            </div>
+            <div class="mainPanelTab" id="refineryTab" style="display: none;">
+                <h1 class="h2">Refinery - dataflow model management</h1>
+                <hr>
+                <div id="refinery">
+                    <b-alert :show="alertVisible" variant="primary">{{alertMessage}}</b-alert>
+
+                    <b-input-group class="mt-3" prepend="Name">
+                        <vue-simple-suggest :filter-by-query="true" :list="fetchModels"
+                                            @select="loadModel"
+                                            class="col-md-8"
+                                            min-length="0"
+                                            placeholder="Click to list models - or Enter to load"
+                                            style="padding:0px;"
+                                            type="search"
+                                            v-model="modelNameInput.name"
+                                            v-on:keyup.native.enter="loadModel"
+
+                        ></vue-simple-suggest>
+                        <b-input-group-append>
+                            <b-button v-on:click="saveModel" variant="info">Save</b-button>
+                            <b-button v-on:click="loadModel" variant="outline-success">Load</b-button>
+                        </b-input-group-append>
+                    </b-input-group>
+                    <br>
+
+                    <b-card text-variant="grey" title="Source data extraction for model building">
+                        <b-form inline>
+                            <b-form-group class="col-md-3" label="Bucket | Tags" style="padding-left:0px">
+                                <vue-tags-input
+                                        :tags="input.bucket.tags"
+                                        v-model="input.bucket.tag"
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputBucketFilteredItems"
+                                        @tags-changed="newTags => input.bucket.tags = newTags"
+
+                                ></vue-tags-input>
+                            </b-form-group>
+
+                            <b-form-group class="col-md-3" label="Filename" style="padding-left:0px">
+                                <vue-tags-input
+                                        :tags="input.filename.tags"
+                                        v-model="input.filename.tag"
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFilenameFilteredItems"
+                                        @tags-changed="newTags => input.filename.tags = newTags"
+                                ></vue-tags-input>
+                            </b-form-group>
+                            <b-form-group class="col-md-2" label="Record Filter" style="padding-left:0px">
+                                <vue-tags-input
+                                        :tags="input.filter.tags"
+                                        v-model="input.filter.tag"
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFilterFilteredItems"
+                                        @tags-changed="newTags => input.filter.tags = newTags"
+                                ></vue-tags-input>
+                            </b-form-group>
+                            <b-form-group class="col-md-3" label="Field extraction for Correlation"
+                                          style="padding-left:0px">
+                                <vue-tags-input
+                                        :tags="input.field.tags"
+                                        v-model="input.field.tag"
+                                        :allow-edit-tags="true"
+                                        :autocomplete-items="inputFieldFilteredItems"
+                                        @tags-changed="newTags => input.field.tags = newTags"
+                                ></vue-tags-input>
+                            </b-form-group>
 
 
-                <div id="importTab"  class="mainPanelTab" style="display: none;">
-                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                        <h1 class="h2">Import</h1>
-                    </div>
-                    <div id="fileUploaderPanel">
+                            <b-form-group class="col-md-1">
+                                <label class="control-label">&nbsp;</label>
+                                <b-button v-on:click="refinerySubmit" variant="primary">
+                                    <span data-feather="aperture"></span></b-button>
+                            </b-form-group>
+                            <b-form-text id="help-block">
+                                Complete all inputs to accurately match your data records. <b>Note</b>: the 'field'
+                                entry is used to extract the correlation field
+                            </b-form-text>
+                        </b-form>
 
-                        <div id="accordion">
-                            <div class="card">
-                                <div class="card-header" id="headingOne">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                            Upload data to your tenant storage
-                                        </button>
-                                    </h5>
-                                </div>
+                    </b-card>
 
-                                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-                                    <div class="card-body">
+                    <br>
 
-                                        <form
-                                                id="fileuploadForm"
-                                                action="https://NOOO/"
-                                                method="POST"
-                                                enctype="multipart/form-data"
-                                        >
-                                            <div class="col-lg-12" >
+                    <b-card bg-variant="light" title="Build schedule">
+                        <b-col sm="3">
+                            <label>Hours</label>
+                        </b-col>
+                        <b-col sm="9">
+                            <b-form-input id="range-1" max="24" min="1" type="range"
+                                          v-model="modelInterval"></b-form-input>
+                            <div class="mt-2">Value: {{ modelInterval }}</div>
+                        </b-col>
+                    </b-card>
+                    <br>
+                    <b-card bg-variant="secondary" text-variant="white" title="Status">
+                        {{statusMessage}}
+                        <li :key="status" v-for="status in statuses">
+                            {{ status }}
+                        </li>
+                    </b-card>
+                    <br>
+                    <b-card bg-variant="info" text-variant="white" title="Model data">
+                        <b-button pill size="sm" v-on:click="refreshModel" variant="outline-light">
+                            <span data-feather="refresh-cw"></span>
+                        </b-button>
+                        &nbsp;{{modelDataUpdateStatus}}
+                        <b-table
+                                @row-selected="loadHistogramData"
+                                select-mode="single"
+                                :fields="modelTable.fields"
+                                :items="modelTable.items"
+                                responsive="sm"
+                                selectable
+                        >
+                        </b-table>
+                    </b-card>
 
-                                                <!-- host/path prefix -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label" id="uploadResourceInputPP">
+                </div>
+            </div>
+
+
+            <div class="mainPanelTab" id="dataflowTab" style="display: none;">
+                <h1 class="h2">Dataflow - search and analysis</h1>
+                <hr>
+                <div id="dataflow">
+                </div>
+            </div>
+            <div class="mainPanelTab" id="importTab" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Import</h1>
+                </div>
+                <div id="fileUploaderPanel">
+
+                    <div id="accordion">
+                        <div class="card">
+                            <div class="card-header" id="headingOne">
+                                <h5 class="mb-0">
+                                    <button aria-controls="collapseOne" aria-expanded="true" class="btn btn-link"
+                                            data-target="#collapseOne" data-toggle="collapse">
+                                        Upload data to your tenant storage
+                                    </button>
+                                </h5>
+                            </div>
+
+                            <div aria-labelledby="headingOne" class="collapse show" data-parent="#accordion"
+                                 id="collapseOne">
+                                <div class="card-body">
+
+                                    <form
+                                            action="https://NOOO/"
+                                            enctype="multipart/form-data"
+                                            id="fileuploadForm"
+                                            method="POST"
+                                    >
+                                        <div class="col-lg-12">
+
+                                            <!-- host/path prefix -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="uploadResourceInputPP">
                                                             Resource Location
                                                         </span>
-                                                    </div>
-                                                    <input name="resource" class="form-control" type="text"
-                                                           id="uploadResourceInput"
-                                                           placeholder="Provide a resource, host or device name"
-                                                           aria-label="Resource Location"
-                                                           aria-describedby="uploadResourceInputPP">
                                                 </div>
+                                                <input aria-describedby="uploadResourceInputPP"
+                                                       aria-label="Resource Location" class="form-control"
+                                                       id="uploadResourceInput"
+                                                       name="resource"
+                                                       placeholder="Provide a resource, host or device name"
+                                                       type="text">
+                                            </div>
 
-                                                <!-- tags -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+                                            <!-- tags -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="uploadTagsInputPP">
                                                             Tags
                                                         </span>
-                                                    </div>
-
-                                                    <input name="tags" type="text" class="form-control"
-                                                           id="uploadTagsInput"
-                                                           placeholder="Enter a comma separated list of tags"
-                                                           aria-label="Resource Identifier"
-                                                           aria-describedby="uploadTagsInputPP">
                                                 </div>
 
-                                                <!-- time extraction -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+                                                <input aria-describedby="uploadTagsInputPP"
+                                                       aria-label="Resource Identifier" class="form-control"
+                                                       id="uploadTagsInput"
+                                                       name="tags"
+                                                       placeholder="Enter a comma separated list of tags"
+                                                       type="text">
+                                            </div>
+
+                                            <!-- time extraction -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="uploadTimeFormatInputPP">
                                                             Time Format
                                                         </span>
-                                                    </div>
-
-                                                    <input name="timeExtraction" type="text" class="form-control"
-                                                           id="uploadTimeFormatInput"
-                                                           placeholder='Optional - time format: yyyy-MM-dd HH:mm:ss.SSS OR with prefix using: prefix:[\"dt\"\"] yyyy-MM-dd&quot;T&quot;HH:mm:SS'
-                                                           aria-label="TimeFormat"
-                                                           aria-describedby="uploadTimeFormatInputPP">
                                                 </div>
 
-
-                                                <!-- file selection -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label">Upload</span>
-                                                    </div>
-                                                    <div class="custom-file">
-                                                        <input type="file" name="fileContent" class="custom-file-input"
-                                                               id="fileupload" multiple>
-                                                        <label class="custom-file-label" for="fileupload">Choose
-                                                            files</label>
-                                                    </div>
-                                                </div>
+                                                <input aria-describedby="uploadTimeFormatInputPP"
+                                                       aria-label="TimeFormat" class="form-control"
+                                                       id="uploadTimeFormatInput"
+                                                       name="timeExtraction"
+                                                       placeholder='Optional - time format: yyyy-MM-dd HH:mm:ss.SSS OR with prefix using: prefix:[\"dt\"\"] yyyy-MM-dd&quot;T&quot;HH:mm:SS'
+                                                       type="text">
                                             </div>
 
-                                            <br>
-                                            <div id="files-list"></div>
-                                        </form>
 
-                                    </div>
+                                            <!-- file selection -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text file-upload-label">Upload</span>
+                                                </div>
+                                                <div class="custom-file">
+                                                    <input class="custom-file-input" id="fileupload" multiple
+                                                           name="fileContent" type="file">
+                                                    <label class="custom-file-label" for="fileupload">Choose
+                                                        files</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <br>
+                                        <div id="files-list"></div>
+                                    </form>
+
                                 </div>
                             </div>
-                            <div class="card">
-                                <div class="card-header" id="headingTwo">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                            Import (S3, Local file system)
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <form
-                                                id="dataImportForm"
-                                        >
-                                            <div class="col-lg-12" >
+                        </div>
+                        <div class="card">
+                            <div class="card-header" id="headingTwo">
+                                <h5 class="mb-0">
+                                    <button aria-controls="collapseTwo" aria-expanded="false"
+                                            class="btn btn-link collapsed" data-target="#collapseTwo"
+                                            data-toggle="collapse">
+                                        Import (S3, Local file system)
+                                    </button>
+                                </h5>
+                            </div>
+                            <div aria-labelledby="headingTwo" class="collapse" data-parent="#accordion"
+                                 id="collapseTwo">
+                                <div class="card-body">
+                                    <form
+                                            id="dataImportForm"
+                                    >
+                                        <div class="col-lg-12">
 
-                                                <!-- bucket -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label" id="importResourceInputPP">
+                                            <!-- bucket -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importResourceInputPP">
                                                             Resource Identifier
                                                         </span>
-                                                    </div>
-                                                    <input  name="importResource" class="form-control"  type="text" id="importResourceInput"
-                                                            placeholder="Storage resource name (S3 bucket name OR local FS path)"
-                                                            aria-label="Resource Identifier" aria-describedby="importResourceInputPP">
                                                 </div>
+                                                <input aria-describedby="importResourceInputPP"
+                                                       aria-label="Resource Identifier" class="form-control"
+                                                       id="importResourceInput"
+                                                       name="importResource"
+                                                       placeholder="Storage resource name (S3 bucket name OR local FS path)"
+                                                       type="text">
+                                            </div>
 
-                                                <!-- tags -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text file-upload-label" id="importTagsInputPP">
+                                            <!-- tags -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                        <span class="input-group-text file-upload-label"
+                                                              id="importTagsInputPP">
                                                             Tags
                                                         </span>
-                                                    </div>
-
-                                                    <input name="importTags"  type="text" class="form-control" id="importTagsInput"
-                                                           placeholder="Comma separated list of tags for labelling"
-                                                           aria-label="Resource Identifier" aria-describedby="importTagsInputPP">
                                                 </div>
 
-                                                <!-- file mask -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+                                                <input aria-describedby="importTagsInputPP"
+                                                       aria-label="Resource Identifier" class="form-control"
+                                                       id="importTagsInput"
+                                                       name="importTags"
+                                                       placeholder="Comma separated list of tags for labelling"
+                                                       type="text">
+                                            </div>
+
+                                            <!-- file mask -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="importFileIncludeInputPP">
                                                             File includes
                                                         </span>
-                                                    </div>
-
-                                                    <input name="importFileIncludes" type="text" class="form-control"
-                                                           id="importFileIncludesInput"
-                                                           placeholder="Partial file path or name: i.e. prod.log - alternatively use '*'"
-                                                           aria-label="File include filter"
-                                                           aria-describedby="importFileIncludeInputPP">
                                                 </div>
 
-                                                <!-- path prefix -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+                                                <input aria-describedby="importFileIncludeInputPP"
+                                                       aria-label="File include filter" class="form-control"
+                                                       id="importFileIncludesInput"
+                                                       name="importFileIncludes"
+                                                       placeholder="Partial file path or name: i.e. prod.log - alternatively use '*'"
+                                                       type="text">
+                                            </div>
+
+                                            <!-- path prefix -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="importFilePrefixInputPP">
                                                             Prefix
                                                         </span>
-                                                    </div>
-
-                                                    <input name="importFilePrefix" type="text" class="form-control"
-                                                           id="importFilePrefixInput"
-                                                           placeholder="Start of the resource Path i.e. exportedData - alternatively use '*'"
-                                                           aria-label="Path prefix"
-                                                           aria-describedby="importFilePrefixInputPP">
                                                 </div>
-                                                <!-- age -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+
+                                                <input aria-describedby="importFilePrefixInputPP"
+                                                       aria-label="Path prefix" class="form-control"
+                                                       id="importFilePrefixInput"
+                                                       name="importFilePrefix"
+                                                       placeholder="Start of the resource Path i.e. exportedData - alternatively use '*'"
+                                                       type="text">
+                                            </div>
+                                            <!-- age -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="importFileAgeInputPP">
                                                             Age days
                                                         </span>
-                                                    </div>
-
-                                                    <input name="importFileAge" type="text" class="form-control"
-                                                           id="importFileAgeInput"
-                                                           placeholder="Optional - Include data less than 'n' days old"
-                                                           aria-label="Age days"
-                                                           aria-describedby="importFileAgeInputPP">
                                                 </div>
 
-                                                <!-- time extraction -->
-                                                <div class="input-group mb-3">
-                                                    <div class="input-group-prepend">
+                                                <input aria-describedby="importFileAgeInputPP" aria-label="Age days"
+                                                       class="form-control"
+                                                       id="importFileAgeInput"
+                                                       name="importFileAge"
+                                                       placeholder="Optional - Include data less than 'n' days old"
+                                                       type="text">
+                                            </div>
+
+                                            <!-- time extraction -->
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
                                                         <span class="input-group-text file-upload-label"
                                                               id="importTimeFormatInputPP">
-                                                            <a target="_blank" href="https://github.com/liquidlabsio/fluidity/blob/master/search/src/main/java/io/fluidity/util/DateTimeExtractor.java">
+                                                            <a target="_blank"
+                                                               href="https://github.com/liquidlabsio/fluidity/blob/master/search/src/main/java/io/fluidity/util/DateTimeExtractor.java">
                                                                 Time Format</a>
                                                         </span>
-                                                    </div>
-
-                                                    <input name="importTimeFormat" type="text" class="form-control"
-                                                           id="importimeFormatInput"
-                                                           placeholder="Optional - time extraction format: yyyy-MM-dd HH:mm:ss.SSS"
-                                                           aria-label="TimeFormat"
-                                                           aria-describedby="uploadTimeFormatInputPP">
                                                 </div>
 
-
-                                                <button id="importFromStorageButton" class="btn btn-primary"
-                                                        data-toggle="tooltip"
-                                                        title="Import making storage data accessible without copying and filtered by tags">
-                                                    Import
-                                                </button>
-                                                <button id="removeFromStorageButton" class="btn btn-warning"
-                                                        data-toggle="tooltip"
-                                                        title="Removes references imported data leaving source data untouched">
-                                                    Remove imported
-                                                </button>
+                                                <input aria-describedby="uploadTimeFormatInputPP"
+                                                       aria-label="TimeFormat" class="form-control"
+                                                       id="importimeFormatInput"
+                                                       name="importTimeFormat"
+                                                       placeholder="Optional - time extraction format: yyyy-MM-dd HH:mm:ss.SSS"
+                                                       type="text">
                                             </div>
-                                            <br>
-                                        </form>
-                                    </div>
+
+
+                                            <button class="btn btn-primary" data-toggle="tooltip"
+                                                    id="importFromStorageButton"
+                                                    title="Import making storage data accessible without copying and filtered by tags">
+                                                Import
+                                            </button>
+                                            <button class="btn btn-warning" data-toggle="tooltip"
+                                                    id="removeFromStorageButton"
+                                                    title="Removes references imported data leaving source data untouched">
+                                                Remove imported
+                                            </button>
+                                        </div>
+                                        <br>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-
                     </div>
+
                 </div>
-                <div id="configuration"  class="mainPanelTab" style="display: none;">
-                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                        <h1 class="h2">Installation Settings (read-only)</h1>
-                    </div>
-                    <div>
-                        <form class="form-group">
-                            <div class="col-lg-12">
-                                <div class="form-group">
-                                    <label for="tenantInfo">Tenant Identity</label>
-                                    <input  name="resource"  type="text" class="form-control" id="tenantInfo"  placeholder="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="restAPIInfo">REST API</label>
-                                    <input name="tags"  type="text" class="form-control" id="restAPIInfo" aria-describedby="" placeholder="Address of the REST API being used" title="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="swaggerRestAPIInfo">Swagger REST API Web</label>
-                                    <input name="tags"  type="text" class="form-control" id="swaggerRestAPIInfo" aria-describedby="" placeholder="Address of the Web based REST API" title="">
-                                </div>
-
+            </div>
+            <div class="mainPanelTab" id="configuration" style="display: none;">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Installation Settings (read-only)</h1>
+                </div>
+                <div>
+                    <form class="form-group">
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label for="tenantInfo">Tenant Identity</label>
+                                <input class="form-control" id="tenantInfo" name="resource" placeholder="" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="restAPIInfo">REST API</label>
+                                <input aria-describedby="" class="form-control" id="restAPIInfo" name="tags"
+                                       placeholder="Address of the REST API being used" title="" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="swaggerRestAPIInfo">Swagger REST API Web</label>
+                                <input aria-describedby="" class="form-control" id="swaggerRestAPIInfo" name="tags"
+                                       placeholder="Address of the Web based REST API" title="" type="text">
                             </div>
 
-                            <br>
-                        </form>
+                        </div>
+
+                        <br>
+                    </form>
 
 
-                    </div>
                 </div>
+            </div>
 
-            </main>
-        </div>
+        </main>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script crossorigin="anonymous" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
-    <script>
+<script>
         if (typeof jQuery == 'undefined') {
             document.write(unescape("%3Cscript src='/js/jquery-3.2.1.min.js' type='text/javascript'%3E%3C/script%3E"));
         }
-    </script>
-    <script src="js/vendor/bootstrap.bundle.min.js"
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js" crossorigin="anonymous"></script>
 
-    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+</script>
+<script crossorigin="anonymous"
+        src="js/vendor/bootstrap.bundle.min.js"></script>
 
+<script crossorigin="anonymous"
+        src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
 
-    <!-- ace ui text editor CDN from https://pagecdn.com/lib/ace -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.7/ace.js" crossorigin="anonymous"
-            integrity="sha256-C7DTYRJLG+B/VEzHGeoPMw699nsTQYPAXHKXZb+q04E="></script>
-    <script src="https://pagecdn.io/lib/ace/1.4.7/theme-monokai.js" crossorigin="anonymous"></script>
-    <script src="https://pagecdn.io/lib/ace/1.4.7/theme-twilight.js" crossorigin="anonymous"></script>
-    <script src="https://pagecdn.io/lib/ace/1.4.7/worker-javascript.js" crossorigin="anonymous"></script>
-    <script src="https://pagecdn.io/lib/ace/1.4.7/worker-json.js" crossorigin="anonymous"></script>
+<script crossorigin="anonymous" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 
 
-    <!-- gzip decompression -->
-    <script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" crossorigin="anonymous"></script>
-
-    <!-- file upload ui -->
-    <script src="js/vendor/jquery.ui.widget.js"></script>
-    <script src="js/vendor/jquery.iframe-transport.js"></script>
-    <script src="js/vendor/jquery.fileupload.js"></script>
-
-    <!-- VUE stuff -->
+<!-- ace ui text editor CDN from https://pagecdn.com/lib/ace -->
+<script crossorigin="anonymous" integrity="sha256-C7DTYRJLG+B/VEzHGeoPMw699nsTQYPAXHKXZb+q04E="
+        src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.7/ace.js"></script>
+<script crossorigin="anonymous" src="https://pagecdn.io/lib/ace/1.4.7/theme-monokai.js"></script>
+<script crossorigin="anonymous" src="https://pagecdn.io/lib/ace/1.4.7/theme-twilight.js"></script>
+<script crossorigin="anonymous" src="https://pagecdn.io/lib/ace/1.4.7/worker-javascript.js"></script>
+<script crossorigin="anonymous" src="https://pagecdn.io/lib/ace/1.4.7/worker-json.js"></script>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js" crossorigin="anonymous"></script>
+<!-- gzip decompression -->
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue-apexcharts" crossorigin="anonymous"></script>
+<!-- file upload ui -->
+<script src="js/vendor/jquery.ui.widget.js"></script>
+<script src="js/vendor/jquery.iframe-transport.js"></script>
+<script src="js/vendor/jquery.fileupload.js"></script>
+
+<!-- VUE stuff -->
+
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
 
 
-    <script src="https://unpkg.com/vue-bootstrap-typeahead" crossorigin="anonymous"></script>
+<!-- bootstrap vue packaging -->
+<!--        <script src="https://cdn.jsdelivr.net/npm/portal-vue@2.1.7/dist/portal-vue.umd.min.js"></script>-->
+<!--        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.4.0/cjs/popper.min.js"></script>-->
 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!--    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>-->
+<script src="https://unpkg.com/bootstrap-vue@2.14.0/dist/bootstrap-vue.js"></script>
+<script src="https://unpkg.com/bootstrap-vue@2.14.0/dist/bootstrap-vue-icons.js"></script>
 
-    <script src="js/gcharts-vue.js"></script>
-    <script src="js/apexcharts-vue.js"></script>
 
-    <!-- App -->
-    <script src="js/pubsub.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/backend.js"></script>
-    <script src="js/explorer.js"></script>
+<script src="https://unpkg.com/vue-simple-suggest" type="text/javascript"></script>
+<script src="https://unpkg.com/vue-simple-suggest@1.10.1" type="text/javascript"></script>
 
-    <script src="js/search-vue.js"></script>
-    <script src="js/search-hoverlink.js"></script>
-    <script src="js/search.js"></script>
-    <script src="js/search-backend.js"></script>
-    <script src="js/navigation.js"></script>
-    <script src="js/import.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/vue-apexcharts"></script>
 
-  </body>
+<script src="https://unpkg.com/@johmun/vue-tags-input/dist/vue-tags-input.js"></script>
+
+<script crossorigin="anonymous" src="https://unpkg.com/vue-bootstrap-typeahead"></script>
+
+<script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
+
+<script src="js/gcharts-vue.js"></script>
+
+
+<!-- App -->
+<script src="js/pubsub.js"></script>
+<script src="js/main.js"></script>
+<script src="js/backend.js"></script>
+<script src="js/explorer.js"></script>
+
+<script src="js/refinery/refinery.js"></script>
+<script src="js/refinery/backend.js"></script>
+<script src="js/refinery/vue.js"></script>
+
+<script src="js/search/search-apexcharts-vue.js"></script>
+<script src="js/search/vue.js"></script>
+<script src="js/search/search-hoverlink.js"></script>
+<script src="js/search/search.js"></script>
+<script src="js/search/backend.js"></script>
+
+
+<script src="js/navigation.js"></script>
+<script src="js/import.js"></script>
+
+</body>
 </html>

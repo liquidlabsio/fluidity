@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services.query;
 
 
@@ -8,14 +22,7 @@ import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
@@ -78,7 +85,7 @@ public class QueryResource implements QueryService {
 
         log.debug("get");
         // requested by storage URL
-        if (filename.startsWith("s3://")) {
+        if (filename.startsWith("storage://")) {
             return storage.get(cloudRegion, filename, offset);
         }
         // requested by filename
@@ -155,10 +162,10 @@ public class QueryResource implements QueryService {
     @GET
     @Path("/list")
     @Produces("application/json")
-    public List<FileMeta> list() {
+    public List<FileMeta> list(String tenant) {
 
         log.debug("list");
-        return query.list();
+        return query.list(tenant);
     }
 
     @Override

@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.search.agg.events;
 
 import io.fluidity.search.Search;
@@ -24,12 +38,12 @@ class SearchEventCollectorTest {
                 new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos);
         Search search = new Search();
         search.expression = "* | * | * | * | CPU | *";
-        search.from = 0;
+        search.from = 0l;
         search.to = System.currentTimeMillis();
 
         String timeFormat = "yyyy-MM-dd HH:mm.SS";
 
-        int[] process = simpleSearchProcessor.process(false, search, 0, System.currentTimeMillis(), 1024, timeFormat);
+        Integer[] process = simpleSearchProcessor.process(false, search, 0, System.currentTimeMillis(), 1024, timeFormat);
         assertTrue(process[0] > 0, "didn't process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());
@@ -47,11 +61,11 @@ class SearchEventCollectorTest {
                 new ByteArrayInputStream(fileContentAsString.toString().getBytes()), baos);
         Search search = new Search();
         search.expression = "* | * | * | * | CPU | *";
-        search.from = 0;
+        search.from = 0l;
         search.to = System.currentTimeMillis();
 
 
-        int[] process = simpleSearchProcessor.process(false, search, 0, System.currentTimeMillis(), 1024, "");
+        Integer[] process = simpleSearchProcessor.process(false, search, 0, System.currentTimeMillis(), 1024, "");
         assertTrue(process[0] > 0, "didnt process any data");
         System.out.println("Processed:" + process);
         String outFileContents = new String(baos.toByteArray());

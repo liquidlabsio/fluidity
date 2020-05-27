@@ -12,19 +12,24 @@
  *
  */
 
-package io.fluidity.search.agg.histo;
+package io.fluidity.search;
 
-public class NoopHistoCollector implements HistoCollector {
-    @Override
-    public void add(long currentTime, long position, String nextLine) {
+import java.io.InputStream;
+
+public class StorageInputStream {
+    public final String name;
+    public final long lastModified;
+    public final long length;
+    public final InputStream inputStream;
+
+    public StorageInputStream(String name, long lastModified, long length, InputStream inputStream) {
+        this.name = name;
+        this.lastModified = lastModified;
+        this.length = length;
+        this.inputStream = inputStream;
     }
 
-    @Override
-    public void updateFileInfo(String filename, String tags) {
-    }
-
-    @Override
-    public void close() throws Exception {
-
+    public StorageInputStream copy(InputStream gzipInputStream) {
+        return new StorageInputStream(this.name, this.lastModified, this.length, gzipInputStream);
     }
 }

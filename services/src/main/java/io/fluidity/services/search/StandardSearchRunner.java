@@ -1,6 +1,21 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services.search;
 
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.EventCollector;
 import io.fluidity.search.agg.events.LineByLineEventAggregator;
 import io.fluidity.search.agg.events.SearchEventCollector;
@@ -18,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,52 +48,61 @@ public class StandardSearchRunner implements SearchRunner {
     }
 
     @Override
-    public FileMeta[] submit(Search search, QueryService query) {
-        List<FileMeta> files = query.list().stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
+    public FileMeta[] submit(String tenant, Search search, QueryService query) {
+        List<FileMeta> files = query.list(tenant).stream().filter(file -> search.tagMatches(file.getTags()) && search.fileMatches(file.filename, file.fromTime, file.toTime)).limit(limitList).collect(Collectors.toList());
         return files.toArray(new FileMeta[0]);
     }
 
     @Override
-    public String[] searchFile(FileMeta[] files, Search search, Storage storage, String region, String tenant) {
-        try {
-            FileMeta fileMeta = files[0];
-            String searchUrl = fileMeta.getStorageUrl();
-            InputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+    public List<Integer[]> searchFile(FileMeta[] fileMetaBatch, Search search, Storage storage, String region, String tenant) {
 
 
-            int[] processedEventsAndTotal = new int[]{0, 0};
-            try (
-                    EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream, fileMeta, region)
-            ) {
-                processedEventsAndTotal = searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, fileMeta.toTime, fileMeta.size, fileMeta.timeFormat);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return new String[]{"histo", Integer.toString(processedEventsAndTotal[0]), Integer.toString(processedEventsAndTotal[1])};
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new String[0];
-        }
-    }
-
-    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, FileMeta fileMeta, String region) {
-        String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
-        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
-
-        String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), searchUrl);
+        /**
+         * Use a single histo aggregator to the firstFile output stream - it can aggregate from others in the same batch - reducing the total number of files for later aggregation
+         */
+        FileMeta firstFile = fileMetaBatch[0];
+        String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), firstFile.getStorageUrl());
         OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
 
-        HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, fileMeta.filename, fileMeta.tags, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search));
+        List<Integer[]> results = new ArrayList<>();
+        try (HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))) {
+
+            for (FileMeta fileMeta : fileMetaBatch) {
+                try {
+                    String searchUrl = fileMeta.getStorageUrl();
+                    StorageInputStream inputStream = getInputStream(storage, region, tenant, searchUrl);
+                    histoCollector.updateFileInfo(fileMeta.filename, firstFile.tags);
+
+                    try (
+                            EventCollector searchProcessor = getCollectors(search, storage, tenant, searchUrl, inputStream.inputStream, region, histoCollector)
+                    ) {
+                        results.add(searchProcessor.process(fileMeta.isCompressed(), search, fileMeta.fromTime, inputStream.lastModified, inputStream.length, fileMeta.timeFormat));
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to process data:{}", fileMeta.filename, e);
+                    results.add(new Integer[]{0, 0, 0});
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+        return results;
+    }
+
+    private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, String region, HistoCollector histoCollector) {
+        String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
+        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
         return new SearchEventCollector(histoCollector, inputStream, outputStream);
     }
 
-    private InputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
-        InputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
+    private StorageInputStream getInputStream(Storage storage, String region, String tenant, String searchUrl) throws IOException {
+        StorageInputStream inputStream = storage.getInputStream(region, tenant, searchUrl);
         if (searchUrl.endsWith(".gz")) {
-            inputStream = new GZIPInputStream(inputStream);
+            inputStream = inputStream.copy(new GZIPInputStream(inputStream.inputStream));
         }
         if (searchUrl.endsWith(".lz4")) {
-            inputStream = new LZ4FrameInputStream(inputStream);
+            inputStream = inputStream.copy(new LZ4FrameInputStream(inputStream.inputStream));
         }
         return inputStream;
     }
@@ -103,7 +128,7 @@ public class StandardSearchRunner implements SearchRunner {
 
         String[] eventAggs;
 
-        Map<String, InputStream> inputStreams = storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime);
+        Map<String, StorageInputStream> inputStreams = storage.getInputStreams(region, tenant, search.stagingPrefix(), Search.eventsSuffix, fromTime);
         try (LineByLineEventAggregator eventAggregator = new LineByLineEventAggregator(inputStreams, search)) {
             eventAggs = eventAggregator.process(fromTime, limit);
         } catch (Exception e) {
@@ -113,5 +138,4 @@ public class StandardSearchRunner implements SearchRunner {
 
         return eventAggs;
     }
-
 }

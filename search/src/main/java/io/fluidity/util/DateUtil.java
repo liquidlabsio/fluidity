@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.util;
 
 import org.joda.time.DateTime;
@@ -178,16 +192,15 @@ public class DateUtil {
      * @return
      */
     public static long guessTimeInterval(boolean isCompressed, long fromTime, long toTime, long fileLength, long currentPos, LinkedList<Integer> lengths) {
-        if (isCompressed) {
-            fileLength *= 100;
-        }
-        if (lengths.size() > 100) lengths.pop();
-        // presume average line fileLength = 1024 bytes;
-        long recentLengthSum = lengths.stream().mapToInt(Integer::intValue).sum();
-        int avgRecentLength = (int) (recentLengthSum / lengths.size());
-        long guessedLineCount = avgRecentLength > 1024 ? (fileLength - currentPos) / avgRecentLength : 10;
-        if (guessedLineCount == 0) guessedLineCount = 10;
-        return (toTime - fromTime) / guessedLineCount;
-    }
-
+		if (isCompressed) {
+			fileLength *= 100;
+		}
+		if (lengths.size() > 100) lengths.pop();
+		// presume average line fileLength = 1024 bytes;
+		long recentLengthSum = lengths.stream().mapToInt(Integer::intValue).sum();
+		int avgRecentLength = (int) (recentLengthSum / lengths.size());
+		long guessedLineCount = (fileLength - currentPos) / avgRecentLength;
+		if (guessedLineCount == 0) guessedLineCount = 1024;
+		return (toTime - fromTime) / guessedLineCount;
+	}
 }

@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +28,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
@@ -43,9 +59,10 @@ class SearchResourceTest {
         Search search = new Search();
         search.expression = "this is a test";
         ExtractableResponse<Response> response = given().contentType("application/json")
+                .pathParam("tenant", "tenant")
                 .body(search)
                 .when()
-                .post("/search/submit")
+                .post("/search/submit/{tenant}")
                 .then()
                 .statusCode(200).extract();
         FileMeta[] as = response.body().as(FileMeta[].class);
@@ -65,7 +82,7 @@ class SearchResourceTest {
         search.expression = "this is a test";
 
         FileMeta fileMeta = new FileMeta();
-        fileMeta.storageUrl = "s3://fixtured-storage-bucket/resource/test-data/file-to-upload.txt";
+        fileMeta.storageUrl = "storage://fixtured-storage-bucket/resource/test-data/file-to-upload.txt";
         fileMeta.toTime = System.currentTimeMillis();
         fileMeta.filename = "yay";
 
@@ -84,10 +101,10 @@ class SearchResourceTest {
                 .post("/search/files/{tenant}/{files}")
                 .then()
                 .statusCode(200).extract();
-        String[] as = response.body().as(String[].class);
+        List<Integer[]> as = response.body().as(ArrayList.class);
         Assert.assertNotNull(as);
-        Assert.assertTrue(as.length > 0);
-        System.out.println("Got:" + Arrays.toString(as));
+        Assert.assertTrue(as.size() > 0);
+        System.out.println("Got:" + as.toString());
     }
 
     @Test

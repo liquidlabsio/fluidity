@@ -1,6 +1,21 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.dataflow;
 
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
 import io.fluidity.util.DateUtil;
 import org.apache.commons.io.IOUtils;
@@ -24,6 +39,7 @@ class DataflowExtractorTest {
     void processWithCorrelationEnhancements() throws IOException {
         StringBuilder fileContentAsString = makeFileContent();
         ByteArrayInputStream instream = new ByteArrayInputStream(fileContentAsString.toString().getBytes());
+        StorageInputStream inputStream1 = new StorageInputStream("someFile", System.currentTimeMillis(), instream.available(), instream);
         final Map<String, String> collected = new HashMap<>();
 
         StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
@@ -35,11 +51,11 @@ class DataflowExtractorTest {
                 e.printStackTrace();
             }
         };
-        DataflowExtractor rewriter = new DataflowExtractor(instream, outFactory, "filePrefix", "region", "tenant");
+        DataflowExtractor rewriter = new DataflowExtractor(inputStream1, outFactory, "filePrefix", "region", "tenant");
 
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(txn)";
-        search.from = 0;
+        search.from = 0l;
         search.to = System.currentTimeMillis();
 
         rewriter.process(false, search, 0, System.currentTimeMillis(), 1024, "");

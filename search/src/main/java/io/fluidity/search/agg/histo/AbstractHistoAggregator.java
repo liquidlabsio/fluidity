@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -16,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.fluidity.search.Search;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.util.PairDeserializer;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.collections.Pair;
@@ -29,17 +33,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 abstract class AbstractHistoAggregator<T> implements HistoAggregator<T> {
-    protected final Map<String, InputStream> inputStreams;
+    protected final Map<String, StorageInputStream> inputStreams;
     protected final Search search;
 
-    public AbstractHistoAggregator(Map<String, InputStream> inputStreams, Search search) {
+    public AbstractHistoAggregator(Map<String, StorageInputStream> inputStreams, Search search) {
         this.inputStreams = inputStreams;
         this.search = search;
     }
 
     @Override
     public String process() throws Exception {
-        List<String> collectedJson = inputStreams.entrySet().stream().map(entry -> readJson(entry.getValue())).collect(Collectors.toList());
+        List<String> collectedJson = inputStreams.entrySet().stream().map(entry -> readJson(entry.getValue().inputStream)).collect(Collectors.toList());
 
         // TODO: implement reduce functionality between each of the series, i.e. avg/stats/min/max etc
         ObjectMapper objectMapper = new ObjectMapper();
@@ -94,7 +98,7 @@ abstract class AbstractHistoAggregator<T> implements HistoAggregator<T> {
     public void close() {
         this.inputStreams.values().forEach(stream -> {
             try {
-                stream.close();
+                stream.inputStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }

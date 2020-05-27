@@ -1,7 +1,7 @@
 /**
 * Vue component for the search page
 **/
-var toggle = Vue.component("vue-toggle",{
+Fluidity.Search.toggle = Vue.component("vue-toggle",{
   props: ['values','selected','default'],
   created: function () {
       this.selected = this.default;
@@ -26,7 +26,7 @@ var toggle = Vue.component("vue-toggle",{
          '</div></fieldset>'
 })
 
-searchTimeSeriesToggle = new Vue({
+Fluidity.Search.searchTimeSeriesToggle = new Vue({
   el: '#searchTimeSeriesSelection',
   data() {
     return {
@@ -40,7 +40,7 @@ searchTimeSeriesToggle = new Vue({
 });
 
 
-searchInputBucket = new Vue({
+Fluidity.Search.searchInputBucket = new Vue({
   el: '#bucketFilterWrapper',
   components: {
     VueBootstrapTypeahead
@@ -52,12 +52,13 @@ searchInputBucket = new Vue({
         '*',
         'bucket.equals(BUCKET_NAME)',
         'bucket.contains(TEXT_PART)',
-        'tags.contains(TEXT)'
+        'tags.contains(TEXT)',
+        'tags.equals(TEXT)'
       ]
     }
   }
 })
-searchInputFilename = new Vue({
+Fluidity.Search.searchInputFilename = new Vue({
   el: '#fileFilterWrapper',
   components: {
     VueBootstrapTypeahead
@@ -73,7 +74,7 @@ searchInputFilename = new Vue({
     }
   }
 })
-searchInputRecord = new Vue({
+Fluidity.Search.searchInputRecord = new Vue({
   el: '#recordFilterWrapper',
   components: {
     VueBootstrapTypeahead
@@ -91,7 +92,7 @@ searchInputRecord = new Vue({
     }
   }
 })
-searchInputField = new Vue({
+Fluidity.Search.searchInputField = new Vue({
   el: '#fieldExtractWrapper',
   components: {
     VueBootstrapTypeahead
@@ -111,7 +112,7 @@ searchInputField = new Vue({
 })
 
 
-searchInputAnalytic = new Vue({
+Fluidity.Search.searchInputAnalytic = new Vue({
   el: '#analyticExtractWrapper',
   components: {
     VueBootstrapTypeahead
@@ -133,7 +134,7 @@ searchInputAnalytic = new Vue({
   }
 })
 
-searchInputGroupBy = new Vue({
+Fluidity.Search.searchInputGroupBy = new Vue({
   el: '#groupByWrapper',
   components: {
     VueBootstrapTypeahead
@@ -153,16 +154,16 @@ searchInputGroupBy = new Vue({
   }
 })
 
-var searchSubmit = new Vue({
+Fluidity.Search.searchSubmit = new Vue({
     el: '#searchSubmit',
     methods: {
       searchSubmit: function () {
         let search = {
-            origin: 'username',
+            origin: Fluidity.username,
             uid: new Date().getTime(),
-            expression: searchInputBucket.query + '|' + searchInputFilename.query + '|' + searchInputRecord.query
-                        + '|' +  searchInputField.query + '|' + searchInputAnalytic.query
-                        + '|' + searchTimeSeriesToggle.time + '|' + searchInputGroupBy.query ,
+            expression: Fluidity.Search.searchInputBucket.query + '|' + Fluidity.Search.searchInputFilename.query + '|' + Fluidity.Search.searchInputRecord.query
+                        + '|' +  Fluidity.Search.searchInputField.query + '|' + Fluidity.Search.searchInputAnalytic.query
+                        + '|' + Fluidity.Search.searchTimeSeriesToggle.time + '|' + Fluidity.Search.searchInputGroupBy.query ,
             from: new Date().getTime() - searcher.duration * 60 * 1000,
             to: new Date().getTime()
         }
@@ -171,13 +172,13 @@ var searchSubmit = new Vue({
   }
 })
 
-var searchStats = new Vue({
+Fluidity.Search.searchStats = new Vue({
   el: '#searchResultStats',
   data: {
     stats: 'Stats[]'
   }
 })
-var searchFileToOpenInfo = new Vue({
+Fluidity.Search.searchFileToOpenInfo = new Vue({
   el: '#searchFileInfo',
   data: {
     searchFileInfo: '---'

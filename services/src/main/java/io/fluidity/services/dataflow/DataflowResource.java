@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -19,35 +22,40 @@ import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import static io.fluidity.dataflow.Model.CORR_PREFIX;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * API to build, maintain, and access dataflow models
  */
-@Path("/dataflow")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+
 public class DataflowResource implements DataflowService {
 
+
+    public static final String MODELS = "_MODEL_";
+    public static final char PATH_SEP = '/';
     private final Logger log = LoggerFactory.getLogger(DataflowResource.class);
+
+
+    @ConfigProperty(name = "dataflow.prefix", defaultValue = "_MODEL_/")
+    String modelPrefix;
 
     @ConfigProperty(name = "cloud.region", defaultValue = "eu-west-2")
     String cloudRegion;
@@ -61,11 +69,20 @@ public class DataflowResource implements DataflowService {
     Storage storage;
 
 
-    @GET
-    @Path("/id")
-    @Produces(MediaType.TEXT_PLAIN)
     public String id() {
         return DataflowResource.class.getCanonicalName();
+    }
+
+    /**
+     * Returns status JSON for client to show process
+     *
+     * @param session
+     * @return
+     */
+    @Override
+    public String status(String tenant, String session, String modelName) {
+        log.info("/status:{}", session);
+        return dataflowBuilder.status(session, modelPrefix + modelName);
     }
 
     /**
@@ -80,60 +97,27 @@ public class DataflowResource implements DataflowService {
      */
     public static String rewriteCorrelationDataS(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
         String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
+        String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
+        String modelPathJson = URLEncoder.encode(modelPath, StandardCharsets.UTF_8);
+
         ResteasyClient client = new ResteasyClientBuilderImpl().build();
-        ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
-        DataflowService proxy = target.proxy(DataflowService.class);
-        return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaString, modelPath, search);
-    }
-
-    @POST
-    @Path("/submit/{tenant}/{serviceAddress}/{modelName}")
-    @Override
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String submit(@PathParam("tenant") String tenant, @MultipartForm Search search, @PathParam("serviceAddress") String serviceAddress, @PathParam("modelName") String modelName) {
-
-        String sessionId = search.uid;
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
-        WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
-            @Override
-            String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
-                try {
-                    return rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress + "/dataflow/rewrite", modelPath);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                    return e.toString();
-                }
-            }
-        };
-        String userSession = runner.run(search, sessionId);
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
-
         try {
-            return new ObjectMapper().writeValueAsString(userSession);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
+            DataflowService proxy = target.proxy(DataflowService.class);
+            return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPathJson, search);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            String failedMessage = "Failed to call onto REST API:" + ex.toString() + " URL:" + apiUrl + "Files:" + fileMetas[0];
+            System.out.println(failedMessage);
+            return failedMessage;
+        } finally {
+            client.close();
         }
-        return "{ \"msg\": \"failed\"}";
     }
 
-    /**
-     * Returns status JSON for client to show process
-     *
-     * @param session
-     * @return
-     */
-    @GET
-    @Path("/status")
     @Override
-    public String status(String tenant, String session, String modelName) {
-        log.info("/status:{}", session);
-        return dataflowBuilder.status(session, modelName);
-    }
-
-    @GET
-    @Path("/model")
-    @Override
-    public String model(String tenant, String session, String modelName) {
+    public List<Map<String, String>> model(String tenant, String session, String modelName) {
+        modelName = modelPrefix + modelName;
 
         log.info("/model:{}", session);
 
@@ -146,21 +130,111 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    @POST
-    @Path("/rewrite/{tenant}/{session}/{files}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public String rewriteCorrelationData(@PathParam("tenant") String tenant, @PathParam("session") String session, @PathParam("files") String fileMetas, @PathParam("modelPath") String modelPath, @MultipartForm Search search) {
-        search.decodeJsonFields();
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
-            log.debug("/file/{}", files[0].filename);
+    public String submit(String tenant, Search search, String modelName, String serviceAddress) {
 
-            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath + CORR_PREFIX);
+        String sessionId = search.uid;
+        modelName = modelPrefix + modelName;
+        AtomicInteger rewritten = new AtomicInteger();
+        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+        WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
+            @Override
+            String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
+                try {
+                    String result = rewriteCorrelationDataS(tenant, sessionId, fileMeta, search, serviceAddress, modelPath);
+                    rewritten.incrementAndGet();
+                    return result;
+                } catch (JsonProcessingException e) {
+                    log.warn("Failed to invoke:" + serviceAddress + "/dataflow/rewrite");
+                    e.printStackTrace();
+                    return "Failed to dispatch to REST:" + e.toString();
+                }
+            }
+        };
+        String userSession = runner.run(search, sessionId);
+        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+
+        try {
+            return new ObjectMapper().writeValueAsString(userSession + " - rewritten:" + rewritten.toString());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return "{ \"msg\": \"failed\"}";
+    }
+
+    @Override
+    public String rewriteCorrelationData(String tenant, String session, String fileMetas,
+                                         String modelPathEnc, Search search) {
+        log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
+
+        try {
+            search.decodeJsonFields();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String modelPath = URLDecoder.decode(modelPathEnc, StandardCharsets.UTF_8);
+
+            FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
+            log.info("/file/{}", files[0].filename);
+
+            return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath);
         } catch (Exception e) {
-            log.error("/search/file:{} failed:{}", fileMetas, e.toString());
+
+            e.printStackTrace();
+            log.error("/rewriteCorrelation:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
+        } finally {
+            log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
     }
 
+    @Override
+    public List<String> listModels(String tenant) {
+
+        Set<String> results = new HashSet<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified) -> {
+            int from = itemName.indexOf(MODELS) + MODELS.length() + 1;
+            int to = itemName.indexOf(PATH_SEP, from);
+            if (from > 0 && to > from) {
+                results.add(itemName.substring(from, to));
+            }
+            return null;
+        });
+        return new ArrayList<>(results);
+    }
+
+    @Override
+    public String loadModel(String tenant, String modelName) {
+        String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
+        try {
+            byte[] bytes = storage.get(cloudRegion, modelNameUrl, 0);
+            return new String(bytes);
+        } catch (Throwable t) {
+            // default to create a new model
+            HashMap<Object, Object> model = new HashMap<>();
+            model.put("name", modelName);
+            model.put("query", "*|*|*|*");
+            try {
+                return new ObjectMapper().writeValueAsString(model);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to load:" + e.toString());
+                return e.toString();
+            }
+        }
+    }
+
+    @Override
+    public String saveModel(String tenant, String modelName, String modelData) {
+        String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
+
+        try {
+            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
+                fos.write(modelData.getBytes());
+            } catch (IOException e) {
+                log.warn("Failed to save:", modelName, e);
+                return new ObjectMapper().writeValueAsString("Failed to save:" + e.toString());
+            }
+
+            return new ObjectMapper().writeValueAsString(modelName);
+        } catch (JsonProcessingException e) {
+        }
+        return "broken";
+    }
 }

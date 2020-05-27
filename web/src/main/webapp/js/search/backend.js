@@ -57,7 +57,7 @@ class SearchRest extends SearchInterface {
         $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
         jQuery.ajax({
             type: 'POST',
-            url: SERVICE_URL + '/search/submit',
+            url: SERVICE_URL + '/search/submit/' + encodeURIComponent(DEFAULT_TENANT),
             contentType: 'application/json',
             data: JSON.stringify(search),
             dataType: 'json',
@@ -167,15 +167,13 @@ class SearchRest extends SearchInterface {
             }
         });
     }
-
-
 }
 
 function searchBackendBinding() {
 //     let backend = new SearchFixture();
     let backend = new SearchRest();
 
-    console.log("Backend is using:" + backend.constructor.name)
+    console.log("Search Backend using:" + backend.constructor.name)
 
     $.Topic(Fluidity.Search.Topics.submitSearch).subscribe(function(search) {
         backend.submitSearch(search);

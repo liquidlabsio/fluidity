@@ -1,11 +1,14 @@
 /*
+ *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
  *
- *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *  You should have received a copy of the GNU Affero General Public License  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
  *
  */
 
@@ -19,6 +22,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
@@ -80,12 +84,12 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
 
-        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
 
         while (objectListing.isTruncated()) {
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
-            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey()));
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
         }
     }
 
@@ -144,7 +148,7 @@ public class AwsS3StorageService implements Storage {
                             inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
                             objSummary.getLastModified().getTime(), timeFormat);
                     fileMeta.setSize(objSummary.getSize());
-                    fileMeta.setStorageUrl(String.format("s3://%s/%s", bucketName, objSummary.getKey()));
+                    fileMeta.setStorageUrl(String.format("storage://%s/%s", bucketName, objSummary.getKey()));
                     fileMeta.setTags(tags + " " + getExtensions(objSummary.getKey()));
                     return fileMeta;
                 })
@@ -280,7 +284,7 @@ public class AwsS3StorageService implements Storage {
         } finally {
             file.delete();
         }
-        return String.format("s3://%s/%s", bucketName, filePath);
+        return String.format("storage://%s/%s", bucketName, filePath);
     }
 
     public String getBucketName(String tenant) {
@@ -334,7 +338,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public InputStream getInputStream(String region, String tenant, String storageUrl) {
+    public StorageInputStream getInputStream(String region, String tenant, String storageUrl) {
         bind();
         try {
             String[] hostnameAndPath = UriUtil.getHostnameAndPath(storageUrl);
@@ -343,7 +347,9 @@ public class AwsS3StorageService implements Storage {
 
             AmazonS3 s3Client = getAmazonS3Client(region);
             S3Object s3object = s3Client.getObject(bucket, filename);
-            return copyToLocalTempFs(s3object.getObjectContent());
+            InputStream inputStream = copyToLocalTempFs(s3object.getObjectContent());
+            ObjectMetadata objectMetadata = s3object.getObjectMetadata();
+            return new StorageInputStream(filename, objectMetadata.getLastModified().getTime(), objectMetadata.getContentLength(), inputStream);
 
         } catch (Exception e) {
             log.error("Failed to retrieve {}", storageUrl, e);
@@ -352,12 +358,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, List<String> urls) {
-        return urls.stream().collect(Collectors.toMap(item -> item, item -> getInputStream(region, tenant, item)));
-    }
-
-    @Override
-    public Map<String, InputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension, long fromTime) {
+    public Map<String, StorageInputStream> getInputStreams(String region, String tenant, String filePathPrefix, String filenameExtension, long fromTime) {
         String bucketName = getBucketName(tenant);
         AmazonS3 s3Client = getAmazonS3Client(region);
 
@@ -366,7 +367,7 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(filePathPrefix).withMaxKeys(MAX_KEYS);
 
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(req);
-        Map<String, InputStream> results = new HashMap<>();
+        Map<String, StorageInputStream> results = new HashMap<>();
         results.putAll(getInputStreamsFromS3(s3Client, filenameExtension, objectListing, fromTime));
         while (objectListing.isTruncated()) {
             objectListing = s3Client.listObjectsV2(req);
@@ -387,17 +388,20 @@ public class AwsS3StorageService implements Storage {
 
     }
 
-    private Map<String, InputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
+    private Map<String, StorageInputStream> getInputStreamsFromS3(final AmazonS3 s3Client, String filenameExtension, final ListObjectsV2Result objectListing, final long fromTime) {
 
-        Map<String, InputStream> results = new ConcurrentHashMap<>();
+        Map<String, StorageInputStream> results = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(S3_REQ_THREADS);
 
         objectListing.getObjectSummaries().stream()
                 .filter(objSummary -> objSummary.getKey().endsWith(filenameExtension) && objSummary.getLastModified().getTime() > fromTime)
                 .forEach(
                         objSummary -> executorService.submit(() -> {
-                            results.put(objSummary.getKey(), copyToLocalTempFs(s3Client.getObject(objSummary.getBucketName(), objSummary.getKey())
-                                    .getObjectContent()));
+                            InputStream inputStream = copyToLocalTempFs(s3Client.getObject(objSummary.getBucketName(),
+                                    objSummary.getKey()).getObjectContent());
+                            results.put(objSummary.getKey(),
+                                    new StorageInputStream(objSummary.getKey(), objSummary.getLastModified().getTime(),
+                                            objSummary.getSize(), inputStream));
                         })
                 );
 
@@ -441,7 +445,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String filenameURL, int daysRetention) {
+    public OutputStream getOutputStream(String region, String tenant, String filenameUrl, int daysRetention) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
             return new BufferedOutputStream(new FileOutputStream(toS3)) {
@@ -453,7 +457,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
-                            writeFileToS3(region, toS3, getBucketName(tenant), filenameURL, objectMetadata, daysRetention);
+                            writeFileToS3(region, toS3, getBucketName(tenant), filenameUrl, objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

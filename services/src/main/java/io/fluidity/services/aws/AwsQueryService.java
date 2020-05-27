@@ -11,14 +11,7 @@ import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbEnhanced
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.DynamoDbTable;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Key;
 import software.amazon.awssdk.extensions.dynamodb.mappingclient.Page;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.BatchWriteItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.CreateTableEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.DeleteItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.GetItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.PutItemEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.QueryEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.ScanEnhancedRequest;
-import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.WriteBatch;
+import software.amazon.awssdk.extensions.dynamodb.mappingclient.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
@@ -242,9 +235,10 @@ public class AwsQueryService implements QueryService {
      * Scan performs a full table scan making it very expensive for large tables; filter applied after the scan
      * Pretty crappy!
      * @return
+     * @param tenant
      */
     @Override
-    public List<FileMeta> list() {
+    public List<FileMeta> list(String tenant) {
         bind();
         createTable();
 

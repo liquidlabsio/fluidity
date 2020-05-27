@@ -8,6 +8,7 @@ body {
   vertical-align: text-bottom;
 }
 
+
 /*
  * Sidebar
  */
@@ -17,8 +18,12 @@ body {
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 100; /* Behind the navbar */
-  padding: 48px 0 0; /* Height of navbar */
+  z-index: 100;
+
+  /* Behind the navbar */
+  padding: 48px 0 0;
+
+  /* Height of navbar */
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
   -webkit-transition: all 0.5s ease;
   -moz-transition: all 0.5s ease;
@@ -31,7 +36,9 @@ body {
   height: calc(100vh - 48px);
   padding-top: 0.5rem;
   overflow-x: hidden;
-  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+  overflow-y: auto;
+
+  /* Scrollable contents if viewport is shorter than content. */
 }
 
 @supports ((position: -webkit-sticky) or (position: sticky)) {
@@ -65,19 +72,23 @@ body {
   text-transform: uppercase;
 }
 
+
 /*
  * Content
  */
 
 [role="main"] {
-  padding-top: 133px; /* Space for fixed navbar */
+  padding-top: 133px;
+
+  /* Space for fixed navbar */
 }
 
 @media (min-width: 768px) {
   [role="main"] {
-    padding-top: 48px; /* Space for fixed navbar */
+    padding-top: 48px;
   }
 }
+
 
 /*
  * Navbar
@@ -109,8 +120,8 @@ body {
 }
 
 
-/**
-APP UI
+/*
+ APP UI
  */
 
 #mainPanel {
@@ -139,19 +150,24 @@ APP UI
 
 .apex-toolbar-icon {
   width: 20;
-    padding-left: 5px;
+  padding-left: 5px;
+}
+
+.ace_editor {
+  margin-right: 5px;
 }
 
 
-/**
-File upload UI
-**/
+/*
+ File upload UI
+ */
+
 .file {
   position: relative;
   background: linear-gradient(to right, lightblue 50%, transparent 50%);
   background-size: 200% 100%;
   background-position: right bottom;
-  transition:all 1s ease;
+  transition: all 1s ease;
 }
 
 .file.done {

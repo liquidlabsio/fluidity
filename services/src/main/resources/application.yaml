@@ -52,14 +52,14 @@ quarkus:
       level: INFO
       console:
         enable: true
-        format: "%d{HH:mm:ss.SSS} %-5p [%c] %s%e%n"
+        format: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c] %s%e%n"
         level: INFO
 
       file:
         enable: true
-        path: ./log/fluidity.log
+        path: ./logs/fluidity.log
         level: INFO
-        format: "%d{HH:mm:ss.SSS} %-5p [%c{2.}]] (%t) %s%e%n"
+        format: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c{3.}]] (%t) %s%e%n"
 
       # App loggers
       category:

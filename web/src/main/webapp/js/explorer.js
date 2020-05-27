@@ -52,11 +52,7 @@ Fluidity.Explorer.FileList = function (table) {
             $(".nav-link.explorer").click()
             $("#explorerOpenFileName").text("Filename: " + content[0]);
             $.Topic(Fluidity.Explorer.Topics.getFileContent).publish(content[0], content[1])
-
-
         })
-
-
 
         $('#refreshFiles').click(function(){
             $.Topic(Fluidity.Explorer.Topics.getListFiles).publish("doit")

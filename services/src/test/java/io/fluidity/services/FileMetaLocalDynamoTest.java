@@ -52,13 +52,14 @@ public class FileMetaLocalDynamoTest {
 
     @Test
     public void ormTest() throws IOException {
+        String tenant = "fluidity-ng-test";
         String filename = "test-data/file-to-upload.txt";
         final byte[] bytes = IOUtils.toByteArray(new FileInputStream(filename));
-        FileMeta fileMeta = new FileMeta("fluidity-ng-test", "IoTDevice",
+        FileMeta fileMeta = new FileMeta(tenant, "IoTDevice",
                 "tag1, tag2", filename, bytes
                 , System.currentTimeMillis() - 1000, System.currentTimeMillis(), "");
 
-        fileMeta.setStorageUrl("s3://somewhere");
+        fileMeta.setStorageUrl("storage://somewhere");
 
         metaDataService.bind();
         metaDataService.createTable();
@@ -69,7 +70,7 @@ public class FileMetaLocalDynamoTest {
 
         metaDataService.putList(Arrays.asList(fileMeta));
 
-        List<FileMeta> listed = metaDataService.list();
+        List<FileMeta> listed = metaDataService.list(tenant);
         assertEquals(1, listed.size());
 
         List<FileMeta> queried = metaDataService.query(fileMeta.getTenant(), fileMeta.getFilename(), "");

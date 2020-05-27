@@ -1,6 +1,19 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.dataflow;
 
-import io.fluidity.search.Search;
 import org.graalvm.collections.Pair;
 
 import java.util.List;
@@ -23,22 +36,12 @@ public class DataflowModeller {
         List<Long[]> longs = correlationSet.stream().map(pair -> {
             String filename = pair.getRight();
             String[] split = filename.split(Model.DELIM);
-            return new Long[]{Long.parseLong(split[2]), Long.parseLong(split[3])};
+            return new Long[]{Long.parseLong(split[split.length - 3]), Long.parseLong(split[split.length - 2])};
         }).collect(Collectors.toList());
         return longs;
     }
 
     private List<String> getFlowFiles(List<Pair<Long, String>> correlationSet) {
         return correlationSet.stream().map(pair -> pair.getRight()).collect(Collectors.toList());
-    }
-
-    /**
-     * Aggregqate all correlation.indexes to a timeseries histogram and store in the cloud
-     *
-     * @param search
-     * @return the histogram of the stored model
-     */
-    public String buildModelFromIndexes(Search search) {
-        return null;
     }
 }
