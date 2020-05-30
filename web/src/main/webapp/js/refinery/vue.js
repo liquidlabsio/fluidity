@@ -1,17 +1,14 @@
 
 Fluidity.Refinery.vue = new Vue({
     el: '#refinery',
-    components: {
-        VueBootstrapTypeahead
-    },
     data() {
       return {
             alertMessage: "",
             alertVisible: false,
             input: {
                 bucket: {
-                    tag: '*',
-                    tags: [],
+                    tag:'',
+                    tags: [ { text: '*' } ],
                     autocompleteItems: [{
                             text: '*',
                           }, {
@@ -23,41 +20,41 @@ Fluidity.Refinery.vue = new Vue({
                           }]
                 },
                 filename: {
-                            tag: '*',
-                            tags: [],
-                            autocompleteItems: [{
-                                    text: '*',
-                                  }, {
-                                    text: 'filename.contains(TEXT)',
-                                  }, {
-                                    text: 'filename.equals(TEXT)',
-                             }]
+                    tag:'',
+                    tags: [ { text: '*' } ],
+                    autocompleteItems: [{
+                            text: '*',
+                          }, {
+                            text: 'filename.contains(TEXT)',
+                          }, {
+                            text: 'filename.equals(TEXT)',
+                     }]
                 },
                 filter: {
-                            tag: '*',
-                            tags: [],
-                            autocompleteItems: [{
-                                    text: '*',
-                                  }, {
-                                  text: 'record.contains(TEXT)',
-                                  },{
-                                    text: 'someTextThatMatches',
-                                    },{
-                                    text: 'findThis AND alsoThis',
-                                    },{
-                                    text: 'foundThis OR foundThat'
-                              }]
+                    tag:'',
+                    tags: [ { text: '*' } ],
+                    autocompleteItems: [{
+                            text: '*',
+                          }, {
+                          text: 'record.contains(TEXT)',
+                          },{
+                            text: 'someTextThatMatches',
+                            },{
+                            text: 'findThis AND alsoThis',
+                            },{
+                            text: 'foundThis OR foundThat'
+                      }]
                 },
                  field: {
-                            tag: '*',
-                            tags: [],
-                            autocompleteItems: [{
-                                text: '*',
-                              }, {
-                                text: 'field.getJsonPair(JsonName)',
-                              }, {
-                                text: 'field.getKVPair(TextKey)',
-                        }]
+                    tag:'',
+                    tags: [ { text: '*' } ],
+                    autocompleteItems: [{
+                        text: '*',
+                      }, {
+                        text: 'field.getJsonPair(JsonName)',
+                      }, {
+                        text: 'field.getKVPair(TextKey)',
+                }]
                 },
             },
 
@@ -71,13 +68,7 @@ Fluidity.Refinery.vue = new Vue({
                },
             modelNameInput: {
                 name: "",
-                names: [
-                    '*',
-                    'bucket.equals(BUCKET_NAME)',
-                    'bucket.contains(TEXT_PART)',
-                    'tags.contains(TEXT)',
-                    'tags.equals(TEXT)'
-                  ]
+                names: []
             },
 
         }

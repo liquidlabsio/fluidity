@@ -6,7 +6,7 @@ The dataflow analytics and visualization platform
 
 # What is it?
 
-A data analytics platform that focuses on events, dataflows (streams of events) and makes them observable.
+A data analytics platform that visualized events, dataflows (streams of events) and makes them observable.
 
 ## In more detail...
 

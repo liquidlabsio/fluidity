@@ -486,6 +486,24 @@
                 <h1 class="h2">Dataflow - search and analysis</h1>
                 <hr>
                 <div id="dataflow">
+                    <b-input-group class="mt-3" prepend="Model">
+                        <vue-simple-suggest :filter-by-query="true" :list="fetchModels"
+                                            @select=""
+                                            class="col-md-8"
+                                            min-length="0"
+                                            placeholder="Click to list models - or Enter to load"
+                                            style="padding:0px;"
+                                            type="search"
+                                            v-model="modelNameInput.name"
+                                            v-on:keyup.native.enter=""
+
+                        ></vue-simple-suggest>
+                        <b-input-group-append>
+                            <b-button v-on:click="" variant="outline-success">
+                                <span data-feather="wind"></span>
+                            </b-button>
+                        </b-input-group-append>
+                    </b-input-group>
                 </div>
             </div>
             <div class="mainPanelTab" id="importTab" style="display: none;">
@@ -837,6 +855,10 @@
 <script src="js/refinery/refinery.js"></script>
 <script src="js/refinery/backend.js"></script>
 <script src="js/refinery/vue.js"></script>
+
+<script src="js/dataflow/dataflow.js"></script>
+<script src="js/dataflow/vue.js"></script>
+
 
 <script src="js/search/search-apexcharts-vue.js"></script>
 <script src="js/search/vue.js"></script>
