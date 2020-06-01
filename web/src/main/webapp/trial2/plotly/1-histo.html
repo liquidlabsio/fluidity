@@ -1,0 +1,34 @@
+<head>
+    <!-- Load plotly.js into the DOM -->
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+</head>
+
+<body>
+<div id='myDiv'></div>
+<script>
+    var x1 = [];
+    var x2 = [];
+for (var i = 0; i < 100; i ++) {
+	x1[i] = Math.random();
+	x2[i] = Math.random();
+}
+
+var trace1 = {
+  x: x1,
+  type: "histogram",
+   autobinx: false,
+   nbinsx: 1000,
+};
+var trace2 = {
+  x: x2,
+  type: "histogram",
+   autobinx: false,
+   nbinsx: 100,
+};
+var data = [trace1, trace2];
+var layout = {barmode: "stack"};
+Plotly.newPlot('myDiv', data, layout);
+
+
+</script>
+</body>
