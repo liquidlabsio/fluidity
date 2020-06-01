@@ -143,7 +143,7 @@ function legendAsTooltipPlugin({ className, style = { backgroundColor:"rgba(255,
     };
 }
 
-function dataVolumePlugin({ gap = 2, shadowColor = "#000011", redColor = "#e54245", greenColor = "#4ab650", bodyMaxWidth = 20, shadowWidth = 2, bodyOutline = 1 } = {}) {
+function dataVolumePlugin({ gap = 2, shadowColor = "#000011", redColor = "#e54245", greenColor = "#79ffa0", bodyMaxWidth = 20, shadowWidth = 2, bodyOutline = 1 } = {}) {
 
     function drawFlowAndVolume(u) {
         u.ctx.save();
@@ -265,7 +265,7 @@ const tzDate = ts => uPlot.tzDate(new Date(ts * 1e3), "Etc/UTC");
 const opts = {
     width: 1220,
     height: 600,
-    title: "Thoughtput. Dataflows/min",
+    title: "Dataflow Rate/min & Volume",
     tzDate,
     plugins: [
         columnHighlightPlugin(),
@@ -300,12 +300,13 @@ const opts = {
         {
             label: "Volume",
             scale: 'vol',
+            value: (u, v) => fmtDecimals(v, 0),
         },
     ],
     axes: [
         {},
         {
-            values: (u, vals) => vals.map(v => fmtDecimals(v, 0)),
+            values: (u, vals) => vals.map(v => fmtDecimals(v, 0)+ "/m"),
         },
         {
             side: 1,
