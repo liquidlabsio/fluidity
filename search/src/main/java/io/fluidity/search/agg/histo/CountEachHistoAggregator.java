@@ -89,7 +89,7 @@ public class CountEachHistoAggregator extends AbstractHistoAggregator<Long> {
 
     @Override
     public HistoFunction<Long, Long> function() {
-        return (currentValue, newValue, nextLine, position, time, histoIndex, expression) -> currentValue == null ? 1 : currentValue.longValue() + 1;
+        return (currentValue, newValue, nextLine, bytePosition, time, histoIndex, expression) -> currentValue == null ? 1 : currentValue.longValue() + 1;
     }
 
     protected long add(Long currentValue, Long newValue) {

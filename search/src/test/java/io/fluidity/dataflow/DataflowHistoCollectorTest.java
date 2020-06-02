@@ -41,7 +41,7 @@ class DataflowHistoCollectorTest {
                 List.of(new Long[]{10l, 20l}, new Long[]{25l, 50l})));
         dataflowHistoCollector.add(time, new FlowInfo("someFlowId", Arrays.asList("/someFlowFile.log"),
                 List.of(new Long[]{1000l, 4000l}, new Long[]{4100l, 4500l})));
-        Map<String, Series<Long[]>> results = dataflowHistoCollector.results();
+        Map<String, Series<Long[]>> results = dataflowHistoCollector.histo();
         System.out.println(results);
         assertTrue(results.containsKey("totalDuration"));
 

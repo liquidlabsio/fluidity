@@ -79,14 +79,14 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     @Override
-    public void add(long currentTime, long position, String nextLine) {
+    public void add(long currentTime, long bytePosition, String nextLine) {
 
         Pair<String, Long> seriesNameAndValue = search.getFieldNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
             String groupBy = search.applyGroupBy(tags, sourceName);
             seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());
             Series<Long> series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
-            Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, series.index(currentTime), search.expression);
+            Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, bytePosition, currentTime, series.index(currentTime), search.expression);
             series.update(currentTime, calculate);
         }
     }

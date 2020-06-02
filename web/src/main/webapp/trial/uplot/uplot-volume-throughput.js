@@ -1,30 +1,4 @@
-var inf = Infinity;
 
-function fmtDecimals(val, dec) {
-    return val.toFixed(dec).replace(/\d(?=(\d{3})+(?:\.|$))/g, "$&,");
-}
-
-function getMinMax(data) {
-    //	console.log("getMinMax()");
-
-        var _min = inf;
-        var _max = -inf;
-
-        for (var i = 0; i < data.length; i++) {
-            if (data[i] != null) {
-                _min = Math.min(_min, data[i]);
-                _max = Math.max(_max, data[i]);
-            }
-        }
-
-        return [_min, _max];
-}
-
-function randInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 // column-highlights the hovered x index
 function columnHighlightPlugin({ className, style = {backgroundColor: "rgba(51,204,255,0.3)"} } = {}) {
@@ -256,7 +230,7 @@ const data = [
     ];
 
 // random volume data
-let volume = data[0].map(v => randInt(10000, 500000));
+let volume = data[0].map(v => randInt(1000000, 50000000));
 data.push(volume);
 
 const fmtDate = uPlot.fmtDate("{YYYY}-{MM}-{DD} {h}:{mm}:{ss}");
@@ -276,8 +250,13 @@ const opts = {
         x: {
             distr: 2,
         },
+        y: {
+            // push the volume MIN value up to leave space above it
+            range: offsetFactor(getMinMax(data[2]), 0.95, 1.02),
+        },
         vol: {
-            range: getMinMax(volume),
+            // push the  max value up to leave space above it
+            range: offsetFactor(getMinMax(volume), 1, 5),
         },
     },
     series: [
@@ -307,13 +286,19 @@ const opts = {
         {},
         {
             values: (u, vals) => vals.map(v => fmtDecimals(v, 0)+ "/m"),
+            size: 60,
         },
         {
             side: 1,
             scale: 'vol',
             grid: {show: false},
+            values: (u, vals) => vals.map(v => shortFmtDecimals(v, 0))
         }
     ]
 };
 
 let u = new uPlot(opts, data, document.body);
+
+u.root.querySelector(".over").addEventListener('click', function(e1, e2) {
+    console.log("yay:" + u.cursor.idx)
+})

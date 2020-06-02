@@ -55,7 +55,7 @@ public class SearchEventCollector implements EventCollector {
         BufferedOutputStream bos = new BufferedOutputStream(output);
         BufferedInputStream bis = new BufferedInputStream(input);
         BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
-        long position = 0;
+        long bytePosition = 0;
 
         LinkedList<Integer> lengths = new LinkedList<>();
 
@@ -70,14 +70,14 @@ public class SearchEventCollector implements EventCollector {
             while (nextLine.isPresent()) {
 
                 if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
-                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(position).append(':').append(nextLine.get()).append('\n').toString().getBytes();
+                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(bytePosition).append(':').append(nextLine.get()).append('\n').toString().getBytes();
                     bos.write(bytes);
-                    histoCollector.add(currentTime, position, nextLine.get());
+                    histoCollector.add(currentTime, bytePosition, nextLine.get());
                     readEvents++;
                     readEvents++;// NL
 
                     // tracks the dest file offset - so it can be seek-to-offset for user actions (histogram click, or raw events click)
-                    position += bytes.length;
+                    bytePosition += bytes.length;
                 }
 
                 // keep calibrating fake time calc based on location

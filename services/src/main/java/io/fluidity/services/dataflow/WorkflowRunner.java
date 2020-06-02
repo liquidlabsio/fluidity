@@ -45,6 +45,9 @@ import static io.fluidity.dataflow.Model.*;
  * <p>
  * Stage 2.
  * Scan model-dir for correlations, spawn tasks to build dataflow for each correlation - i.e. list files in flow order /bucket/modeldir/corr-{CORRELATINID}.index
+ *
+ * Stage 3.
+ * Store Histo and Ladder models for 50k and 20k foot visualizations
  */
 public abstract class WorkflowRunner {
     private final Logger log = LoggerFactory.getLogger(WorkflowRunner.class);
@@ -105,7 +108,8 @@ public abstract class WorkflowRunner {
             buildDataFlowIndexForCorrelations(this.session, modelPath, dataflowHistoCollector);
 
             // Stage 3. Write it off to disk
-            buildFinalModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
+            storeHistoModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
+            storeLadderModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
         } catch (Exception ex) {
             ex.printStackTrace();
             log.info(LogHelper.format(session, "builder", "workflow", "Failed:" + ex.toString()));
@@ -126,21 +130,32 @@ public abstract class WorkflowRunner {
      * @param modelPath
      * @param dataflowHistoCollector
      */
-    private void buildFinalModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
-        log.info(LogHelper.format(session, "builder", "buildFinalModel", "Start"));
-        AtomicInteger modelsWritten = new AtomicInteger();
+    // TODO: these histos will get huge - revist breaking them down by timeframe
+    private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
+        log.info(LogHelper.format(session, "builder", "storeHisto", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
-            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.results());
+            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.histo());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
-            modelsWritten.incrementAndGet();
         } catch (IOException e) {
             e.printStackTrace();
-            log.info(LogHelper.format(session, "builder", "buildFinalModel", "Failed:" + e.toString()));
+            log.info(LogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
         } finally {
-            log.info(LogHelper.format(session, "builder", "buildFinalModel", "Finish modelsWritten:" + modelsWritten));
+            log.info(LogHelper.format(session, "builder", "storeHisto", "Finish"));
         }
     }
-
+    // TODO: these ladders will get huge - revist breaking them down by timeframe
+    private void storeLadderModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
+        log.info(LogHelper.format(session, "builder", "storeLadder", "Start"));
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, start, end), 365)) {
+            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.ladder());
+            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.info(LogHelper.format(session, "builder", "storeLadder", "Failed:" + e.toString()));
+        } finally {
+            log.info(LogHelper.format(session, "builder", "storeLadder", "Finish"));
+        }
+    }
     /**
      * Step 2.: For each dataflow generate span-information into a corr-time.flow file
      *
