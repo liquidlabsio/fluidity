@@ -30,4 +30,36 @@ public class StatsDuration {
     public Long[] data() {
         return new Long[]{min, max, sum, count};
     }
+
+    public long getMin() {
+        return min;
+    }
+
+    public void setMin(long min) {
+        this.min = min;
+    }
+
+    public long getSum() {
+        return sum;
+    }
+
+    public void setSum(long sum) {
+        this.sum = sum;
+    }
+
+    public long getMax() {
+        return max;
+    }
+
+    public void setMax(long max) {
+        this.max = max;
+    }
+
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
 }
