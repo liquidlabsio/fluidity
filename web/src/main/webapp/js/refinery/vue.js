@@ -128,6 +128,9 @@ Fluidity.Refinery.vue = new Vue({
       			    return res;
       			 });
       		},
+      loadModelFromInput() {
+        loadModel(Fluidity.Refinery.vue.modelNameInput.name)
+      },
       loadModel(name) {
             return fetch(SERVICE_URL + '/dataflow/model/load?'
                 + new URLSearchParams(

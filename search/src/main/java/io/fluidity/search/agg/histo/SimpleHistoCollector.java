@@ -15,6 +15,7 @@
 package io.fluidity.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.fluidity.search.Search;
 import org.graalvm.collections.EconomicMap;
 import org.graalvm.collections.Pair;
@@ -102,6 +103,7 @@ public class SimpleHistoCollector implements HistoCollector {
     public void close() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
+            objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
             List<Series> seriesList = StreamSupport.stream(seriesMap.getValues().spliterator(), false).collect(Collectors.toList());
             String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesList));

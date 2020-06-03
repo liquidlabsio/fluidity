@@ -15,6 +15,7 @@
 package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.fluidity.dataflow.*;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
@@ -134,7 +135,9 @@ public abstract class WorkflowRunner {
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(LogHelper.format(session, "builder", "storeHisto", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
-            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.histo());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            byte[] dataflowHistogram = mapper.writeValueAsBytes(dataflowHistoCollector.flowHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -147,7 +150,9 @@ public abstract class WorkflowRunner {
     private void storeLadderModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(LogHelper.format(session, "builder", "storeLadder", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, start, end), 365)) {
-            byte[] dataflowHistogram = new ObjectMapper().writeValueAsBytes(dataflowHistoCollector.ladder());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            byte[] dataflowHistogram = mapper.writeValueAsBytes(dataflowHistoCollector.ladderHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();

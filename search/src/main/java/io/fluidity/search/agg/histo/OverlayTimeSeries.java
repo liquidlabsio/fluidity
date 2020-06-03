@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.search.agg.histo;
 
 import io.fluidity.util.DateUtil;
@@ -162,5 +176,73 @@ public class OverlayTimeSeries<T> implements Series<T> {
                 .forEach(dataPoint ->
                         this.update(dataPoint.getLeft(), ops.add(this.get(dataPoint.getLeft()), dataPoint.getRight()))
                 );
+    }
+
+
+    /**
+     * Getters/Settings for support bean json serialization
+     */
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public Ops<T> getOps() {
+        return ops;
+    }
+
+    public void setOps(Ops<T> ops) {
+        this.ops = ops;
+    }
+
+    public List<Pair<Long, T>> getData() {
+        return data;
+    }
+
+    public void setData(List<Pair<Long, T>> data) {
+        this.data = data;
+    }
+
+    public long getDelta() {
+        return delta;
+    }
+
+    public void setDelta(long delta) {
+        this.delta = delta;
+    }
+
+    public long getFrom() {
+        return from;
+    }
+
+    public void setFrom(long from) {
+        this.from = from;
+    }
+
+    public long getTo() {
+        return to;
+    }
+
+    public void setTo(long to) {
+        this.to = to;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 }

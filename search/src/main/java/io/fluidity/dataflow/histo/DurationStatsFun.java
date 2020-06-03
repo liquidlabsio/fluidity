@@ -14,6 +14,7 @@
 
 package io.fluidity.dataflow.histo;
 
+import io.fluidity.dataflow.FlowInfo;
 import io.fluidity.search.agg.histo.HistoFunction;
 import io.fluidity.util.DateUtil;
 
@@ -23,16 +24,16 @@ import java.util.Map;
 /**
  * Applies state to each index
  */
-public class DurationStatsFun implements HistoFunction<Long[], Long> {
-    Map<Long, StatsDuration> indexedFuns = new HashMap();
+public class DurationStatsFun implements HistoFunction<FlowStats, FlowInfo> {
+    Map<Long, FlowStats> indexedFuns = new HashMap();
 
     public DurationStatsFun() {
     }
 
     @Override
-    public Long[] calculate(Long[] currentValue, Long newValue, String nextLine, long bytePosition, long time, int histoIndex, String expression) {
-        StatsDuration currentStats = indexedFuns.computeIfAbsent(DateUtil.floorMin(time), k -> new StatsDuration());
+    public FlowStats calculate(FlowStats currentValue, FlowInfo newValue, String nextLine, long bytePosition, long time, int histoIndex, String expression) {
+        FlowStats currentStats = indexedFuns.computeIfAbsent(DateUtil.floorMin(time), k -> new FlowStats());
         currentStats.update(newValue);
-        return currentStats.data();
+        return currentStats;
     }
 }

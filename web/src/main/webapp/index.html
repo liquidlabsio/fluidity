@@ -43,7 +43,7 @@
 
     <link href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" rel="stylesheet">
 
-    <link href="css/uPlot.min.css" rel="stylesheet">
+<!--    <link href="css/uPlot.min.css" rel="stylesheet">-->
     <!-- Favicons -->
     <link href="img/favicon.ico" rel="icon">
     <meta content="img/favicons/browserconfig.xml" name="msapplication-config">
@@ -373,12 +373,12 @@
                                             style="padding:0px;"
                                             type="search"
                                             v-model="modelNameInput.name"
-                                            v-on:keyup.native.enter="loadModel"
+                                            v-on:keyup.native.enter="loadModelFromInput"
 
                         ></vue-simple-suggest>
                         <b-input-group-append>
                             <b-button v-on:click="saveModel" variant="info">Save</b-button>
-                            <b-button v-on:click="loadModel" variant="outline-success">Load</b-button>
+                            <b-button v-on:click="loadModelFromInput" variant="outline-success">Load</b-button>
                         </b-input-group-append>
                     </b-input-group>
                     <br>
@@ -842,7 +842,7 @@
 
 <script src="js/gcharts-vue.js"></script>
 
-<script src="js/vendor/uPlot.iife.min.js"></script>
+<!--<script src="js/vendor/uPlot.iife.min.js"></script>-->
 
 
 <!-- App -->

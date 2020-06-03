@@ -41,7 +41,7 @@ import static io.fluidity.util.DateUtil.WEEK;
 public class TimeSeries<T> implements Series<T> {
 
     public String groupBy;
-    private Ops<T> ops;
+    private Ops<T> ops = (Ops<T>) new LongOps();
     public String name;
     public List<Pair<Long, T>> data = new ArrayList<>();
     public long delta = DateUtil.MINUTE;
@@ -123,4 +123,38 @@ public class TimeSeries<T> implements Series<T> {
     }
 
 
+    /**
+     * Getters/Settings for support bean json serialization
+     */
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Pair<Long, T>> getData() {
+        return data;
+    }
+
+    public void setData(List<Pair<Long, T>> data) {
+        this.data = data;
+    }
+
+    public long getDelta() {
+        return delta;
+    }
+
+    public void setDelta(long delta) {
+        this.delta = delta;
+    }
 }

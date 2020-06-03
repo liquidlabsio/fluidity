@@ -16,7 +16,7 @@ package io.fluidity.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.histo.StatsDuration;
+import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.Series;
 import io.fluidity.util.DateUtil;
@@ -33,24 +33,20 @@ class DataflowHistoCollectorTest {
     @Test
     void ladderGetCollected() throws JsonProcessingException {
         DataflowHistoCollector dataflowHistoCollector = setupTheHistoCollector();
-        Series<Map<Long, StatsDuration>> ladder = dataflowHistoCollector.ladder();
+        Series<Map<Long, FlowStats>> ladder = dataflowHistoCollector.ladderHisto();
         String ladderString = new ObjectMapper().writeValueAsString(ladder);
-        System.out.println(ladderString.replace("},{","},\n{"));
+//        System.out.println(ladderString.replace("},{","},\n{"));
         assertTrue(ladderString.contains("\"right\":{\"0\":{\"min\":3000,\"sum\":3000,\"max\":3000,\"count\":1},\"25\":{\"min\":25,\"sum\":25,\"max\":25,\"count\":1}}}"), "Ladder stats not matching");
     }
 
     @Test
     void flowStatsGetCollected() throws JsonProcessingException {
         DataflowHistoCollector dataflowHistoCollector = setupTheHistoCollector();
-        Map<String, Series<Long[]>> histo = dataflowHistoCollector.histo();
-        System.out.println(histo);
-        assertTrue(histo.containsKey("totalDuration"));
+        Series<FlowStats> histo = dataflowHistoCollector.flowHisto();
+        String histoStats = new ObjectMapper().writeValueAsString(histo);
 
-        Series<Long[]> totalDuration = histo.get("totalDuration");
-        assertTrue(new ObjectMapper().writeValueAsString(totalDuration).contains("[40,3500,3540,2]"), "Duration stats is missing");
-
-        assertTrue(histo.containsKey("op2OpLatency"));
-        assertTrue(histo.containsKey("maxOpDuration"));
+//        System.out.println(histoStats.replace("},{", "},\n{"));
+        assertTrue(histoStats.contains("\"right\":{\"opLatency\":[5,5,105],\"opDuration\":[25,25,3025],\"duration\":[40,40,3540],\"count\":2}}"));
     }
 
     private DataflowHistoCollector setupTheHistoCollector() {

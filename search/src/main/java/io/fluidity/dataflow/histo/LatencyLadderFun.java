@@ -14,6 +14,7 @@
 
 package io.fluidity.dataflow.histo;
 
+import io.fluidity.dataflow.FlowInfo;
 import io.fluidity.search.agg.histo.HistoFunction;
 import io.fluidity.util.DateUtil;
 
@@ -23,19 +24,25 @@ import java.util.Map;
 /**
  * Applies state to each index
  */
-public class LatencyLadderFun implements HistoFunction<Map<Long, StatsDuration>, Long> {
-    private static final Long ORDINAL_MS_GRANULARITY = 50l;
-    Map<Long, Map<Long, StatsDuration>> indexedFuns = new HashMap();
+public class LatencyLadderFun implements HistoFunction<Map<Long, FlowStats>, FlowInfo> {
+    private static final Long ORDINAL_MS_GRANULARITY = Long.getLong("ladder.granularity", 100l);
+    Map<Long, Map<Long, FlowStats>> indexedFuns = new HashMap();
 
     public LatencyLadderFun() {
     }
 
     @Override
-    public Map<Long, StatsDuration> calculate(Map<Long, StatsDuration> currentValue, Long newValue, String nextLine, long bytePosition, long time, int histoIndex, String expression) {
+    public Map<Long, FlowStats> calculate(Map<Long, FlowStats> currentValue, FlowInfo flowInfo, String nextLine, long bytePosition, long time, int histoIndex, String expression) {
         // calculate a ladder function - return Long[][] - i.e. count of flows for each ladder using the ordinal value to bucket stats into the ladder
-        Map<Long, StatsDuration> ladder = indexedFuns.computeIfAbsent(DateUtil.floorMin(time), k -> new HashMap<>());
-        StatsDuration currentStats = ladder.computeIfAbsent((newValue % ORDINAL_MS_GRANULARITY), k -> new StatsDuration());
-        currentStats.update(newValue);
+        Map<Long, FlowStats> ladder = indexedFuns.computeIfAbsent(DateUtil.floorMin(time), k -> new HashMap<>());
+
+        long duration = flowInfo.getDuration();
+        FlowStats currentStats = ladder.computeIfAbsent( nearestBucket(duration, ORDINAL_MS_GRANULARITY), k -> new FlowStats());
+        currentStats.update(flowInfo);
         return ladder;
+    }
+
+    private Long nearestBucket(long duration, Long ordinalMsGranularity) {
+        return duration - duration % ordinalMsGranularity;
     }
 }

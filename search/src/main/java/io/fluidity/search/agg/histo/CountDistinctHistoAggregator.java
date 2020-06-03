@@ -60,7 +60,7 @@ public class CountDistinctHistoAggregator extends AbstractHistoAggregator<Long> 
             boolean present = filter.isPresent(newValue.toString());
             filter.add(newValue.toString());
             if (!present) {
-                return currentValue == null ? currentValue + 2 : +1;
+                return currentValue != null ? currentValue + 2 : +1;
             } else {
                 return currentValue;
             }

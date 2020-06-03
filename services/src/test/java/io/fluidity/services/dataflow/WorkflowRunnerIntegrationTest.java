@@ -104,12 +104,9 @@ class WorkflowRunnerIntegrationTest {
         // String json = new String(storage.get(region, "storgage://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
         String json = new String(storage.get(region, collected.get(0), 0));
 
-        System.out.println("Got Model:" + json);
+        System.out.println("Got Model:" + json.replace("},{", "},\n{"));
         System.out.println("Got Model:" + collected);
-        assertTrue(json.contains("totalDuration"), "Missing duration series");
-        assertTrue(json.contains("op2OpLatency"), "Missing op2OpLatency series");
-        assertTrue(json.contains("maxOpDuration"), "Missing maxOpDuration series");
-        assertTrue(json.contains("\"right\":[180000,180000,180000,1]"), "Missing maxOpDuration data");
+        assertTrue(json.contains( "{\"opLatency\":[0,0,0],\"opDuration\":[180000,180000,180000],\"duration\":[180000,180000,180000],\"count\":1}}"), "Missing stats data");
     }
 
     private void populateTestData(String region, String session, QueryService query, Storage storage, String tenant) {

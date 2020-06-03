@@ -2,7 +2,7 @@
 * Implements: https://github.com/liquidlabsio/fluidity/issues/62
 **/
 
-Fluidity.Refinery.vue = new Vue({
+Fluidity.Dataflow.vue = new Vue({
     el: '#dataflow',
     data() {
       return {

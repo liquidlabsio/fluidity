@@ -94,7 +94,7 @@ class Refinery {
         this.searchRequest = search;
         this.startTime =  new Date();
 
-        this.addStatusMessage("Starting model query");
+        this.addStatusMessage("Starting model generation");
 
         Fluidity.Refinery.vue.statusMessage="Running:" + search.expression;
         $.Topic(Fluidity.Refinery.Topics.submit).publish(search, Fluidity.Refinery.vue.modelNameInput.name);
