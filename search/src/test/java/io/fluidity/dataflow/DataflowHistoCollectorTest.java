@@ -46,8 +46,8 @@ class DataflowHistoCollectorTest {
         Series<FlowStats> histo = dataflowHistoCollector.flowHisto();
         String histoStats = new ObjectMapper().writeValueAsString(histo);
 
-//        System.out.println(histoStats.replace("},{", "},\n{"));
-        assertTrue(histoStats.contains("\"right\":{\"opLatency\":[5,5,105],\"opDuration\":[25,25,3025],\"duration\":[40,40,3540],\"count\":2}}"));
+        System.out.println(histoStats.replace("},{", "},\n{"));
+        assertTrue(histoStats.contains("\"right\":{\"opLatency\":[5,100,105],\"opDuration\":[25,3000,3025],\"duration\":[40,3500,3540],\"count\":2}"));
     }
 
     private DataflowHistoCollector setupTheHistoCollector() {
