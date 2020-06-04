@@ -15,7 +15,7 @@
 package io.fluidity.services.search;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -68,10 +68,10 @@ public class SearchResource {
     @Path("/submit/{tenant}")
     public FileMeta[] submit(@PathParam("tenant") String tenant, Search search) {
         try {
-            log.info(LogHelper.format(search.uid, "search", "submit", "Start:" + search.expression));
+            log.info(FlowLogHelper.format(search.uid, "search", "submit", "Start:" + search.expression));
             return searchRunner.submit(tenant, search, query);
         } finally {
-            log.info(LogHelper.format(search.uid, "search", "submit", "End"));
+            log.info(FlowLogHelper.format(search.uid, "search", "submit", "End"));
         }
     }
 
@@ -99,7 +99,7 @@ public class SearchResource {
 
         long start = System.currentTimeMillis();
         try {
-            log.info(LogHelper.format(search.uid, "search", "finalizeEvents", "Start"));
+            log.info(FlowLogHelper.format(search.uid, "search", "finalizeEvents", "Start"));
             search.decodeJsonFields();
             eventLimit = 10000;
             return searchRunner.finalizeEvents(search, from, eventLimit, tenant, cloudRegion, storage);
@@ -109,7 +109,7 @@ public class SearchResource {
             return new String[]{"0", "0", "0"};
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
-            log.info(LogHelper.format(search.uid, "search", "finalizeEvents", "End"));
+            log.info(FlowLogHelper.format(search.uid, "search", "finalizeEvents", "End"));
         }
     }
 
@@ -120,13 +120,13 @@ public class SearchResource {
 
         long start = System.currentTimeMillis();
         try {
-            log.info(LogHelper.format(search.uid, "search", "finalizeHisto", "Start"));
+            log.info(FlowLogHelper.format(search.uid, "search", "finalizeHisto", "Start"));
             search.decodeJsonFields();
 
             return searchRunner.finalizeHisto(search, tenant, cloudRegion, storage);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
-            log.info(LogHelper.format(search.uid, "search", "finalizeHisto", "End"));
+            log.info(FlowLogHelper.format(search.uid, "search", "finalizeHisto", "End"));
         }
     }
 }

@@ -15,7 +15,7 @@
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.DataflowExtractor;
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
@@ -58,7 +58,7 @@ public class DataflowBuilder {
 
     private String extractCorrelationData(String session, FileMeta fileMeta, Search search, Storage storage, String region, String tenant, String modelPath) {
         try {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String fileUrl = fileMeta.getStorageUrl();
             StorageInputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
 
@@ -72,11 +72,11 @@ public class DataflowBuilder {
             }
             return status;
         } catch (Exception e) {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "Error:" + e.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "Error:" + e.toString()));
             log.warn("Failed to process:", e);
             return e.toString();
         } finally {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "Finished"));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "Finished"));
         }
     }
 

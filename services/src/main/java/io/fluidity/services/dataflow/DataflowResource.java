@@ -16,7 +16,7 @@ package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -135,7 +135,7 @@ public class DataflowResource implements DataflowService {
         String sessionId = search.uid;
         modelName = modelPrefix + modelName;
         AtomicInteger rewritten = new AtomicInteger();
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+        log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
@@ -151,7 +151,7 @@ public class DataflowResource implements DataflowService {
             }
         };
         String userSession = runner.run(search, sessionId);
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+        log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
 
         try {
             return new ObjectMapper().writeValueAsString(userSession + " - rewritten:" + rewritten.toString());
@@ -164,7 +164,7 @@ public class DataflowResource implements DataflowService {
     @Override
     public String rewriteCorrelationData(String tenant, String session, String fileMetas,
                                          String modelPathEnc, Search search) {
-        log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
+        log.info(FlowLogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
 
         try {
             search.decodeJsonFields();
@@ -181,7 +181,7 @@ public class DataflowResource implements DataflowService {
             log.error("/rewriteCorrelation:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
         } finally {
-            log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
+            log.info(FlowLogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
     }
 

@@ -94,11 +94,11 @@ public abstract class WorkflowRunner {
      */
     public String run(Search search, String session) {
         this.session = session;
-        log.info(LogHelper.format(session, "builder", "workflow", "Start"));
+        log.info(FlowLogHelper.format(session, "builder", "workflow", "Start"));
         try {
 
             FileMeta[] filesToExtractFrom = dfBuilder.listFiles(tenant, search, query);
-            log.info(LogHelper.format(session, "builder", "workflow", "FileToCorrelate:" + filesToExtractFrom.length));
+            log.info(FlowLogHelper.format(session, "builder", "workflow", "FileToCorrelate:" + filesToExtractFrom.length));
 
             // Stage 1. Rewrite dataflows by correlationId-timeFrom-timeTo =< fan-out
             stepOneExtractDataflowIntoStorage(search, filesToExtractFrom);
@@ -113,9 +113,9 @@ public abstract class WorkflowRunner {
             storeLadderModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.info(LogHelper.format(session, "builder", "workflow", "Failed:" + ex.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "workflow", "Failed:" + ex.toString()));
         } finally {
-            log.info(LogHelper.format(session, "builder", "workflow", "Finish"));
+            log.info(FlowLogHelper.format(session, "builder", "workflow", "Finish"));
         }
         drainStatusQueue();
         scheduler.shutdown();
@@ -133,28 +133,28 @@ public abstract class WorkflowRunner {
      */
     // TODO: these histos will get huge - revist breaking them down by timeframe
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
-        log.info(LogHelper.format(session, "builder", "storeHisto", "Start"));
+        log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
             byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.flowHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();
-            log.info(LogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
         } finally {
-            log.info(LogHelper.format(session, "builder", "storeHisto", "Finish"));
+            log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Finish"));
         }
     }
     // TODO: these ladders will get huge - revist breaking them down by timeframe
     private void storeLadderModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
-        log.info(LogHelper.format(session, "builder", "storeLadder", "Start"));
+        log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, start, end), 365)) {
             byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.ladderHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();
-            log.info(LogHelper.format(session, "builder", "storeLadder", "Failed:" + e.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Failed:" + e.toString()));
         } finally {
-            log.info(LogHelper.format(session, "builder", "storeLadder", "Finish"));
+            log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Finish"));
         }
     }
 
@@ -177,7 +177,7 @@ public abstract class WorkflowRunner {
         DataflowModeller dataflowModeller = new DataflowModeller();
         AtomicInteger foundCorrelations = new AtomicInteger();
 
-        log.info(LogHelper.format(session, "builder", "buildCorrelations", "Start"));
+        log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
         storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified) -> {
             if (!correlationFilename.contains(CORR_PREFIX)) return null;
@@ -204,7 +204,7 @@ public abstract class WorkflowRunner {
             foundCorrelations.incrementAndGet();
             writeCorrelationFlow(session, modelPath, histoCollector, correlationFileSet, dataflowModeller, region, correlationKey);
         }
-        log.info(LogHelper.format(session, "builder", "buildCorrelations", "Finish, found:" + foundCorrelations));
+        log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Finish, found:" + foundCorrelations));
         // flush the histo collector to storage
         statusQueue.add("Finished for Correlation Tasks");
     }
@@ -218,7 +218,7 @@ public abstract class WorkflowRunner {
         } catch (IOException e) {
             e.printStackTrace();
             log.error(e.getMessage(), "Failed to process:{0}", correlationKey, e);
-            log.info(LogHelper.format(session, "builder", "buildCorrelations", "Error:" + e.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Error:" + e.toString()));
         }
     }
 
@@ -229,7 +229,7 @@ public abstract class WorkflowRunner {
      * @param submit
      */
     private void stepOneExtractDataflowIntoStorage(Search search, FileMeta[] submit) {
-        log.info(LogHelper.format(session, "workflow", "extractFlows", "Start:" + search));
+        log.info(FlowLogHelper.format(session, "workflow", "extractFlows", "Start:" + search));
         ExecutorService pool = Executors.newFixedThreadPool(N_THREADS);
         Arrays.stream(submit).forEach(fileMeta -> pool.submit(() -> {
                     try {
@@ -246,7 +246,7 @@ public abstract class WorkflowRunner {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        log.info(LogHelper.format(session, "workflow", "extractFlows", "Finish:" + search));
+        log.info(FlowLogHelper.format(session, "workflow", "extractFlows", "Finish:" + search));
     }
 
     abstract String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath);

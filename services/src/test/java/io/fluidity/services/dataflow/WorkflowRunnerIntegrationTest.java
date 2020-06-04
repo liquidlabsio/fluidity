@@ -14,7 +14,7 @@
 
 package io.fluidity.services.dataflow;
 
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -115,9 +115,9 @@ class WorkflowRunnerIntegrationTest {
         StringBuilder testContent = new StringBuilder();
         long startTime = System.currentTimeMillis() - DateUtil.MINUTE * 10;
 
-        testContent.append("\"ts\":\"" + startTime + "\"," + LogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
-        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 2) + "\"," + LogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
-        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 3) + "\"," + LogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
+        testContent.append("\"ts\":\"" + startTime + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 2) + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 3) + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
 
         String timeFormat = "prefix:[\"ts\":\"] LONG";
         FileMeta testFile = new FileMeta(tenant, "resource", "tags", testFilename, testContent.toString().getBytes(), System.currentTimeMillis() - DateUtil.MINUTE, System.currentTimeMillis(), timeFormat);
