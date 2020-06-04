@@ -26,6 +26,7 @@ import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
+import io.fluidity.util.FileUtil;
 import io.fluidity.util.LazyFileInputStream;
 import io.fluidity.util.UriUtil;
 import org.apache.commons.io.FileUtils;
@@ -145,7 +146,7 @@ public class AwsS3StorageService implements Storage {
                             objSummary.getETag(),
                             objSummary.getKey(),
                             new byte[0],
-                            inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
+                            FileUtil.inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
                             objSummary.getLastModified().getTime(), timeFormat);
                     fileMeta.setSize(objSummary.getSize());
                     fileMeta.setStorageUrl(String.format("storage://%s/%s", bucketName, objSummary.getKey()));
@@ -157,16 +158,6 @@ public class AwsS3StorageService implements Storage {
 
         if (results.size() > 0) log.info("Import progress:{}", results.size());
         return results.stream().distinct().collect(Collectors.toList());
-    }
-
-    private long inferFakeStartTimeFromSize(long size, long lastModified) {
-        if (size < 4096) return lastModified - DateUtil.HOUR;
-        int fudgeLineLength = 256;
-        int fudgeLineCount = (int) (size / fudgeLineLength);
-        long fudgedTimeIntervalPerLineMs = 1000;
-        long startTimeOffset = fudgedTimeIntervalPerLineMs * fudgeLineCount;
-        if (startTimeOffset < DateUtil.HOUR) startTimeOffset = DateUtil.HOUR;
-        return lastModified - startTimeOffset;
     }
 
     private String getExtensions(String filename) {

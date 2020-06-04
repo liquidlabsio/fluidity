@@ -35,8 +35,9 @@ class DataflowHistoCollectorTest {
         DataflowHistoCollector dataflowHistoCollector = setupTheHistoCollector();
         Series<Map<Long, FlowStats>> ladder = dataflowHistoCollector.ladderHisto();
         String ladderString = new ObjectMapper().writeValueAsString(ladder);
-//        System.out.println(ladderString.replace("},{","},\n{"));
-        assertTrue(ladderString.contains("\"right\":{\"0\":{\"min\":3000,\"sum\":3000,\"max\":3000,\"count\":1},\"25\":{\"min\":25,\"sum\":25,\"max\":25,\"count\":1}}}"), "Ladder stats not matching");
+        System.out.println(ladderString.replace("},{","},\n{"));
+        String ladderJson = "{\"0\":{\"opLatency\":[5,5,5],\"opDuration\":[25,25,25],\"duration\":[40,40,40],\"count\":1},\"3500\":{\"opLatency\":[100,100,100],\"opDuration\":[3000,3000,3000],\"duration\":[3500,3500,3500],\"count\":1}";
+        assertTrue(ladderString.contains(ladderJson), "Ladder stats not matching");
     }
 
     @Test

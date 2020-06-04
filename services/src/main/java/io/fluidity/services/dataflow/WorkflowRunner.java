@@ -135,9 +135,7 @@ public abstract class WorkflowRunner {
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(LogHelper.format(session, "builder", "storeHisto", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            byte[] dataflowHistogram = mapper.writeValueAsBytes(dataflowHistoCollector.flowHisto());
+            byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.flowHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -150,9 +148,7 @@ public abstract class WorkflowRunner {
     private void storeLadderModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(LogHelper.format(session, "builder", "storeLadder", "Start"));
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, start, end), 365)) {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            byte[] dataflowHistogram = mapper.writeValueAsBytes(dataflowHistoCollector.ladderHisto());
+            byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.ladderHisto());
             IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -161,6 +157,13 @@ public abstract class WorkflowRunner {
             log.info(LogHelper.format(session, "builder", "storeLadder", "Finish"));
         }
     }
+
+    private ObjectMapper getMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
+
     /**
      * Step 2.: For each dataflow generate span-information into a corr-time.flow file
      *
@@ -168,7 +171,7 @@ public abstract class WorkflowRunner {
      */
     private void buildDataFlowIndexForCorrelations(String session, String modelPath, DataflowHistoCollector histoCollector) {
         // storage.list files keeping track of each correlation
-        List<Pair<Long, String>> correlationSet = new ArrayList<>();
+        List<Pair<Long, String>> correlationFileSet = new ArrayList<>();
 
         List<String> currentCorrelationKeySet = new ArrayList<>();
         DataflowModeller dataflowModeller = new DataflowModeller();
@@ -186,31 +189,31 @@ public abstract class WorkflowRunner {
                 currentCorrelationKeySet.clear();
                 currentCorrelationKeySet.add(correlationKey);
                 foundCorrelations.incrementAndGet();
-                writeCorrelationSet(session, modelPath, histoCollector, correlationSet, dataflowModeller, region, currentCorrelationKey);
-                correlationSet.clear();
+                writeCorrelationFlow(session, modelPath, histoCollector, correlationFileSet, dataflowModeller, region, currentCorrelationKey);
+                correlationFileSet.clear();
             }
             if (currentCorrelationKey == null) {
                 currentCorrelationKeySet.add(correlationKey);
             }
-            correlationSet.add(Pair.create(Long.parseLong(split[2]), correlationFilename));
+            correlationFileSet.add(Pair.create(Long.parseLong(split[2]), correlationFilename));
             return null;
         });
 
         if (!currentCorrelationKeySet.isEmpty()) {
             String correlationKey = currentCorrelationKeySet.get(0);
             foundCorrelations.incrementAndGet();
-            writeCorrelationSet(session, modelPath, histoCollector, correlationSet, dataflowModeller, region, correlationKey);
+            writeCorrelationFlow(session, modelPath, histoCollector, correlationFileSet, dataflowModeller, region, correlationKey);
         }
         log.info(LogHelper.format(session, "builder", "buildCorrelations", "Finish, found:" + foundCorrelations));
         // flush the histo collector to storage
         statusQueue.add("Finished for Correlation Tasks");
     }
 
-    private void writeCorrelationSet(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
-        FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationSet);
+    private void writeCorrelationFlow(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationFileSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
+        FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationFileSet);
         histoCollector.add(flow.getStart(), flow);
         try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT, modelPath, correlationKey, flow.getStart(), flow.getEnd()), 365)) {
-            String flowJson = new ObjectMapper().writeValueAsString(flow);
+            String flowJson = getMapper().writeValueAsString(flow);
             IOUtils.copy(new ByteArrayInputStream(flowJson.getBytes()), outputStream);
         } catch (IOException e) {
             e.printStackTrace();

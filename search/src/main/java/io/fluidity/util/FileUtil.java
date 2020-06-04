@@ -25,10 +25,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileUtil {
+
+    public static long inferFakeStartTimeFromSize(long size, long lastModified) {
+        if (size <= 0) return lastModified - DateUtil.HOUR;
+        int fudgeLineLength = 128;
+        int fudgeLineCount = (int) (size / fudgeLineLength);
+        long fudgedTimeIntervalPerLineMs = 100;
+        long startTimeOffset = fudgedTimeIntervalPerLineMs * fudgeLineCount;
+        if (startTimeOffset < DateUtil.MINUTE) startTimeOffset = DateUtil.MINUTE;
+        return lastModified - startTimeOffset;
+    }
+
     public static byte[] readFileToByteArray(final File file, int limit) throws IOException {
         try (InputStream in = FileUtils.openInputStream(file)) {
             long fileLength = file.length();
@@ -44,7 +56,7 @@ public class FileUtil {
         FileUtils.writeByteArrayToFile(file, fileContent);
     }
 
-    public static Collection<File> listDirs(String baseDir, final String extension, final String... pathFilters) {
+    public static List<File> listDirs(String baseDir, final String extension, final String... pathFilters) {
         String[] dirFilters = pathFilters;
 
         try (Stream<Path> walk = Files.walk(Paths.get(baseDir))) {

@@ -48,7 +48,7 @@ public interface Storage extends Lifecycle {
     void stop();
 
     /**
-     * List in UTF-binary order
+     * MANDATORY: List in UTF-binary order
      *
      * @param region
      * @param tenant

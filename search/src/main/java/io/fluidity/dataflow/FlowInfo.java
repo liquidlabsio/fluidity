@@ -17,6 +17,8 @@ package io.fluidity.dataflow;
 import java.util.List;
 
 public class FlowInfo {
+    public static final int START_TIME_INDEX = 0;
+    public static final int END_TIME_INDEX = 1;
     /**
      * Info to render the span breakdown
      */
@@ -53,8 +55,8 @@ public class FlowInfo {
         long maxOpDuration = 0;
         for (int i = 0; i < durations.size(); i++) {
             if (i > 0) {
-                long interval = durations.get(i)[0] - durations.get(i - 1)[1];
-                if (interval < min) min = interval;
+                long interval = durations.get(i)[START_TIME_INDEX] - durations.get(i - 1)[END_TIME_INDEX];
+                if (interval < min || interval == Long.MAX_VALUE) min = interval;
                 if (interval > max) max = interval;
             }
             long duration = durations.get(i)[1] - durations.get(i)[0];

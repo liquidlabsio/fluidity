@@ -28,8 +28,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,7 +94,7 @@ public class FileSystemBasedStorageService implements Storage {
                 .map(file ->
                 {
                     String relativePath = file.getPath().startsWith(storageId) ? file.getPath().substring(storageId.length() + 1) : file.getPath();
-                    FileMeta fm = new FileMeta(tenant, storageId, tags, relativePath, new byte[0], inferFakeStartTimeFromSize(file.length(), file.lastModified()), file.lastModified(), timeFormat);
+                    FileMeta fm = new FileMeta(tenant, storageId, tags, relativePath, new byte[0], FileUtil.inferFakeStartTimeFromSize(file.length(), file.lastModified()), file.lastModified(), timeFormat);
                     fm.setSize(guessSize(file));
                     fm.setStorageUrl(file.getAbsolutePath());
                     return fm;
@@ -106,17 +109,6 @@ public class FileSystemBasedStorageService implements Storage {
         if (file.getName().endsWith(".gz")) return file.length() * 20l;
         if (file.getName().endsWith(".lz4")) return file.length() * 4l;
         return file.length();
-    }
-
-    private long inferFakeStartTimeFromSize(long size, long lastModified) {
-        // some file systems can return '0'
-        if (size < 4096) return lastModified - DateUtil.HOUR;
-        int fudgeLineLength = 256;
-        int fudgeLineCount = (int) (size / fudgeLineLength);
-        long fudgedTimeIntervalPerLineMs = 1000;
-        long startTimeOffset = fudgedTimeIntervalPerLineMs * fudgeLineCount;
-        if (startTimeOffset < DateUtil.HOUR) startTimeOffset = DateUtil.HOUR;
-        return lastModified - startTimeOffset;
     }
 
     @Override
@@ -161,7 +153,8 @@ public class FileSystemBasedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-        Collection<File> files = FileUtil.listDirs(this.baseDir + "/" + prefix, "*");
+        List<File> files = new ArrayList(FileUtil.listDirs(this.baseDir + "/" + prefix, "*"));
+        Collections.sort(new ArrayList(files), (Comparator<File>) (o1, o2) -> o1.getName().compareTo(o2.getName()));
         files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath()), item.lastModified()));
     }
 

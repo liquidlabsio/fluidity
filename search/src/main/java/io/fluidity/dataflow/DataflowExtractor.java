@@ -90,6 +90,7 @@ public class DataflowExtractor implements AutoCloseable {
                             currentCorrelation = correlationId;
                             currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
+                            bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes());
                             startTime = currentTime;
                         }
 

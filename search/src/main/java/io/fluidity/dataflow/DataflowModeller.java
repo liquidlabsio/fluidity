@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
  */
 public class DataflowModeller {
     public DataflowModeller() {
-
     }
 
     public FlowInfo getCorrelationFlow(String flowId, List<Pair<Long, String>> correlationSet) {

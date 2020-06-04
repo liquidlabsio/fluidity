@@ -31,8 +31,8 @@ public class FlowStats {
 
     long count = 0;
 
-    public void update(FlowInfo value) {
-        long[] minOp2OpLatency = value.getMinMaxOp2OpLatencyWithMaxOpAndE2E();
+    public void update(FlowInfo flow) {
+        long[] minOp2OpLatency = flow.getMinMaxOp2OpLatencyWithMaxOpAndE2E();
         setMinMax(minOp2OpLatency[0], opLatency, false);
         setMinMax(minOp2OpLatency[1], opLatency, true);
         setMinMax(minOp2OpLatency[2], opDuration, true);
@@ -42,7 +42,7 @@ public class FlowStats {
 
     private void setMinMax(long value, long[] data, boolean includeSum) {
         data[0] = Math.min(value, data[0]);
-        data[1] = Math.min(value, data[0]);
+        data[1] = Math.max(value, data[0]);
         if (includeSum) {
             data[2] += value;
         }

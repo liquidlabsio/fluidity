@@ -17,20 +17,37 @@ package io.fluidity.dataflow;
 public class Model {
 
     public final static String DELIM = "_";
-    // correlation-start-end
-    public final static String CORR_FILE_FMT = "%s/corr_%s_%d_%d_.log";
+    /**
+     * The correlation file contains an extracted set of line items that contain a common-correlation id
+     */
+    public final static String CORR_FILE_FMT = "%s/corr_%s_%d_%d_.corr";
     public final static String CORR_PREFIX = "/corr_";
 
+    /**
+     * DAT files contain the meta data model for a correlation including:
+     * service, operation, type, meta, tag, behavior
+     * These attributes are used to enrich the search functionality when analysing correlations
+     */
     public final static String CORR_DAT_FMT = "%s/dat_%s_%d_%d_.dat";
     public final static String CORR_DAT_PREFIX = "/dat_";
 
-    public final static String CORR_FLOW_FMT = "%s/flow_%s_%d_%d_.dat";
+    /**
+     * The set of related correlation files as well as flow level stats (durations, latencies etc)
+     */
+    public final static String CORR_FLOW_FMT = "%s/flow_%s_%d_%d_.flow";
     public final static String CORR_FLOW_PREFIX = "/flow_";
 
+    /**
+     * The 20k foot ladder histogram that maps flows into ladders/buckets
+     */
+    public final static String LADDER_HIST_FMT = "%s/ladder_%d_%d_.ladder";
+    public final static String LADDER_HIST_PREFIX = "/ladder_";
+
+    /**
+     * The 50k view of flows. Includes volume, throughput and latency aggregates
+     */
     public final static String CORR_HIST_FMT = "%s/histo_%d_%d_.histo";
     public final static String CORR_HIST_PREFIX = "/histo_";
 
-    public final static String LADDER_HIST_FMT = "%s/ladder_%d_%d_.ladder";
-    public final static String LADDER_HIST_PREFIX = "/ladder_";
 
 }
