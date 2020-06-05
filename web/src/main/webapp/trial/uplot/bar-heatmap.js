@@ -93,7 +93,7 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
             let xVal         = u.scales.x.distr == 2 ? i : u.data[0][i];
             let timeAsX      = u.valToPos(xVal,  "x", true);
             let bodyX        = timeAsX - (bodyWidth / 2);
-            let ladderY         = u.data[1][i];
+            let ladderY         = u.data[3][i];
 
             ladderY.forEach(renderLadderY.bind({ u:u, xVal:xVal, bodyX:bodyX, bodyWidth:bodyWidth}));
         }
@@ -111,7 +111,12 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
 const data = [
     // dates
     [1546300800,1546387200,1546473600,1546560000,1546819200],
-    //  latency-Y with heatmap as percent
+    // min
+    [1, 1 , 1, 1, 1],
+    // max
+    [100, 100,100,100,100],
+
+    //  ladders
     [
     [10.1,12.3,14.8,18.9,30.15, 50.10, 43.2],
     [10.1,12.3,14.8,18.9,30.15, 50.10, 43.2, 60.1, 70.5, 63.9],
@@ -137,12 +142,9 @@ const opts = {
         ],
     scales: {
         y: {
-          auto: false,
-          min: 0,
-          max: 100,
-          range: [0, 60 * 1000],
-      }
-    },
+          auto: true
+        },
+    }
 };
 
 let u = new uPlot(opts, data, document.body);
