@@ -66,13 +66,11 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
     function renderLadderY(ladderY) {
             let ladderAsY = this.u.valToPos(ladderY,   "y", true);
 
+            let ladderValue = ladderY - parseInt(ladderY)
+            let ladderPercent = ladderValue * this.maxHeatValue;
 
-            let decimal = ladderY - parseInt(ladderY)
-
-            let colorHeat = 255 * decimal;
-           this.u.ctx.fillStyle = "rgba(51,154," + colorHeat + ",1)"
-
-            console.log("GOT:" + ladderAsY + " to " + this.bodyX)
+            let colorHeat = parseInt(255 * ladderPercent/100.0);
+           this.u.ctx.fillStyle = "rgba(50,50," + colorHeat + ",0.5)"
 
             this.u.ctx.fillRect(
                 Math.round(this.bodyX),
@@ -93,13 +91,12 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
             let xVal         = u.scales.x.distr == 2 ? i : u.data[0][i];
             let timeAsX      = u.valToPos(xVal,  "x", true);
             let bodyX        = timeAsX - (bodyWidth / 2);
-            let ladderY         = u.data[3][i];
+            let ladderY         = u.data[1][i];
 
-            ladderY.forEach(renderLadderY.bind({ u:u, xVal:xVal, bodyX:bodyX, bodyWidth:bodyWidth}));
+            ladderY.forEach(renderLadderY.bind({ u:u, xVal:xVal, bodyX:bodyX, bodyWidth:bodyWidth, maxHeatValue: u.data[2][1]}));
         }
         u.ctx.restore();
     }
-
 
     return {
         hooks: {
@@ -111,18 +108,17 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
 const data = [
     // dates
     [1546300800,1546387200,1546473600,1546560000,1546819200],
-    // min
-    [1, 1 , 1, 1, 1],
-    // max
-    [100, 100,100,100,100],
-
     //  ladders
     [
-    [10.1,12.3,14.8,18.9,30.15, 50.10, 43.2],
-    [10.1,12.3,14.8,18.9,30.15, 50.10, 43.2, 60.1, 70.5, 63.9],
-    [70.5, 90.10, 13.2, 10.1,12.3,14.8,18.9,30.15, 50.10, 43.2],
-    [70.5, 90.10, 13.2],
-    [18.9,30.15, 50.10, 70.5, 90.10, 13.2]]
+        [80.0100, 50.0500, 43.0999],
+        [10.0100,12.0300,14.0800,18.0900,30.0150, 50.0100, 43.0200, 60.0100, 70.05, 63.9],
+        [70.5, 90.10, 13.2, 10.1,12.3,14.8,18.9,30.15, 50.10, 43.2],
+        [70.5, 90.10, 13.2],
+        [18.9,30.15, 50.10, 70.5, 90.10, 13.0999]
+
+    ],
+    // global heatmap min and max value
+    [0,1000]
 ];
 
 const fmtDate = uPlot.fmtDate("{YYYY}-{MM}-{DD} {h}:{mm}:{ss}");
@@ -134,15 +130,38 @@ const opts = {
     title: "Latency heatmap ladder",
     tzDate,
     plugins: [
-        columnHighlightPlugin(),
+       columnHighlightPlugin(),
        ladderRenderPlugin(),
     ],
       series: [
             {},
+            {
+              paths: () => null,
+              points: {show: false},
+            },
         ],
     scales: {
         y: {
-          auto: true
+            auto: false,
+            range: u => {
+                let [i0, i1] = u.series[0].idxs;
+
+                let min = Infinity;
+                let max = -Infinity;
+                let heatmapMax = 0;
+
+                // find min/max y values for all non-null values in shown series
+                for (let i = i0; i <= i1; i++) {
+                    let yVal = u.data[1][i];
+                    if (yVal != null) {
+                        for (let yy = 0; yy < yVal.length; yy++) {
+                          min = Math.min(min, yVal[yy]);
+                          max = Math.max(max, yVal[yy]);
+                        }
+                    }
+                }
+                return [min, max];
+            },
         },
     }
 };
