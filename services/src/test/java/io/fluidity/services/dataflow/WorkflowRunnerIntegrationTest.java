@@ -106,7 +106,7 @@ class WorkflowRunnerIntegrationTest {
 
         System.out.println("Got Model:" + json.replace("},{", "},\n{"));
         System.out.println("Got Model:" + collected);
-        assertTrue(json.contains( "{\"opLatency\":[0,0,0],\"opDuration\":[180000,180000,180000],\"duration\":[180000,180000,180000],\"count\":1}}"), "Missing stats data");
+        assertTrue(json.contains( "\"opDuration\" : [ 180000, 180000, 180000 ]"), "Missing stats data");
     }
 
     private void populateTestData(String region, String session, QueryService query, Storage storage, String tenant) {
