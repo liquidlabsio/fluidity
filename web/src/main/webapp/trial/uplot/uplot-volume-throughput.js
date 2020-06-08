@@ -62,7 +62,7 @@ function columnHighlightPlugin({ className, style = {backgroundColor: "rgba(51,2
 }
 
 // converts the legend into a simple tooltip
-function legendAsTooltipPlugin({ className, style = { backgroundColor:"rgba(255, 249, 196, 0.92)", color: "black" } } = {}) {
+function legendAsTooltipPlugin({ className, style = { backgroundColor:"black", color: "white" } } = {}) {
     let legendEl;
 
     function init(u, opts) {

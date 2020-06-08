@@ -59,6 +59,7 @@ function columnHighlightPlugin({ className, style = {backgroundColor: "rgba(51,2
         }
     };
 }
+
 function tooltipsPlugin(opts) {
     function init(u, opts, data) {
         let plot = u.root.querySelector(".over");
@@ -68,7 +69,8 @@ function tooltipsPlugin(opts) {
         ttc.textContent = "(x,y)";
         ttc.style.pointerEvents = "none";
         ttc.style.position = "absolute";
-        ttc.style.background = "rgba(0,0,255,0.1)";
+        ttc.style.background = "black";
+        ttc.style.color = "white";
         plot.appendChild(ttc);
 
         u.seriestt = opts.series.map((s, i) => {
@@ -132,6 +134,8 @@ function tooltipsPlugin(opts) {
 
         tt.style.left = Math.round(u.valToPos(xVal, 'x')) + "px";
         tt.style.top = Math.round(u.valToPos(yVal, s.scale)) + "px";
+        tt.style.background = "black";
+        tt.style.color = "white";
 
 
         u.cursortt.style.left = left + "px";
@@ -144,7 +148,7 @@ function tooltipsPlugin(opts) {
 
         let foundIndex = yVal.indexOf(liveYValue);
         if (foundIndex >= 0){
-            u.cursortt.textContent = "Latency:" +liveYValue + " Hits: " + zVal[foundIndex];
+            u.cursortt.textContent = "- Latency:" +liveYValue + " Hits: " + zVal[foundIndex] + " -";
         }
     }
 
@@ -260,7 +264,7 @@ const tzDate = ts => uPlot.tzDate(new Date(ts * 1e3), "Etc/UTC");
 const opts = {
     width: 1440,
     height: 600,
-    title: "Latency heatmap ladder",
+   // title: "Latency heatmap ladder",
     tzDate,
     plugins: [
        columnHighlightPlugin(),
@@ -270,7 +274,7 @@ const opts = {
       series: [
             {},
             {
-                paths: () => null,
+              paths: () => null,
               points: {show: false},
             }
         ],
