@@ -137,7 +137,6 @@ function tooltipsPlugin(opts) {
         tt.style.background = "black";
         tt.style.color = "white";
 
-
         u.cursortt.style.left = left + "px";
         u.cursortt.style.top = top + "px";
 
