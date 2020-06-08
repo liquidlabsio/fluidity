@@ -63,13 +63,13 @@ function columnHighlightPlugin({ className, style = {backgroundColor: "rgba(51,2
 
 function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 50 } = {}) {
 
-    function renderLadderY(ladderY) {
+    function renderLadderY(ladderY, index) {
             let ladderAsY = this.u.valToPos(ladderY,   "y", true);
 
-            let ladderValue = ladderY - parseInt(ladderY)
-            let ladderPercent = ladderValue * this.maxHeatValue;
+            let ladderValue = this.u.data[2][this.i][index]
+            let ladderPercent = ladderValue / this.maxHeatValue;
 
-            let colorHeat = parseInt(255 * ladderPercent/100.0);
+            let colorHeat = parseInt(255 * ladderPercent);
            this.u.ctx.fillStyle = "rgba(50,50," + colorHeat + ",0.5)"
 
             this.u.ctx.fillRect(
@@ -93,7 +93,7 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
             let bodyX        = timeAsX - (bodyWidth / 2);
             let ladderY         = u.data[1][i];
 
-            ladderY.forEach(renderLadderY.bind({ u:u, xVal:xVal, bodyX:bodyX, bodyWidth:bodyWidth, maxHeatValue: u.data[2][1]}));
+            ladderY.forEach(renderLadderY.bind({ i:i, u:u, xVal:xVal, bodyX:bodyX, bodyWidth:bodyWidth, maxHeatValue: u.data[3][1]}));
         }
         u.ctx.restore();
     }
@@ -107,18 +107,44 @@ function ladderRenderPlugin({ gap = 2, shadowColor = "#000000", bodyMaxWidth = 5
 
 const data = [
     // dates
-    [1546300800,1546387200,1546473600,1546560000,1546819200],
-    //  ladders
+    [1546300800,1546387200,1546473600,1546560000,1546819200,1546905600,1546992000,1547078400,1547164800,1547424000,1547510400,1547596800],
+
+    //  latency ladder
     [
-        [80.0100, 50.0500, 43.0999],
-        [10.0100,12.0300,14.0800,18.0900,30.0150, 50.0100, 43.0200, 60.0100, 70.05, 63.9],
-        [70.5, 90.10, 13.2, 10.1,12.3,14.8,18.9,30.15, 50.10, 43.2],
-        [70.5, 90.10, 13.2],
-        [18.9,30.15, 50.10, 70.5, 90.10, 13.0999]
+        [80,  50,  43],
+        [10,  12,  14,  18,  30,  50],
+        [70,  90,  13,  10,  12,  13],
+        [170, 190, 113, 110, 112, 113],
+        [270, 290, 213, 110, 112, 113],
+        [80,  50,  43],
+        [10,  12,  14,  18,  30,  50],
+        [70,  90,  13,  10,  12,  13],
+        [170, 190, 113, 110, 112, 113],
+        [270, 290, 213, 110, 112, 113],
+        [220, 222, 224, 228, 230, 240],
+        [270, 290, 213, 210, 212, 213],
 
     ],
-    // global heatmap min and max value
-    [0,1000]
+
+    // count ladder to match latency
+    [
+        [1,  3,   5],
+        [7,  9,   5,   6, 7,  8],
+        [17, 119, 115, 116, 117, 118],
+        [27, 29, 25, 226, 227, 228],
+        [17, 19, 15, 216, 227, 288],
+        [12,  32,   52],
+        [217,  219,   252,   216, 217,  218],
+        [17, 19, 15, 16, 17, 18],
+        [27, 29, 25, 26, 27, 28],
+        [17, 19, 15, 16, 27, 88],
+        [17, 19, 15, 16, 17, 18],
+        [27, 29, 25, 26, 27, 28],
+    ],
+
+    // colour range
+    [10, 256]
+
 ];
 
 const fmtDate = uPlot.fmtDate("{YYYY}-{MM}-{DD} {h}:{mm}:{ss}");
@@ -136,9 +162,15 @@ const opts = {
       series: [
             {},
             {
-              paths: () => null,
+                paths: () => null,
               points: {show: false},
             },
+              {
+                paths: () => null,
+              points: {show: false},
+            },
+//            { }
+
         ],
     scales: {
         y: {
