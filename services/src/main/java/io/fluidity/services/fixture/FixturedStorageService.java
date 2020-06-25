@@ -101,19 +101,17 @@ public class FixturedStorageService implements Storage {
 
     @Override
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
-        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey(), System.currentTimeMillis()));
+        storage.entrySet().stream().filter(item -> item.getKey().contains(prefix)).forEach(item -> processor.process(region, item.getKey(), item.getKey(), System.currentTimeMillis(), item.getValue().length));
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String fileUrl, int daysRetention) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream() {
+    public OutputStream getOutputStream(String region, String tenant, String fileUrl, int daysRetention, long lastModified) {
+        return new ByteArrayOutputStream() {
             @Override
             public void close() throws IOException {
                 storage.put(fileUrl, this.buf);
             }
         };
-
-        return baos;
     }
 
     @Override

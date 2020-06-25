@@ -74,58 +74,56 @@ public class DataflowExtractor implements AutoCloseable {
         Optional<OutputStream> bos = Optional.empty();
         String currentCorrelation = "nada";
         long startTime = 0;
+        long lastCorrelationTime = 0;
 
         Map<String, KvJsonPairExtractor> extractorMap = getExtractorMap();
         Map<String, String> datData = new HashMap<>();
         try {
-
             while (nextLine.isPresent()) {
+
+                // recalibrate the time interval as more line lengths are known
+                lengths.add(nextLine.get().length());
+                guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
+                scanFilePos += nextLine.get().length() + 2;
+
                 if (search.matches(nextLine.get())) {
+                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
+
                     Optional<Pair<String, Long>> fieldNameAndValue = Optional.ofNullable(search.getFieldNameAndValue("file-name-source", nextLine.get()));
 
                     if (fieldNameAndValue.isPresent()) {
                         String correlationId = fieldNameAndValue.get().getLeft();
                         if (!currentCorrelation.equals(correlationId)) {
-                            flushToStorage(bos, currentTime, currentFile, startTime, datData, correlationId);
+                            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, correlationId);
                             currentCorrelation = correlationId;
                             currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
                             bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes());
                             startTime = currentTime;
                         }
-
                         getDatData(nextLine.get(), datData, extractorMap);
                         if (bos.isPresent()) {
                             bos.get().write(nextLine.get().getBytes());
                             bos.get().write('\n');
                         }
                     }
+                    lastCorrelationTime = currentTime;
                 }
-
-                // keep calibrating fake time calc based on location
                 nextLine = Optional.ofNullable(reader.readLine());
-
-                // recalibrate the time interval as more line lengths are known
-                if (nextLine.isPresent()) {
-                    lengths.add(nextLine.get().length());
-                    guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                    scanFilePos += nextLine.get().length() + 2;
-                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
-                }
             }
         } finally {
             reader.close();
-            flushToStorage(bos, currentTime, currentFile, startTime, datData, currentCorrelation);
+            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation);
         }
         return "done";
     }
 
-    private void flushToStorage(Optional<OutputStream> bos, long currentTime, File currentFile, long startTime, Map<String, String> datData, String correlationId) throws IOException {
+    private void flushToStorage(Optional<OutputStream> bos, long lastCorrelationTime, File currentFile, long startTime, Map<String, String> datData, String correlationId) throws IOException {
         if (bos.isPresent()) {
             bos.get().close();
-            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
+            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
             currentFile.delete();
-            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, currentTime), 365, currentTime);
+            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
             datData.clear();
         }
     }

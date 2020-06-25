@@ -17,9 +17,7 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.util.DateUtil;
 import org.graalvm.collections.Pair;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static io.fluidity.util.DateUtil.DAY;
 import static io.fluidity.util.DateUtil.HOUR;
@@ -178,6 +176,28 @@ public class OverlayTimeSeries<T> implements Series<T> {
                 );
     }
 
+
+    @Override
+    public Collection<Series<T>> slice(long timeBucket) {
+        HashMap<Long, Series<T>> results = new HashMap<>();
+        this.data.stream().forEach(item -> {
+            long seriesStartTime = DateUtil.floorHour(item.getLeft());
+            OverlayTimeSeries<T> tSeries = (OverlayTimeSeries<T>) results.computeIfAbsent(seriesStartTime,
+                    k -> new OverlayTimeSeries(this.name, this.groupBy, seriesStartTime, seriesStartTime + timeBucket, this.ops));
+            tSeries.data.add(item);
+        });
+        return results.values();
+    }
+
+    @Override
+    public long start() {
+        return data.get(0).getLeft();
+    }
+
+    @Override
+    public long end() {
+        return data.get(data.size()-1).getLeft();
+    }
 
     /**
      * Getters/Settings for support bean json serialization

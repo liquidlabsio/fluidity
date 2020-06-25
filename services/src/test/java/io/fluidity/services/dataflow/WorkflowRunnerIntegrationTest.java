@@ -93,7 +93,7 @@ class WorkflowRunnerIntegrationTest {
 
         ArrayList<String> collected = new ArrayList<>();
 
-        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified) -> {
+        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified, size) -> {
             if (itemName.contains(CORR_HIST_PREFIX)) collected.add(itemUrl);
             return null;
         });

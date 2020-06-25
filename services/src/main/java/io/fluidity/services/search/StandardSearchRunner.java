@@ -62,7 +62,7 @@ public class StandardSearchRunner implements SearchRunner {
          */
         FileMeta firstFile = fileMetaBatch[0];
         String histoDestinationUrl = search.histoDestinationURI(storage.getBucketName(tenant), firstFile.getStorageUrl());
-        OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1);
+        OutputStream histoOutputStream = storage.getOutputStream(region, tenant, histoDestinationUrl, 1, System.currentTimeMillis());
 
         List<Integer[]> results = new ArrayList<>();
         try (HistoCollector histoCollector = new SimpleHistoCollector(histoOutputStream, search, search.from, search.to, new HistoAggFactory().getHistoAnalyticFunction(search))) {
@@ -92,7 +92,7 @@ public class StandardSearchRunner implements SearchRunner {
 
     private EventCollector getCollectors(Search search, Storage storage, String tenant, String searchUrl, InputStream inputStream, String region, HistoCollector histoCollector) {
         String searchDestinationUrl = search.eventsDestinationURI(storage.getBucketName(tenant), searchUrl);
-        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1);
+        OutputStream outputStream = storage.getOutputStream(region, tenant, searchDestinationUrl, 1, System.currentTimeMillis());
         return new SearchEventCollector(histoCollector, inputStream, outputStream);
     }
 

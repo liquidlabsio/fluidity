@@ -60,7 +60,7 @@ class Refinery {
              // trigger refresh to update the UI
              Fluidity.Refinery.vue.modelTable.items.pop();
              reply.forEach(item => {
-                Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: '128k'} )
+                Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: item.size + 'b'} )
              })
         })
 

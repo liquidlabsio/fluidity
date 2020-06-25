@@ -17,10 +17,13 @@ package io.fluidity.services.dataflow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.fluidity.dataflow.*;
+import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
+import io.fluidity.search.agg.histo.Series;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
+import io.fluidity.util.DateUtil;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.collections.Pair;
 import org.slf4j.Logger;
@@ -29,9 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -131,31 +132,34 @@ public abstract class WorkflowRunner {
      * @param modelPath
      * @param dataflowHistoCollector
      */
-    // TODO: these histos will get huge - revist breaking them down by timeframe
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Start"));
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, start, end), 365)) {
-            byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.flowHisto());
-            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
-        } finally {
-            log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Finish"));
-        }
+        Collection<Series<FlowStats>> flowHisto = dataflowHistoCollector.flowHisto().slice(DateUtil.HOUR);
+        flowHisto.forEach(item -> {
+            try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, item.start(), DateUtil.ceilHour(item.end())), 365, item.start())) {
+                byte[] dataflowHistogram = getMapper().writeValueAsBytes(item);
+                IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
+            }});
+
+        log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Finish"));
     }
     // TODO: these ladders will get huge - revist breaking them down by timeframe
     private void storeLadderModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Start"));
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, start, end), 365)) {
-            byte[] dataflowHistogram = getMapper().writeValueAsBytes(dataflowHistoCollector.ladderHisto());
-            IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Failed:" + e.toString()));
-        } finally {
-            log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Finish"));
-        }
+        Collection<Series<Map<Long, FlowStats>>> ladderHisto = dataflowHistoCollector.ladderHisto().slice(DateUtil.HOUR);
+        ladderHisto.forEach(item -> {
+            try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(LADDER_HIST_FMT, modelPath, item.start(), DateUtil.ceilHour(item.end())), 365, item.start())) {
+                byte[] dataflowHistogram = getMapper().writeValueAsBytes(item);
+                IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Failed:" + e.toString()));
+            }
+        });
+        log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Finish"));
     }
 
     private ObjectMapper getMapper() {
@@ -179,7 +183,7 @@ public abstract class WorkflowRunner {
 
         log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
-        storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified) -> {
+        storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified, size) -> {
             if (!correlationFilename.contains(CORR_PREFIX)) return null;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);
@@ -212,7 +216,7 @@ public abstract class WorkflowRunner {
     private void writeCorrelationFlow(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationFileSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
         FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationFileSet);
         histoCollector.add(flow.getStart(), flow);
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT, modelPath, correlationKey, flow.getStart(), flow.getEnd()), 365)) {
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT, modelPath, correlationKey, flow.getStart(), DateUtil.ceilHour(flow.getEnd())), 365, flow.getStart())) {
             String flowJson = getMapper().writeValueAsString(flow);
             IOUtils.copy(new ByteArrayInputStream(flowJson.getBytes()), outputStream);
         } catch (IOException e) {

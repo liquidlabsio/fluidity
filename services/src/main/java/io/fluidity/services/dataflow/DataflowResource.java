@@ -189,7 +189,7 @@ public class DataflowResource implements DataflowService {
     public List<String> listModels(String tenant) {
 
         Set<String> results = new HashSet<>();
-        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified) -> {
+        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified, size) -> {
             int from = itemName.indexOf(MODELS) + MODELS.length() + 1;
             int to = itemName.indexOf(PATH_SEP, from);
             if (from > 0 && to > from) {
@@ -225,7 +225,7 @@ public class DataflowResource implements DataflowService {
         String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
 
         try {
-            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
+            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360, System.currentTimeMillis())) {
                 fos.write(modelData.getBytes());
             } catch (IOException e) {
                 log.warn("Failed to save:", modelName, e);

@@ -85,12 +85,12 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
 
-        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime(), item.getSize()));
 
         while (objectListing.isTruncated()) {
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
-            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime(), item.getSize()));
         }
     }
 
@@ -436,7 +436,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String filenameUrl, int daysRetention) {
+    public OutputStream getOutputStream(String region, String tenant, String filenameUrl, int daysRetention, long lastModified) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
             return new BufferedOutputStream(new FileOutputStream(toS3)) {
@@ -448,6 +448,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
+                            objectMetadata.setLastModified(new Date(lastModified));
                             writeFileToS3(region, toS3, getBucketName(tenant), filenameUrl, objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {

@@ -155,19 +155,26 @@ public class FileSystemBasedStorageService implements Storage {
     public void listBucketAndProcess(String region, String tenant, String prefix, Processor processor) {
         List<File> files = new ArrayList(FileUtil.listDirs(this.baseDir + "/" + prefix, "*"));
         Collections.sort(new ArrayList(files), (Comparator<File>) (o1, o2) -> o1.getName().compareTo(o2.getName()));
-        files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath()), item.lastModified()));
+        files.stream().forEach(item -> processor.process(region, FileUtil.fixPath(item.getPath()), FileUtil.fixPath(item.getPath()), item.lastModified(), item.length()));
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String fullFilePath, int daysRetention) {
+    public OutputStream getOutputStream(String region, String tenant, String fullFilePath, int daysRetention, long lastModified) {
         if (fullFilePath.startsWith("storage://")) fullFilePath = fullFilePath.substring("storage://".length());
         if (fullFilePath.contains(baseDir)) {
             fullFilePath = fullFilePath.substring(fullFilePath.indexOf(baseDir) + baseDir.length());
         }
         File file = new File(this.baseDir, fullFilePath);
+        file.setLastModified(lastModified);
         file.getParentFile().mkdirs();
         try {
-            return new FileOutputStream(file);
+            return new FileOutputStream(file) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    file.setLastModified(lastModified);
+                }
+            };
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
