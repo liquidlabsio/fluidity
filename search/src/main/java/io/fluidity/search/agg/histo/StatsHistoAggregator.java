@@ -63,7 +63,7 @@ public class StatsHistoAggregator extends AbstractHistoAggregator<Long> {
             LinkedList<Long> values = new LinkedList<>();
 
             @Override
-            public Long calculate(Long currentValue, Long newValue, String nextLine, long position, long time, int histoIndex, String expression) {
+            public Long calculate(Long currentValue, Long newValue, String nextLine, long bytePosition, long time, int histoIndex, String expression) {
                 if (newValue instanceof Long) {
                     Long value = newValue;
                     values.add(value);

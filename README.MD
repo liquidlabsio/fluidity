@@ -1,3 +1,6 @@
+
+[![CircleCI](https://circleci.com/gh/liquidlabsio/fluidity.svg?style=shield)](<LINK>)
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2976c0c51a34d3fb6e1460a9aa394cd)](https://www.codacy.com/gh/liquidlabsio/fluidity?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=liquidlabsio/fluidity&amp;utm_campaign=Badge_Grade)
 
 ![Image description](img/fluidity-by.png)
@@ -6,7 +9,7 @@ The dataflow analytics and visualization platform
 
 # What is it?
 
-A data analytics platform that focuses on events, dataflows (streams of events) and makes them observable.
+A data analytics platform that visualized events, dataflows (streams of events) and makes them observable.
 
 ## In more detail...
 

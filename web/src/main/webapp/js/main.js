@@ -37,6 +37,7 @@ if (typeof Fluidity == 'undefined') {
         Explorer: {},
         Search: {},
         Refinery: {},
+        Dataflow: {},
 
         startOfWord: function (txt, end) {
             var i = end -1;

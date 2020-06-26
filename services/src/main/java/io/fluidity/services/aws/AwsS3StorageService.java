@@ -26,6 +26,7 @@ import io.fluidity.search.StorageInputStream;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.storage.Storage;
 import io.fluidity.util.DateUtil;
+import io.fluidity.util.FileUtil;
 import io.fluidity.util.LazyFileInputStream;
 import io.fluidity.util.UriUtil;
 import org.apache.commons.io.FileUtils;
@@ -84,12 +85,12 @@ public class AwsS3StorageService implements Storage {
         ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bucketName);
         ListObjectsV2Result objectListing = s3Client.listObjectsV2(bucketName, prefix);
 
-        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
+        objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime(), item.getSize()));
 
         while (objectListing.isTruncated()) {
             req.setContinuationToken(objectListing.getNextContinuationToken());
             objectListing = s3Client.listObjectsV2(req);
-            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime()));
+            objectListing.getObjectSummaries().stream().forEach(item -> processor.process(region, item.getKey(), item.getKey(), item.getLastModified().getTime(), item.getSize()));
         }
     }
 
@@ -145,7 +146,7 @@ public class AwsS3StorageService implements Storage {
                             objSummary.getETag(),
                             objSummary.getKey(),
                             new byte[0],
-                            inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
+                            FileUtil.inferFakeStartTimeFromSize(objSummary.getSize(), objSummary.getLastModified().getTime()),
                             objSummary.getLastModified().getTime(), timeFormat);
                     fileMeta.setSize(objSummary.getSize());
                     fileMeta.setStorageUrl(String.format("storage://%s/%s", bucketName, objSummary.getKey()));
@@ -157,16 +158,6 @@ public class AwsS3StorageService implements Storage {
 
         if (results.size() > 0) log.info("Import progress:{}", results.size());
         return results.stream().distinct().collect(Collectors.toList());
-    }
-
-    private long inferFakeStartTimeFromSize(long size, long lastModified) {
-        if (size < 4096) return lastModified - DateUtil.HOUR;
-        int fudgeLineLength = 256;
-        int fudgeLineCount = (int) (size / fudgeLineLength);
-        long fudgedTimeIntervalPerLineMs = 1000;
-        long startTimeOffset = fudgedTimeIntervalPerLineMs * fudgeLineCount;
-        if (startTimeOffset < DateUtil.HOUR) startTimeOffset = DateUtil.HOUR;
-        return lastModified - startTimeOffset;
     }
 
     private String getExtensions(String filename) {
@@ -445,7 +436,7 @@ public class AwsS3StorageService implements Storage {
     }
 
     @Override
-    public OutputStream getOutputStream(String region, String tenant, String filenameUrl, int daysRetention) {
+    public OutputStream getOutputStream(String region, String tenant, String filenameUrl, int daysRetention, long lastModified) {
         try {
             File toS3 = File.createTempFile("S3OutStream", "tmp");
             return new BufferedOutputStream(new FileOutputStream(toS3)) {
@@ -457,6 +448,7 @@ public class AwsS3StorageService implements Storage {
                             ObjectMetadata objectMetadata = new ObjectMetadata();
                             objectMetadata.addUserMetadata("tenant", tenant);
                             objectMetadata.addUserMetadata("length", "" + toS3.length());
+                            objectMetadata.setLastModified(new Date(lastModified));
                             writeFileToS3(region, toS3, getBucketName(tenant), filenameUrl, objectMetadata, daysRetention);
                         }
                     } catch (Exception e) {

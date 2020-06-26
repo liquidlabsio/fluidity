@@ -195,12 +195,23 @@ public class DateUtil {
 		if (isCompressed) {
 			fileLength *= 100;
 		}
+		if (lengths.size() == 0) {
+			return 100;
+		}
+		if (fromTime == 0 || fromTime < toTime - DateUtil.DAY * 30) {
+			fromTime = toTime - DateUtil.HOUR;
+		}
 		if (lengths.size() > 100) lengths.pop();
 		// presume average line fileLength = 1024 bytes;
 		long recentLengthSum = lengths.stream().mapToInt(Integer::intValue).sum();
 		int avgRecentLength = (int) (recentLengthSum / lengths.size());
+		if (avgRecentLength == 0) avgRecentLength = 100;
 		long guessedLineCount = (fileLength - currentPos) / avgRecentLength;
 		if (guessedLineCount == 0) guessedLineCount = 1024;
 		return (toTime - fromTime) / guessedLineCount;
+	}
+
+	public static String printTime(long time) {
+		return DateTimeFormat.longDateTime().print(time);
 	}
 }

@@ -57,6 +57,6 @@ public class CountHistoAggregator extends AbstractHistoAggregator<Long> {
 
     @Override
     public HistoFunction<Long, Long> function() {
-        return (currentValue, newValue, nextLine, position, time, histoIndex, expression) -> currentValue == null ? 1l : currentValue.longValue() + 1l;
+        return (currentValue, newValue, nextLine, bytePosition, time, histoIndex, expression) -> currentValue == null ? 1l : currentValue.longValue() + 1l;
     }
 }

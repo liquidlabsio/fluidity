@@ -15,6 +15,7 @@
 package io.fluidity.search.agg.histo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.fluidity.search.Search;
 import org.graalvm.collections.EconomicMap;
 import org.graalvm.collections.Pair;
@@ -79,14 +80,14 @@ public class SimpleHistoCollector implements HistoCollector {
     }
 
     @Override
-    public void add(long currentTime, long position, String nextLine) {
+    public void add(long currentTime, long bytePosition, String nextLine) {
 
         Pair<String, Long> seriesNameAndValue = search.getFieldNameAndValue(sourceName, nextLine);
         if (seriesNameAndValue != null) {
             String groupBy = search.applyGroupBy(tags, sourceName);
             seriesNameAndValue = Pair.create(groupBy + "-" + seriesNameAndValue.getLeft(), seriesNameAndValue.getRight());
             Series<Long> series = getSeriesItem(groupBy, seriesNameAndValue.getLeft());
-            Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, position, currentTime, series.index(currentTime), search.expression);
+            Long calculate = function.calculate(series.get(currentTime), seriesNameAndValue.getRight(), nextLine, bytePosition, currentTime, series.index(currentTime), search.expression);
             series.update(currentTime, calculate);
         }
     }
@@ -102,6 +103,7 @@ public class SimpleHistoCollector implements HistoCollector {
     public void close() {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
+            objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
             List<Series> seriesList = StreamSupport.stream(seriesMap.getValues().spliterator(), false).collect(Collectors.toList());
             String histoJson = objectMapper.writeValueAsString(new ArrayList(seriesList));

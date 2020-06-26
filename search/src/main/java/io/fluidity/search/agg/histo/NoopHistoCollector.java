@@ -16,7 +16,7 @@ package io.fluidity.search.agg.histo;
 
 public class NoopHistoCollector implements HistoCollector {
     @Override
-    public void add(long currentTime, long position, String nextLine) {
+    public void add(long currentTime, long bytePosition, String nextLine) {
     }
 
     @Override

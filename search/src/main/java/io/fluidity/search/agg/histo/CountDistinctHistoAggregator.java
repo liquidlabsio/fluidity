@@ -56,11 +56,11 @@ public class CountDistinctHistoAggregator extends AbstractHistoAggregator<Long> 
     @Override
     public HistoFunction<Long, Long> function() {
         Filter filter = new BloomFilter(100, 0.01);
-        return (currentValue, newValue, nextLine, position, time, histoIndex, expression) -> {
+        return (currentValue, newValue, nextLine, bytePosition, time, histoIndex, expression) -> {
             boolean present = filter.isPresent(newValue.toString());
             filter.add(newValue.toString());
             if (!present) {
-                return currentValue == null ? currentValue + 2 : +1;
+                return currentValue != null ? currentValue + 2 : +1;
             } else {
                 return currentValue;
             }

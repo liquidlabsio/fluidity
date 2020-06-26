@@ -15,7 +15,7 @@
 package io.fluidity.services.dataflow;
 
 import io.fluidity.dataflow.DataflowExtractor;
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.search.StorageInputStream;
 import io.fluidity.search.agg.events.StorageUtil;
@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.LADDER_HIST_PREFIX;
 
 public class DataflowBuilder {
     private long limitList = 5000;
@@ -58,7 +59,7 @@ public class DataflowBuilder {
 
     private String extractCorrelationData(String session, FileMeta fileMeta, Search search, Storage storage, String region, String tenant, String modelPath) {
         try {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "File:" + fileMeta.filename));
             String fileUrl = fileMeta.getStorageUrl();
             StorageInputStream inputStream = getInputStream(storage, region, tenant, fileUrl);
 
@@ -72,17 +73,17 @@ public class DataflowBuilder {
             }
             return status;
         } catch (Exception e) {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "Error:" + e.toString()));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "Error:" + e.toString()));
             log.warn("Failed to process:", e);
             return e.toString();
         } finally {
-            log.info(LogHelper.format(session, "builder", "extractFlow", "Finished"));
+            log.info(FlowLogHelper.format(session, "builder", "extractFlow", "Finished"));
         }
     }
 
     private StorageUtil getOutStreamFactory(Storage storage) {
         StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
-            try (OutputStream storageOutputStream = storage.getOutputStream(region, tenant, filePath, daysRetention)) {
+            try (OutputStream storageOutputStream = storage.getOutputStream(region, tenant, filePath, daysRetention, lastModified)) {
                 // duplicate copy to local FS due to not knowing the name until finished
                 IOUtils.copy(inputStream, storageOutputStream);
             } catch (IOException e) {
@@ -108,13 +109,13 @@ public class DataflowBuilder {
     }
 
     public List<Map<String, String>> getModel(String region, String tenant, String session, String modelName, Storage storage) {
-        List<Map<String, String>> histoUrls = new ArrayList<>();
-        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName, modified) -> {
-            if (itemUrl.contains(CORR_HIST_PREFIX)) {
-                histoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified)));
+        List<Map<String, String>> ladderAndHistoUrls = new ArrayList<>();
+        storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(CORR_HIST_PREFIX) || itemUrl.contains(LADDER_HIST_PREFIX) ) {
+                ladderAndHistoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified), "size", Long.toString(size)));
             }
             return null;
         });
-        return histoUrls;
+        return ladderAndHistoUrls;
     }
 }

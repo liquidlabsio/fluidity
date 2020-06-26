@@ -1,8 +1,24 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.dataflow;
 
 import java.util.List;
 
 public class FlowInfo {
+    public static final int START_TIME_INDEX = 0;
+    public static final int END_TIME_INDEX = 1;
     /**
      * Info to render the span breakdown
      */
@@ -33,20 +49,20 @@ public class FlowInfo {
         return getEnd() - getStart();
     }
 
-    public long[] getMinOp2OpLatency() {
+    public long[] getMinMaxOp2OpLatencyWithMaxOpAndE2E() {
         long min = Long.MAX_VALUE;
         long max = 0;
         long maxOpDuration = 0;
         for (int i = 0; i < durations.size(); i++) {
             if (i > 0) {
-                long interval = durations.get(i)[0] - durations.get(i - 1)[1];
-                if (interval < min) min = interval;
+                long interval = durations.get(i)[START_TIME_INDEX] - durations.get(i - 1)[END_TIME_INDEX];
+                if (interval < min || interval == Long.MAX_VALUE) min = interval;
                 if (interval > max) max = interval;
             }
             long duration = durations.get(i)[1] - durations.get(i)[0];
             if (maxOpDuration < duration) maxOpDuration = duration;
         }
-        return new long[]{min, max, maxOpDuration};
+        return new long[]{min, max, maxOpDuration, durationMs};
     }
 
 }

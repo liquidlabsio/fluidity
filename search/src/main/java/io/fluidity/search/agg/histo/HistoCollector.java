@@ -42,7 +42,7 @@ package io.fluidity.search.agg.histo;
  *   ]
  */
 public interface HistoCollector extends AutoCloseable {
-    void add(long currentTime, long position, String nextLine);
+    void add(long currentTime, long bytePosition, String nextLine);
 
     void updateFileInfo(String filename, String tags);
 }

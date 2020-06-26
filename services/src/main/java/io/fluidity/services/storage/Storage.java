@@ -41,14 +41,14 @@ public interface Storage extends Lifecycle {
 
     StorageInputStream getInputStream(String region, String tenant, String storageUrl);
 
-    OutputStream getOutputStream(String region, String tenant, String filePathUrl, int daysRetention);
+    OutputStream getOutputStream(String region, String tenant, String filePathUrl, int daysRetention, long lastModified);
 
     Map<String, StorageInputStream> getInputStreams(String region, String tenant, String prefix, String filepathSuffix, long fromTime);
 
     void stop();
 
     /**
-     * List in UTF-binary order
+     * MANDATORY: List in UTF-binary order
      *
      * @param region
      * @param tenant
@@ -58,6 +58,6 @@ public interface Storage extends Lifecycle {
     void listBucketAndProcess(String region, String tenant, String prefix, Processor processor);
 
     interface Processor {
-        String process(String region, String itemUrl, String itemName, long modified);
+        String process(String region, String itemUrl, String itemName, long modified, long size);
     }
 }

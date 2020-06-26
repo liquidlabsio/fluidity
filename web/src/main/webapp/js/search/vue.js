@@ -69,7 +69,7 @@ Fluidity.Search.searchInputFilename = new Vue({
       completes: [
         '*',
         'filename.contains(TEXT)',
-        'filename.equals(TEXT)'
+        'somefilename.log'
       ]
     }
   }

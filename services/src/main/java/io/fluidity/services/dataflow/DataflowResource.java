@@ -16,7 +16,7 @@ package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -135,7 +135,7 @@ public class DataflowResource implements DataflowService {
         String sessionId = search.uid;
         modelName = modelPrefix + modelName;
         AtomicInteger rewritten = new AtomicInteger();
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+        log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
         WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
@@ -151,7 +151,7 @@ public class DataflowResource implements DataflowService {
             }
         };
         String userSession = runner.run(search, sessionId);
-        log.info(LogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
+        log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
 
         try {
             return new ObjectMapper().writeValueAsString(userSession + " - rewritten:" + rewritten.toString());
@@ -164,7 +164,7 @@ public class DataflowResource implements DataflowService {
     @Override
     public String rewriteCorrelationData(String tenant, String session, String fileMetas,
                                          String modelPathEnc, Search search) {
-        log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
+        log.info(FlowLogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
 
         try {
             search.decodeJsonFields();
@@ -181,7 +181,7 @@ public class DataflowResource implements DataflowService {
             log.error("/rewriteCorrelation:{} failed:{}", fileMetas, e.toString());
             return "Failed:" + e.toString();
         } finally {
-            log.info(LogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
+            log.info(FlowLogHelper.format(session, "workflow", "rewriteCorrelationData", "End"));
         }
     }
 
@@ -189,7 +189,7 @@ public class DataflowResource implements DataflowService {
     public List<String> listModels(String tenant) {
 
         Set<String> results = new HashSet<>();
-        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified) -> {
+        storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified, size) -> {
             int from = itemName.indexOf(MODELS) + MODELS.length() + 1;
             int to = itemName.indexOf(PATH_SEP, from);
             if (from > 0 && to > from) {
@@ -225,7 +225,7 @@ public class DataflowResource implements DataflowService {
         String modelNameUrl = storage.getBucketName(tenant) + PATH_SEP + MODELS + PATH_SEP + modelName + "/model.json";
 
         try {
-            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360)) {
+            try (OutputStream fos = storage.getOutputStream(cloudRegion, tenant, modelNameUrl, 360, System.currentTimeMillis())) {
                 fos.write(modelData.getBytes());
             } catch (IOException e) {
                 log.warn("Failed to save:", modelName, e);

@@ -60,7 +60,7 @@ class Refinery {
              // trigger refresh to update the UI
              Fluidity.Refinery.vue.modelTable.items.pop();
              reply.forEach(item => {
-                Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: '128k'} )
+                Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: item.size + 'b'} )
              })
         })
 
@@ -94,7 +94,7 @@ class Refinery {
         this.searchRequest = search;
         this.startTime =  new Date();
 
-        this.addStatusMessage("Starting model query");
+        this.addStatusMessage("Starting model generation");
 
         Fluidity.Refinery.vue.statusMessage="Running:" + search.expression;
         $.Topic(Fluidity.Refinery.Topics.submit).publish(search, Fluidity.Refinery.vue.modelNameInput.name);

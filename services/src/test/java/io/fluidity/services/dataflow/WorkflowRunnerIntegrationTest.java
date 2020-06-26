@@ -14,7 +14,7 @@
 
 package io.fluidity.services.dataflow;
 
-import io.fluidity.dataflow.LogHelper;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.search.Search;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
@@ -93,7 +93,7 @@ class WorkflowRunnerIntegrationTest {
 
         ArrayList<String> collected = new ArrayList<>();
 
-        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified) -> {
+        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified, size) -> {
             if (itemName.contains(CORR_HIST_PREFIX)) collected.add(itemUrl);
             return null;
         });
@@ -104,12 +104,9 @@ class WorkflowRunnerIntegrationTest {
         // String json = new String(storage.get(region, "storgage://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
         String json = new String(storage.get(region, collected.get(0), 0));
 
-        System.out.println("Got Model:" + json);
+        System.out.println("Got Model:" + json.replace("},{", "},\n{"));
         System.out.println("Got Model:" + collected);
-        assertTrue(json.contains("totalDuration"), "Missing duration series");
-        assertTrue(json.contains("op2OpLatency"), "Missing op2OpLatency series");
-        assertTrue(json.contains("maxOpDuration"), "Missing maxOpDuration series");
-        assertTrue(json.contains("\"right\":[180000,180000,180000,1]"), "Missing maxOpDuration data");
+        assertTrue(json.contains( "\"opDuration\" : [ 180000, 180000, 180000 ]"), "Missing stats data");
     }
 
     private void populateTestData(String region, String session, QueryService query, Storage storage, String tenant) {
@@ -118,9 +115,9 @@ class WorkflowRunnerIntegrationTest {
         StringBuilder testContent = new StringBuilder();
         long startTime = System.currentTimeMillis() - DateUtil.MINUTE * 10;
 
-        testContent.append("\"ts\":\"" + startTime + "\"," + LogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
-        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 2) + "\"," + LogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
-        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 3) + "\"," + LogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
+        testContent.append("\"ts\":\"" + startTime + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step1")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 2) + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step2")).append("\n");
+        testContent.append("\"ts\":\"" + (startTime + DateUtil.MINUTE * 3) + "\"," + FlowLogHelper.format(session, "builder", "workflow", "Step3")).append("\n");
 
         String timeFormat = "prefix:[\"ts\":\"] LONG";
         FileMeta testFile = new FileMeta(tenant, "resource", "tags", testFilename, testContent.toString().getBytes(), System.currentTimeMillis() - DateUtil.MINUTE, System.currentTimeMillis(), timeFormat);

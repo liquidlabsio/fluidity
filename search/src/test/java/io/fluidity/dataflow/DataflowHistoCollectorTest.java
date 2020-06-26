@@ -16,6 +16,7 @@ package io.fluidity.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.Series;
 import io.fluidity.util.DateUtil;
@@ -30,7 +31,26 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DataflowHistoCollectorTest {
 
     @Test
-    void add() throws JsonProcessingException {
+    void ladderGetCollected() throws JsonProcessingException {
+        DataflowHistoCollector dataflowHistoCollector = setupTheHistoCollector();
+        Series<Map<Long, FlowStats>> ladder = dataflowHistoCollector.ladderHisto();
+        String ladderString = new ObjectMapper().writeValueAsString(ladder);
+        System.out.println(ladderString.replace("},{","},\n{"));
+        String ladderJson = "{\"0\":{\"opLatency\":[5,5,5],\"opDuration\":[25,25,25],\"duration\":[40,40,40],\"count\":1},\"3500\":{\"opLatency\":[100,100,100],\"opDuration\":[3000,3000,3000],\"duration\":[3500,3500,3500],\"count\":1}";
+        assertTrue(ladderString.contains(ladderJson), "Ladder stats not matching");
+    }
+
+    @Test
+    void flowStatsGetCollected() throws JsonProcessingException {
+        DataflowHistoCollector dataflowHistoCollector = setupTheHistoCollector();
+        Series<FlowStats> histo = dataflowHistoCollector.flowHisto();
+        String histoStats = new ObjectMapper().writeValueAsString(histo);
+
+        System.out.println(histoStats.replace("},{", "},\n{"));
+        assertTrue(histoStats.contains("\"right\":{\"opLatency\":[5,100,105],\"opDuration\":[25,3000,3025],\"duration\":[40,3500,3540],\"count\":2}"));
+    }
+
+    private DataflowHistoCollector setupTheHistoCollector() {
         Search search = new Search();
         search.expression = "*|*|*|field.getJsonPair(txn)";
         search.from = System.currentTimeMillis() - DateUtil.HOUR;
@@ -41,15 +61,6 @@ class DataflowHistoCollectorTest {
                 List.of(new Long[]{10l, 20l}, new Long[]{25l, 50l})));
         dataflowHistoCollector.add(time, new FlowInfo("someFlowId", Arrays.asList("/someFlowFile.log"),
                 List.of(new Long[]{1000l, 4000l}, new Long[]{4100l, 4500l})));
-        Map<String, Series<Long[]>> results = dataflowHistoCollector.results();
-        System.out.println(results);
-        assertTrue(results.containsKey("totalDuration"));
-
-
-        Series<Long[]> totalDuration = results.get("totalDuration");
-        assertTrue(new ObjectMapper().writeValueAsString(totalDuration).contains("[40,3500,3540,2]"), "Duration stats is missing");
-
-        assertTrue(results.containsKey("op2OpLatency"));
-        assertTrue(results.containsKey("maxOpDuration"));
+        return dataflowHistoCollector;
     }
 }

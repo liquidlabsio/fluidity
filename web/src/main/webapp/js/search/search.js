@@ -22,9 +22,11 @@ $(document).ready(function () {
 
 class Search {
 
+
     constructor() {
 
     try {
+        this.FILE_BATCH = 3;
         this.searchId = 0;
         this.searchFileUrls = [];
         this.searchedFileUrls = [];
@@ -146,7 +148,7 @@ class Search {
         var collected = []
         this.searchFileMetas.forEach(fileMeta => {
             collected.push(fileMeta)
-            if (collected.length > 7) {
+            if (collected.length > this.FILE_BATCH) {
                 console.log("BATCH:" + fileMeta + " size:" + collected.length)
                 $.Topic(Fluidity.Search.Topics.searchFile).publish(self.searchRequest, collected.slice())
                 collected.length = 0;

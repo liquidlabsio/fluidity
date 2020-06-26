@@ -17,8 +17,7 @@ package io.fluidity.search.agg.histo;
 import io.fluidity.util.DateUtil;
 import org.graalvm.collections.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static io.fluidity.util.DateUtil.DAY;
 import static io.fluidity.util.DateUtil.HOUR;
@@ -41,14 +40,13 @@ import static io.fluidity.util.DateUtil.WEEK;
 public class TimeSeries<T> implements Series<T> {
 
     public String groupBy;
-    private Ops<T> ops;
+    private Ops<T> ops = (Ops<T>) new LongOps();
     public String name;
     public List<Pair<Long, T>> data = new ArrayList<>();
     public long delta = DateUtil.MINUTE;
 
     public TimeSeries() {
     }
-
     public TimeSeries(String filename, String groupBy, long from, long to, Ops<T> ops) {
         this.name = filename;
         this.groupBy = groupBy;
@@ -122,5 +120,72 @@ public class TimeSeries<T> implements Series<T> {
                 );
     }
 
+    @Override
+    public Collection<Series<T>> slice(long timeBucket) {
+        HashMap<Long, Series<T>> results = new LinkedHashMap<>();
+        this.data.stream().forEach(item -> {
+            long seriesStartTime = DateUtil.floorHour(item.getLeft());
+            TimeSeries<T> tSeries = (TimeSeries<T>) results.computeIfAbsent(seriesStartTime,
+                    k -> new TimeSeries(this.name, this.groupBy, seriesStartTime, seriesStartTime + timeBucket, this.ops));
+            tSeries.data.add(item);
+        });
+        return results.values();
+    }
 
+    @Override
+    public long start() {
+        return data.get(0).getLeft();
+    }
+
+    @Override
+    public long end() {
+        return data.get(data.size()-1).getLeft();
+    }
+
+    /**
+     * Getters/Settings for support bean json serialization
+     */
+    public String getGroupBy() {
+        return groupBy;
+    }
+
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Pair<Long, T>> getData() {
+        return data;
+    }
+
+    public void setData(List<Pair<Long, T>> data) {
+        this.data = data;
+    }
+
+    public long getDelta() {
+        return delta;
+    }
+
+    public void setDelta(long delta) {
+        this.delta = delta;
+    }
+
+    @Override
+    public String toString() {
+        return "TimeSeries{" +
+                "groupBy='" + groupBy + '\'' +
+                " start=" + DateUtil.printTime(this.start()) +
+                " end=" + DateUtil.printTime(this.end()) +
+                ", ops=" + ops +
+                ", name='" + name + '\'' +
+                ", delta=" + delta +
+                '}';
+    }
 }
