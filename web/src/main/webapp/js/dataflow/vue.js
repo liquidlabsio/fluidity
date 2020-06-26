@@ -12,7 +12,7 @@ Fluidity.Dataflow.vue = new Vue({
         }
     },
     mounted() {
-        console.log("yayaya")
+        console.log("dataflow is mounted")
       },
     methods: {
       fetchModels() {
