@@ -27,7 +27,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,7 +95,7 @@ class WorkflowRunnerIntegrationTest {
 
         ArrayList<String> collected = new ArrayList<>();
 
-        storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified, size) -> {
+       storage.listBucketAndProcess(region, tenant, modelPath, (region1, itemUrl, itemName, modified, size) -> {
             if (itemName.contains(CORR_HIST_PREFIX)) collected.add(itemUrl);
             return null;
         });
@@ -101,11 +103,10 @@ class WorkflowRunnerIntegrationTest {
         assertTrue(collected.size() > 0, "Should have found a histogram model in the store");
 
         // AWS uses bucket name unlike local alternatives
-        // String json = new String(storage.get(region, "storgage://fluidity-dev-" + tenant + "/" + collected.get(0), 0));
-        String json = new String(storage.get(region, collected.get(0), 0));
+        List<String> jsonList = collected.stream().map(item -> new String(storage.get(region, item, 0))).collect(Collectors.toList());
+        String json = jsonList.toString();
 
         System.out.println("Got Model:" + json.replace("},{", "},\n{"));
-        System.out.println("Got Model:" + collected);
         assertTrue(json.contains( "\"opDuration\" : [ 180000, 180000, 180000 ]"), "Missing stats data");
     }
 
