@@ -15,6 +15,9 @@ Fluidity.Dataflow.vue = new Vue({
         console.log("dataflow is mounted")
       },
     methods: {
+      executeDataflow() {
+        Fluidity.Dataflow.dataflow.bind();
+      },
       fetchModels() {
       			return fetch(SERVICE_URL + '/dataflow/model/list?'
       			    + new URLSearchParams({ tenant: DEFAULT_TENANT })
