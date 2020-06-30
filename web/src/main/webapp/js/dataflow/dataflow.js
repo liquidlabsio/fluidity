@@ -21,9 +21,11 @@ class Dataflow {
         }
     }
     bind() {
-        this.loadHistogram();
-        this.loadHeatmap();
         this.loadDataflowsForTimeX();
+        this.loadHeatmap();
+        this.loadHistogram();
+
+
     }
     /**
     * Load timeseries latency and volumes
@@ -44,7 +46,7 @@ class Dataflow {
 
         if (this.histo == null) {
             this.histo = new VolumeLatencyHisto();
-            this.histo.setup(data, document.getElementById('dataflowHisto'));
+            this.histo.setup(data, document.getElementById('dataflowHisto'), this.heatmap.click);
         } else {
             this.histo.update(data);
         }
@@ -55,9 +57,9 @@ class Dataflow {
 
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();
-            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'));
+            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), this.dataflowsForTime.click);
         } else {
-            this.histo.update(aggData);
+            this.heatmap.update(aggData);
         }
     }
     loadDataflowsForTimeX() {

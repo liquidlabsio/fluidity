@@ -23,5 +23,13 @@ class DataflowsForTime {
 
         this.chart = new google.charts.Bar(this.element);
         this.chart.draw(ddata, google.charts.Bar.convertOptions(options));
+        google.visualization.events.addListener(this.chart, 'click', function() {
+          //table.setSelection(orgchart.getSelection());
+          console.log("Clicked thingy:" + event)
+        });
+    }
+
+    click(event) {
+        console.log("Doing a Click")
     }
 }

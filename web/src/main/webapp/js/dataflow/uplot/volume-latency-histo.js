@@ -221,7 +221,7 @@ function dataVolumePlugin({ gap = 2, shadowColor = "#000011", redColor = "#e5424
 }
 
 class VolumeLatencyHisto {
-    setup(data, element) {
+    setup(data, element, clickHandler) {
         let volume = data[4];
         const fmtDate = uPlot.fmtDate("{YYYY}-{MM}-{DD} {h}:{mm}:{ss}");
         const tzDate = ts => uPlot.tzDate(new Date(ts * 1e3), "Etc/UTC");
@@ -289,6 +289,7 @@ class VolumeLatencyHisto {
         let uplot = new uPlot(opts, data, element);
         uplot.root.querySelector(".over").addEventListener('click', function(e1, e2) {
                 console.log("yay:" + uplot.cursor.idx)
+                clickHandler(uplot.cursor.idx)
             })
         this.uPlot = uplot;
     }

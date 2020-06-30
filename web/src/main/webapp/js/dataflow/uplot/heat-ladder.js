@@ -162,7 +162,7 @@ function generateAggData(raw, bucketIncr) {
     }
 
 class HeatLadder {
-    setup(data, element) {
+    setup(data, element, clickHandler) {
 
         const opts = {
             width: 1800,
@@ -192,9 +192,25 @@ class HeatLadder {
             ],
         };
 
-        this.uPlot = new uPlot(opts, data, element);
+        let u = new uPlot(opts, data, element);
+
+        u.root.querySelector(".over").addEventListener('click', function(e1, e2) {
+
+            const {left, top, idx} = u.cursor;
+            let xVal = u.data[0][idx];
+            let yVal = u.data[1][idx];
+            (u.valToPos(xVal, 'x'))
+            let liveXValue = Math.round(u.posToVal(top, "x").toFixed(0));
+            let liveYValue = Math.round(u.posToVal(top, "y"));
+            console.log("yay:" + u.cursor.idx)
+            clickHandler(u.cursor.idx);
+        });
+        this.uPlot = u;
     }
     update(data) {
         this.uPlot.setData(data);
+    }
+    click(eventData) {
+        console.log("Clicked:" + eventData)
     }
 }

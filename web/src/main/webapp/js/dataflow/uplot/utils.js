@@ -1,7 +1,3 @@
-/**
-Pull into ChartUtils
-**/
-// ======== CHART UTILS ================================================
 var inf = Infinity;
 
 function fmtDecimals(val, dec) {
@@ -16,17 +12,12 @@ function shortFmtDecimals(val, dec) {
 function incrRound(num, incr) {
     return Math.round(num/incr)*incr;
 }
-
 function incrRoundUp(num, incr) {
     return Math.ceil(num/incr)*incr;
 }
-
 function incrRoundDn(num, incr) {
     return Math.floor(num/incr)*incr;
 }
-
-
-
 function getMinMax(data) {
     var _min = inf;
     var _max = -inf;
