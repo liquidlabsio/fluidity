@@ -135,10 +135,10 @@ public abstract class WorkflowRunner {
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Start"));
         Collection<Series<FlowStats>> flowHisto = dataflowHistoCollector.flowHisto().slice(DateUtil.HOUR);
+        ClientHistoJsonConvertor jsonConvertor = new ClientHistoJsonConvertor();
         flowHisto.forEach(item -> {
             try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, item.start(), DateUtil.ceilHour(item.end())), 365, item.start())) {
-                byte[] dataflowHistogram = getMapper().writeValueAsBytes(item);
-                IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
+                IOUtils.copy(new ByteArrayInputStream(jsonConvertor.toJson(item)), outputStream);
             } catch (IOException e) {
                 e.printStackTrace();
                 log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
@@ -160,12 +160,6 @@ public abstract class WorkflowRunner {
             }
         });
         log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Finish"));
-    }
-
-    private ObjectMapper getMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        return mapper;
     }
 
     /**
@@ -256,6 +250,10 @@ public abstract class WorkflowRunner {
     abstract String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath);
 
 
-
+    private ObjectMapper getMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
 
 }

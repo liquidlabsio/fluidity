@@ -241,11 +241,13 @@ class VolumeLatencyHisto {
                 },
                 y: {
                     // push the volume MIN value up to leave space above it
-                    range: offsetFactor(getMinMax(data[2]), 0.95, 1.02),
+                    //range: offsetFactor(getMinMax(data[2]), 0.95, 1.02),
+                    auto: true,
                 },
                 vol: {
                     // push the  max value up to leave space above it
-                    range: offsetFactor(getMinMax(volume), 1, 5),
+                    //range: offsetFactor(getMinMax(volume), 1, 5),
+                    auto: true,
                 },
             },
             series: [

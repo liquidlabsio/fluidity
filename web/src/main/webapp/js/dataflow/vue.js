@@ -16,7 +16,7 @@ Fluidity.Dataflow.vue = new Vue({
       },
     methods: {
       executeDataflow() {
-        Fluidity.Dataflow.dataflow.bind();
+        Fluidity.Dataflow.dataflow.loadHistogramData(Fluidity.Dataflow.vue.modelNameInput.name);
       },
       fetchModels() {
       			return fetch(SERVICE_URL + '/dataflow/model/list?'

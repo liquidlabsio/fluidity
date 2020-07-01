@@ -48,7 +48,15 @@
       ]);
 
       var options = {
-        height: 275
+        height: 275,
+         fontName: 'Arial',
+        gantt: {
+            labelStyle: {
+              fontName: 'Arial',
+              fontSize: 14,
+              color: '#757575'
+            }
+         }
       };
 
       var chart = new google.visualization.Gantt(document.getElementById('chart_div'));

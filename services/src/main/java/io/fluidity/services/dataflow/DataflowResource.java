@@ -15,12 +15,17 @@
 package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fluidity.dataflow.ClientHistoJsonConvertor;
 import io.fluidity.dataflow.FlowLogHelper;
+import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
+import io.fluidity.search.agg.histo.TimeSeries;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
+import io.vertx.core.TimeoutStream;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -41,6 +46,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.LADDER_HIST_PREFIX;
 
 /**
  * API to build, maintain, and access dataflow models
@@ -116,14 +124,14 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<Map<String, String>> model(String tenant, String session, String modelName) {
+    public List<Map<String, String>> modelDataList(String tenant, String session, String modelName) {
         modelName = modelPrefix + modelName;
 
         log.info("/model:{}", session);
 
         long start = System.currentTimeMillis();
         try {
-            return dataflowBuilder.getModel(cloudRegion, tenant, session, modelName, storage);
+            return dataflowBuilder.getModelDataList(cloudRegion, tenant, session, modelName, storage);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
         }
@@ -236,5 +244,36 @@ public class DataflowResource implements DataflowService {
         } catch (JsonProcessingException e) {
         }
         return "broken";
+    }
+
+
+    @Override
+    public String volumeHisto(String tenant, String modelName, Long time) {
+
+        modelName = modelPrefix + modelName;
+
+        List<Map<String, String>> ladderAndHistoUrls = new ArrayList<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(CORR_HIST_PREFIX)) {
+                ladderAndHistoUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
+
+            }
+            return null;
+        });
+        ClientHistoJsonConvertor clientHistoJsonConvertor = new ClientHistoJsonConvertor();
+        StringBuilder results = new StringBuilder();
+        List<TimeSeries<FlowStats>> last = new ArrayList<>();
+        ladderAndHistoUrls.stream().forEach(item -> {
+            byte[] jsonPayload = storage.get(cloudRegion, item.get("url"), 0);
+                TimeSeries<FlowStats> timeSeries = clientHistoJsonConvertor.fromJson(jsonPayload);
+                last.add(timeSeries);
+                if (timeSeries.start() < time && timeSeries.end() > time) {
+                    results.append(clientHistoJsonConvertor.toClientArrays(timeSeries));
+                }
+        });
+        if (results.length() == 0) {
+            return clientHistoJsonConvertor.toClientArrays(last.get(last.size()-1));
+        }
+        return results.toString();
     }
 }
