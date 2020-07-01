@@ -240,14 +240,18 @@ class VolumeLatencyHisto {
                     distr: 2,
                 },
                 y: {
+                    // TODO: issues with auto-ranging
                     // push the volume MIN value up to leave space above it
                     //range: offsetFactor(getMinMax(data[2]), 0.95, 1.02),
-                    auto: true,
+                    //auto: true,
+                    range: [-100, 30000]
                 },
                 vol: {
+                    // TODO: issues with auto-ranging
                     // push the  max value up to leave space above it
-                    //range: offsetFactor(getMinMax(volume), 1, 5),
-                    auto: true,
+                    range: offsetFactor(getMinMax(volume), 1, 5),
+                    //auto: true,
+                    range: [0, 1000]
                 },
             },
             series: [

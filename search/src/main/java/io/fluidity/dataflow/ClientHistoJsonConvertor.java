@@ -106,8 +106,8 @@ public class ClientHistoJsonConvertor {
             ArrayList<List<Long>> results = new ArrayList<>();
             results.add(times);
             results.add(min);
-            results.add(max);
             results.add(avg);
+            results.add(max);
             results.add(volume);
 
             return getMapper().writeValueAsString(results);
