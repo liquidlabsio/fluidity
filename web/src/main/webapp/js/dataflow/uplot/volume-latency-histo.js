@@ -240,18 +240,28 @@ class VolumeLatencyHisto {
                     distr: 2,
                 },
                 y: {
-                    // TODO: issues with auto-ranging
-                    // push the volume MIN value up to leave space above it
-                    //range: offsetFactor(getMinMax(data[2]), 0.95, 1.02),
-                    //auto: true,
-                    range: [-100, 30000]
+                    range: (u, minOld, maxOld)  => {
+                        let min = Infinity;
+                        let max = -Infinity;
+                        let heatmapMax = 0;
+                        u.data[2].forEach(yVal => {
+                              min = Math.min(min, yVal);
+                              max = Math.max(max, yVal);
+                        })
+                        return [min * 0.95, max * 1.02];
+                    },
                 },
                 vol: {
-                    // TODO: issues with auto-ranging
-                    // push the  max value up to leave space above it
-                    range: offsetFactor(getMinMax(volume), 1, 5),
-                    //auto: true,
-                    range: [0, 1000]
+                     range: (u, minOld, maxOld)  => {
+                            let min = Infinity;
+                            let max = -Infinity;
+                            let heatmapMax = 0;
+                            u.data[4].forEach(yVal => {
+                                  min = Math.min(min, yVal);
+                                  max = Math.max(max, yVal);
+                            })
+                            return [min, max * 5];
+                        },
                 },
             },
             series: [
@@ -280,7 +290,7 @@ class VolumeLatencyHisto {
             axes: [
                 {},
                 {
-                    values: (u, vals) => vals.map(v => fmtDecimals(v, 0)+ "ms"),
+                    values: (u, vals) => vals.map(v => shortFmtDecimals(v, 0)+ " ms"),
                     size: 60,
                 },
                 {
@@ -294,8 +304,9 @@ class VolumeLatencyHisto {
 
         let uplot = new uPlot(opts, data, element);
         uplot.root.querySelector(".over").addEventListener('click', function(e1, e2) {
-                console.log("yay:" + uplot.cursor.idx)
-                clickHandler(uplot.cursor.idx)
+                const {left, top, idx} = uplot.cursor;
+                let xValTime = uplot.data[0][idx];
+                clickHandler(xValTime)
             })
         this.uPlot = uplot;
     }

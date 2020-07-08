@@ -3,6 +3,8 @@ var inf = Infinity;
 function fmtDecimals(val, dec) {
     return val.toFixed(dec).replace(/\d(?=(\d{3})+(?:\.|$))/g, "$&,");
 }
+
+
 function shortFmtDecimals(val, dec) {
     if (val > 999 && val < 900000) return val/1000 + "k"
     if (val >= 1000000) return fmtDecimals(val/1000000, dec) + "m"

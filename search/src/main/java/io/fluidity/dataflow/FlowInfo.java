@@ -50,19 +50,20 @@ public class FlowInfo {
     }
 
     public long[] getMinMaxOp2OpLatencyWithMaxOpAndE2E() {
-        long min = Long.MAX_VALUE;
-        long max = 0;
+        long minLatency = Long.MAX_VALUE;
+        long maxLatency = 0;
         long maxOpDuration = 0;
         for (int i = 0; i < durations.size(); i++) {
             if (i > 0) {
                 long interval = durations.get(i)[START_TIME_INDEX] - durations.get(i - 1)[END_TIME_INDEX];
-                if (interval < min || interval == Long.MAX_VALUE) min = interval;
-                if (interval > max) max = interval;
+                if (interval < minLatency || interval == Long.MAX_VALUE) minLatency = interval;
+                if (interval > maxLatency) maxLatency = interval;
             }
             long duration = durations.get(i)[1] - durations.get(i)[0];
             if (maxOpDuration < duration) maxOpDuration = duration;
         }
-        return new long[]{min, max, maxOpDuration, durationMs};
+        if (durations.size() == 1) minLatency = 0;
+        return new long[]{minLatency, maxLatency, maxOpDuration, durationMs};
     }
 
 }

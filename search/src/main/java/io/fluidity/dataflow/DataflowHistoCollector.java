@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class DataflowHistoCollector {
     private LatencyLadderFun ladderFun;
-    private Series<Map<Long, FlowStats>> ladderStatsHisto;
+    private TimeSeries<Map<Long, FlowStats>> ladderStatsHisto;
 
     private DurationStatsFun flowFun;
     private TimeSeries<FlowStats> flowStatsHisto;

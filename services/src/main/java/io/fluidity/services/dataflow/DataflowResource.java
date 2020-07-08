@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fluidity.dataflow.ClientHistoJsonConvertor;
+import io.fluidity.dataflow.ClientLadderJsonConvertor;
 import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
@@ -252,27 +253,57 @@ public class DataflowResource implements DataflowService {
 
         modelName = modelPrefix + modelName;
 
-        List<Map<String, String>> ladderAndHistoUrls = new ArrayList<>();
+        List<Map<String, String>> histoUrls = new ArrayList<>();
         storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
             if (itemUrl.contains(CORR_HIST_PREFIX)) {
-                ladderAndHistoUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
+                histoUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
 
             }
             return null;
         });
-        ClientHistoJsonConvertor clientHistoJsonConvertor = new ClientHistoJsonConvertor();
+        ClientHistoJsonConvertor convertor = new ClientHistoJsonConvertor();
         StringBuilder results = new StringBuilder();
         List<TimeSeries<FlowStats>> last = new ArrayList<>();
-        ladderAndHistoUrls.stream().forEach(item -> {
+        histoUrls.stream().forEach(item -> {
             byte[] jsonPayload = storage.get(cloudRegion, item.get("url"), 0);
-                TimeSeries<FlowStats> timeSeries = clientHistoJsonConvertor.fromJson(jsonPayload);
+                TimeSeries<FlowStats> timeSeries = convertor.fromJson(jsonPayload);
                 last.add(timeSeries);
                 if (timeSeries.start() < time && timeSeries.end() > time) {
-                    results.append(clientHistoJsonConvertor.toClientArrays(timeSeries));
+                    results.append(convertor.toClientArrays(timeSeries));
                 }
         });
         if (results.length() == 0) {
-            return clientHistoJsonConvertor.toClientArrays(last.get(last.size()-1));
+            return convertor.toClientArrays(last.get(last.size()-1));
+        }
+        return results.toString();
+    }
+
+    @Override
+    public String heatmapHisto(String tenant, String modelName, Long time) {
+
+        modelName = modelPrefix + modelName;
+
+        List<Map<String, String>> ladderUrls = new ArrayList<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(LADDER_HIST_PREFIX)) {
+                ladderUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
+
+            }
+            return null;
+        });
+        ClientLadderJsonConvertor convertor = new ClientLadderJsonConvertor();
+        StringBuilder results = new StringBuilder();
+        List<TimeSeries<Map<Long, FlowStats>>> last = new ArrayList<>();
+        ladderUrls.stream().forEach(item -> {
+            byte[] jsonPayload = storage.get(cloudRegion, item.get("url"), 0);
+            TimeSeries<Map<Long, FlowStats>> ladder = convertor.fromJson(jsonPayload);
+            last.add(ladder);
+            if (ladder.start() < time && ladder.end() > time) {
+                results.append(convertor.toClientArrays(ladder));
+            }
+        });
+        if (results.length() == 0) {
+            return convertor.toClientArrays(last.get(last.size()-1));
         }
         return results.toString();
     }

@@ -1,4 +1,4 @@
-function rawData(xCount, ySeriesCount, yCountMin, yCountMax, yMin, yMax) {
+function generateRawData(xCount, ySeriesCount, yCountMin, yCountMax, yMin, yMax) {
         xCount = xCount || 100;
         ySeriesCount = ySeriesCount || 1;
 
@@ -42,18 +42,6 @@ function rawData(xCount, ySeriesCount, yCountMin, yCountMax, yMin, yMax) {
         return data;
     }
 
-function generateRawData(){
-    console.time("rawData");
-    let raw = rawData();
-    console.timeEnd("rawData");
-//    return [
-//        raw[0],
-//        raw[1].map(vals => vals[0]),
-//        raw[1].map(vals => vals[vals.length - 1]),
-//        raw[1],
-//    ];
-    return raw;
-}
 
 function aggData(data, incr) {
         let data2 = [
@@ -103,13 +91,10 @@ function generateAggData(raw, bucketIncr) {
 
     return [
         agg[0],
-        raw[1].map(vals => vals[0]),
-        raw[1].map(vals => vals[vals.length - 1]),
         agg[1],
         agg[2],
     ];
 }
-
     function heatmapPlugin2() {
         // let global min/max
         function fillStyle(count, minCount, maxCount) {
@@ -123,35 +108,41 @@ function generateAggData(raw, bucketIncr) {
                     const { ctx, data } = u;
                     const bucketIncr = 2;
 
-                    let yData = data[3];
-                    let yQtys = data[4];
-/*
+                    let yData = data[1];
+                    let yQtys = data[2];
+                    let [iMin, iMax] = u.series[0].idxs;
+
                     let maxCount = -Infinity;
                     let minCount = Infinity;
                     yQtys.forEach(qtys => {
                         maxCount = Math.max(maxCount, Math.max.apply(null, qtys));
                         minCount = Math.min(minCount, Math.min.apply(null, qtys));
                     });
-                    console.log(maxCount, minCount);
-*/
+//                    console.log(maxCount, minCount);
+
 
                     // pre-calc rect height since we know the aggregation bucket
                     let yHgt = Math.floor(u.valToPos(bucketIncr, 'y', true) - u.valToPos(0, 'y', true));
 
-                    yData.forEach((yVals, xi) => {
-                        let xPos = Math.floor(u.valToPos(data[0][xi], 'x', true));
+                    // prevent super skinny rendering
+                    if (yHgt >= -2) {
+                        yHgt = -5;
+                    }
+                    let columnWidth  = u.bbox.width / (iMax - iMin);
 
-                        let maxCount = yQtys[xi].reduce((acc, val) => Math.max(val, acc), -Infinity);
+                    yData.forEach((yVals, xi) => {
+
+                        let xPos = Math.floor(u.valToPos(data[0][xi], 'x', true));
 
                         yVals.forEach((yVal, yi) => {
                             let yPos =  Math.floor(u.valToPos(yVal, 'y', true));
 
-                        //	ctx.fillStyle = fillStyle(yQtys[xi][yi], minCount, maxCount);
-                            ctx.fillStyle = fillStyle(yQtys[xi][yi], 1, maxCount);
+                        	ctx.fillStyle = fillStyle(yQtys[xi][yi], minCount, maxCount);
+                            //ctx.fillStyle = fillStyle(yQtys[xi][yi], 1, maxCount);
                             ctx.fillRect(
-                                xPos - 4,
+                                xPos - (columnWidth/2) - 5,
                                 yPos,
-                                10,
+                                columnWidth-4,
                                 yHgt,
                             );
                         });
@@ -190,8 +181,24 @@ class HeatLadder {
                     points: {show: false},
                 },
             ],
-        };
-
+            scales: {
+                y: {
+                    auto: false,
+                    range: (u, minOld, maxOld)  => {
+                            let min = Infinity;
+                            let max = -Infinity;
+                            let heatmapMax = 0;
+                            u.data[1].forEach(yValueArray => {
+                                yValueArray.forEach(yVal => {
+                                  min = Math.min(min, yVal);
+                                  max = Math.max(max, yVal);
+                                })
+                            })
+                            return [min, max];
+                        },
+        }
+            }
+        }
         let u = new uPlot(opts, data, element);
 
         u.root.querySelector(".over").addEventListener('click', function(e1, e2) {
@@ -210,7 +217,7 @@ class HeatLadder {
     update(data) {
         this.uPlot.setData(data);
     }
-    click(eventData) {
-        console.log("Clicked:" + eventData)
+    click(time) {
+        console.log("Clicked:" + time)
     }
 }

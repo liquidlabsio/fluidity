@@ -19,40 +19,47 @@ import io.fluidity.search.agg.histo.Series;
 import io.fluidity.search.agg.histo.TimeSeries;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ClientHistoJsonConvertorTest {
+class ClientLadderJsonConvertorTest {
 
     @Test
     void toFromJson() {
-        TimeSeries<FlowStats> stats = makeFlowStats();
-        ClientHistoJsonConvertor jsonConvertor = new ClientHistoJsonConvertor();
+        TimeSeries<Map<Long, FlowStats>> stats = makeFlowStats();
+        ClientLadderJsonConvertor jsonConvertor = new ClientLadderJsonConvertor();
         byte[] jsonBytes = jsonConvertor.toJson(stats);
-        TimeSeries<FlowStats> newTimeSeries = jsonConvertor.fromJson(jsonBytes);
+        TimeSeries<Map<Long, FlowStats>> newTimeSeries = jsonConvertor.fromJson(jsonBytes);
         byte[] checkingJson = jsonConvertor.toJson(newTimeSeries);
+
+        System.out.println("GOT:" + new String(jsonBytes));
         assertEquals(new String(jsonBytes), new String(checkingJson), "Reconciliation failed!");
     }
 
     @Test
     void toClientJsonArrays() {
-        TimeSeries<FlowStats> timeSeries = makeFlowStats();
-        String clientJson = new ClientHistoJsonConvertor().toClientArrays(timeSeries);
+        ClientLadderJsonConvertor jsonConvertor = new ClientLadderJsonConvertor();
+        TimeSeries<Map<Long, FlowStats>> ladder = makeFlowStats();
+
+        // double check json serdes doesnt break type info (it was!)
+        byte[] jsonBytes = jsonConvertor.toJson(ladder);
+        TimeSeries<Map<Long, FlowStats>> ladder2 = jsonConvertor.fromJson(jsonBytes);
+
+        String clientJson = jsonConvertor.toClientArrays(ladder2);
         System.out.println(clientJson);
-        assertTrue(clientJson.contains("[ 100 ]"));
+        assertTrue(clientJson.contains("[ [ 0 ], [ [ 111 ] ], [ [ 1 ] ] ]"));
     }
 
-    private TimeSeries<FlowStats> makeFlowStats() {
-        TimeSeries<FlowStats> stats = new TimeSeries("none", "", 1000, 3000, new Series.LongOps());
+    private TimeSeries<Map<Long, FlowStats>> makeFlowStats() {
+        TimeSeries<Map<Long, FlowStats>> timeseries = new TimeSeries("none", "", 1000, 3000, new Series.LongOps());
         FlowStats flowStats = new FlowStats();
         Long[] longs = {100l, 200l};
         FlowInfo flowInfo = new FlowInfo("flowId", List.of("someFile"), new ArrayList<>(Collections.singleton(longs)));
         flowStats.update(flowInfo);
-        stats.update(1000, flowStats);
-        return stats;
+        Map<Long, FlowStats> statsMap = Map.of(111l, flowStats);
+        timeseries.update(1000, statsMap);
+        return timeseries;
     }
 }

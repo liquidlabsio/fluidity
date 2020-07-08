@@ -15,6 +15,7 @@
 package io.fluidity.dataflow;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,7 @@ import org.graalvm.collections.Pair;
 import java.io.IOException;
 
 public class PairDeserializer<K,V> extends StdDeserializer<Pair<K, V>> {
+    private TypeReference rightType;
     private Class left;
     private Class right;
     ObjectMapper mapper = new ObjectMapper();
@@ -34,6 +36,12 @@ public class PairDeserializer<K,V> extends StdDeserializer<Pair<K, V>> {
         this.right = right;
     }
 
+    public PairDeserializer(Class left, TypeReference rightType) {
+        this(null);
+        this.left = left;
+        this.rightType = rightType;
+    }
+
     public PairDeserializer(Class<?> vc) {
         super(vc);
     }
@@ -42,7 +50,9 @@ public class PairDeserializer<K,V> extends StdDeserializer<Pair<K, V>> {
     public Pair<K, V> deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = jp.getCodec().readTree(jp);
         Object left = mapper.readValue(node.get("left").toString(), this.left);
-        Object right = mapper.readValue(node.get("right").toString(), this.right);
-        return (Pair<K, V>) Pair.create(left, right);
+        Object right = rightType != null ?
+                mapper.readValue(node.get("right").toString(), this.rightType) :
+                mapper.readValue(node.get("right").toString(), this.right);
+            return (Pair<K, V>) Pair.create(left, right);
     }
 }

@@ -29,8 +29,14 @@ class Dataflow {
     loadHistogramData(modelName) {
 //        Fluidity.Dataflow.dataflow.bind();
         let thisHisto = this.histo;
-        this.rest.volume(this.uuid, modelName, new Date().getTime(), function(event) {
-            thisHisto.update(event);
+        this.rest.volume(this.uuid, modelName, new Date().getTime(), function(data) {
+            thisHisto.update(data);
+        })
+    }
+    loadHeatmapForTime(time) {
+        let thisHeatmap = this.heatmap;
+        this.rest.heatmap(this.uuid, Fluidity.Dataflow.vue.modelNameInput.name, time * 1000, function(data) {
+            thisHeatmap.update(data);
         })
     }
     /**
@@ -52,14 +58,13 @@ class Dataflow {
 
         if (this.histo == null) {
             this.histo = new VolumeLatencyHisto();
-            this.histo.setup(data, document.getElementById('dataflowHisto'), this.heatmap.click);
+            this.histo.setup(data, document.getElementById('dataflowHisto'), this.loadHeatmapForTime.bind({heatmap: this.heatmap, rest: this.rest}));
         } else {
             this.histo.update(data);
         }
     }
     loadHeatmap() {
-        let rawData = generateRawData();
-        let aggData = generateAggData(rawData, 2);
+        let aggData = generateAggData(generateRawData(), 2);
 
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();

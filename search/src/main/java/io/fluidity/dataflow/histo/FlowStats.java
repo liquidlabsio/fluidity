@@ -42,7 +42,7 @@ public class FlowStats {
 
     private void setMinMax(long value, long[] data, boolean includeSum) {
         data[0] = Math.min(value, data[0]);
-        data[1] = Math.max(value, data[0]);
+        data[1] = Math.max(value, data[1]);
         if (includeSum) {
             data[2] += value;
         }

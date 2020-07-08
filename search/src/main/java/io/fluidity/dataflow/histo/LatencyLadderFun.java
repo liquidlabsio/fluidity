@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Applies state to each index
+ * Maps a FLowInfo to a Ladder bucket using the time duration to choose the bucket.
  */
 public class LatencyLadderFun implements HistoFunction<Map<Long, FlowStats>, FlowInfo> {
     private static final Long ORDINAL_MS_GRANULARITY = Long.getLong("ladder.granularity", 100l);
