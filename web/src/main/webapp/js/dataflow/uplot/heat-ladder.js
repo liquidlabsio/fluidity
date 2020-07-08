@@ -106,7 +106,7 @@ function generateAggData(raw, bucketIncr) {
             hooks: {
                 draw: u => {
                     const { ctx, data } = u;
-                    const bucketIncr = 2;
+                    const bucketIncr = 5000;
 
                     let yData = data[1];
                     let yQtys = data[2];
@@ -170,6 +170,12 @@ class HeatLadder {
                     show: false
                 }
             },
+            axes: [
+                {},
+                {
+                    values: (u, vals) => vals.map(v => shortFmtDecimals(v, 0)+ " ms"),
+                    size: 60,
+            }],
             series: [
                 {},
                 {
