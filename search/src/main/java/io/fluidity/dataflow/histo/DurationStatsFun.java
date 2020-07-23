@@ -18,14 +18,14 @@ import io.fluidity.dataflow.FlowInfo;
 import io.fluidity.search.agg.histo.HistoFunction;
 import io.fluidity.util.DateUtil;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Applies state to each index
  */
 public class DurationStatsFun implements HistoFunction<FlowStats, FlowInfo> {
-    Map<Long, FlowStats> indexedFuns = new HashMap();
+    Map<Long, FlowStats> indexedFuns = new LinkedHashMap<>();
 
     public DurationStatsFun() {
     }

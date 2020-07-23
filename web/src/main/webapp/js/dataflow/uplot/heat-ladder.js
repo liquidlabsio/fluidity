@@ -1,3 +1,52 @@
+    var ddd;
+    var nnn;
+    var uuu;
+
+const nnnnData = [
+    // dates
+    [1546300800,1546387200,1546473600,1546560000,1546819200,1546905600,1546992000,1547078400,1547164800,1547424000,1547510400,1547596800],
+
+    //  latency ladder
+    [
+       [],// [80,  50,  43],
+        [10,  12,  14,  18,  30,  50],
+        [70,  90,  13,  10,  12,  13],
+        [170, 190, 113, 110, 112, 113],
+        [270, 290, 213, 110, 112, 113],
+        [80,  50,  43],
+        [10,  12,  14,  18,  30,  50],
+        [70,  90,  13,  10,  12,  13],
+        [170, 190, 113, 110, 112, 113],
+        [270, 290, 213, 110, 112, 113],
+        [220, 222, 224, 228, 230, 240],
+        [270, 290, 213, 210, 212, 213],
+
+    ],
+
+    // count ladder to match latency
+    [
+    [],
+       // [1,  3,   5],
+        [7,  9,   5,   6, 7,  8],
+        [17, 119, 115, 116, 117, 118],
+        [27, 29, 25, 226, 227, 228],
+        [17, 19, 15, 216, 227, 288],
+        [12,  32,   52],
+        [217,  219,   252,   216, 217,  218],
+        [17, 19, 15, 16, 17, 18],
+        [27, 29, 25, 26, 27, 28],
+        [17, 19, 15, 16, 27, 88],
+        [17, 19, 15, 16, 17, 18],
+        [27, 29, 25, 26, 27, 28],
+    ],
+
+    // colour range
+    [10, 256]
+
+];
+
+
+
 function generateRawData(xCount, ySeriesCount, yCountMin, yCountMax, yMin, yMax) {
         xCount = xCount || 100;
         ySeriesCount = ySeriesCount || 1;
@@ -95,7 +144,7 @@ function generateAggData(raw, bucketIncr) {
         agg[2],
     ];
 }
-    function heatmapPlugin2() {
+    function heatmapPlugin2(bucketIncr) {
         // let global min/max
         function fillStyle(count, minCount, maxCount) {
         //	console.log(val);
@@ -106,7 +155,6 @@ function generateAggData(raw, bucketIncr) {
             hooks: {
                 draw: u => {
                     const { ctx, data } = u;
-                    const bucketIncr = 5000;
 
                     let yData = data[1];
                     let yQtys = data[2];
@@ -153,14 +201,14 @@ function generateAggData(raw, bucketIncr) {
     }
 
 class HeatLadder {
-    setup(data, element, clickHandler) {
+    setup(data, element, clickHandler, bucketIncr) {
 
         const opts = {
             width: 1800,
             height: 600,
             //title: "Latency Heatmap Aggregated 10ms (~20k)",
             plugins: [
-                heatmapPlugin2(),
+                heatmapPlugin2(bucketIncr),
             ],
             cursor: {
                 drag: {

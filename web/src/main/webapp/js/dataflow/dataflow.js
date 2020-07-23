@@ -68,7 +68,7 @@ class Dataflow {
 
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();
-            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), this.dataflowsForTime.click);
+            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), this.dataflowsForTime.click, 100);
         } else {
             this.heatmap.update(aggData);
         }

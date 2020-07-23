@@ -127,9 +127,14 @@ public class TimeSeries<T> implements Series<T> {
             long seriesStartTime = DateUtil.floorHour(item.getLeft());
             TimeSeries<T> tSeries = (TimeSeries<T>) results.computeIfAbsent(seriesStartTime,
                     k -> new TimeSeries(this.name, this.groupBy, seriesStartTime, seriesStartTime + timeBucket, this.ops));
-            tSeries.data.add(item);
+            tSeries.replace(item);
         });
         return results.values();
+    }
+
+    private void replace(Pair<Long, T> item) {
+        int index = index(item.getLeft());
+        this.data.set(index, item);
     }
 
     @Override

@@ -19,14 +19,15 @@ import io.fluidity.search.agg.histo.HistoFunction;
 import io.fluidity.util.DateUtil;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Maps a FLowInfo to a Ladder bucket using the time duration to choose the bucket.
  */
 public class LatencyLadderFun implements HistoFunction<Map<Long, FlowStats>, FlowInfo> {
-    private static final Long ORDINAL_MS_GRANULARITY = Long.getLong("ladder.granularity", 100l);
-    Map<Long, Map<Long, FlowStats>> indexedFuns = new HashMap();
+    private static final Long ORDINAL_MS_GRANULARITY = Long.getLong("ladder.granularity", 50l);
+    Map<Long, Map<Long, FlowStats>> indexedFuns = new LinkedHashMap<>();
 
     public LatencyLadderFun() {
     }

@@ -272,7 +272,7 @@ public class DataflowResource implements DataflowService {
                     results.append(convertor.toClientArrays(timeSeries));
                 }
         });
-        if (results.length() == 0) {
+        if (results.length() == 0 || true) {
             return convertor.toClientArrays(last.get(last.size()-1));
         }
         return results.toString();
@@ -287,7 +287,6 @@ public class DataflowResource implements DataflowService {
         storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
             if (itemUrl.contains(LADDER_HIST_PREFIX)) {
                 ladderUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
-
             }
             return null;
         });
@@ -302,8 +301,10 @@ public class DataflowResource implements DataflowService {
                 results.append(convertor.toClientArrays(ladder));
             }
         });
-        if (results.length() == 0) {
-            return convertor.toClientArrays(last.get(last.size()-1));
+        if (results.length() == 0 || true) {
+            TimeSeries<Map<Long, FlowStats>> lasty = (TimeSeries<Map<Long, FlowStats>>) last.get(last.size() - 1);
+
+            return convertor.toClientArrays(lasty);
         }
         return results.toString();
     }
