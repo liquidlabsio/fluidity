@@ -11,11 +11,16 @@ class Dataflow {
 
     constructor(rest) {
 
-    try {
-        this.rest = rest;
-        this.uuid = new Fluidity.Util.UUID();
-        this.searchId = 0;
-        this.duration = 1440;
+        try {
+            this.rest = rest;
+            this.uuid = new Fluidity.Util.UUID();
+            this.searchId = 0;
+            this.duration = 1440;
+
+            // main charting elements
+            this.histo = null;
+            this.heatmap = null;
+            this.dataflowsForTime = null;
 
         } catch (error) {
             console.log(error)
@@ -27,7 +32,6 @@ class Dataflow {
         this.loadHistogram();
     }
     loadHistogramData(modelName) {
-//        Fluidity.Dataflow.dataflow.bind();
         let thisHisto = this.histo;
         this.rest.volume(this.uuid, modelName, new Date().getTime(), function(data) {
             thisHisto.update(data);
@@ -40,7 +44,7 @@ class Dataflow {
         })
     }
     /**
-    * Load timeseries latency and volumes
+    * Load timeseries latency and volumes histogram
     **/
     loadHistogram() {
         // gold prices from https://www.investing.com/commodities/gold-historical-data
@@ -63,39 +67,32 @@ class Dataflow {
             this.histo.update(data);
         }
     }
+    /**
+    * Load the heatmap view for a time-selection
+    */
     loadHeatmap() {
         let aggData = generateAggData(generateRawData(), 2);
 
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();
-            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), this.dataflowsForTime.click, 100);
+            let dataflowSelf = this;
+            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), function(index, timeX, valueY) {
+                console.log("glue it");
+                dataflowSelf.dataflowsForTime.click(dataflowSelf.dataflowsForTime, index, timeX, valueY);
+            }, 100);
+
         } else {
             this.heatmap.update(aggData);
         }
     }
+    /**
+    * Load detailed dataflow view for selected heatmap time and latency
+    **/
     loadDataflowsForTimeX() {
         google.charts.load('current', {'packages':['bar']});
-        let df = new DataflowsForTime();
-        let data = [
-                                 ['Correlation', 'Register', 'Process', 'Load','Complete', 'Acknowledge'],
-                                 ['txn-1000', 1000, 400, 200,1000, 400],
-                                 ['txn-1222', 1170, 460, 250, 1000, 400],
-                                 ['txn-133300', 660, 1120, 300, 1000, 400],
-                                 ['txn-101gesr00', 1030, 540, 350, 1000, 400],
-                                 ['txn-2000', 1000, 400, 200,1000, 400],
-                                 ['txn-3222', 1170, 460, 250, 1000, 400],
-                                 ['txn-433300', 660, 1120, 300, 1000, 400],
-                                 ['txn-401gesr00', 1030, 540, 350, 1000, 400],
-                                 ['txn-4000', 1000, 400, 200,1000, 400],
-                                 ['txn-4222', 1170, 460, 250, 1000, 400],
-                                 ['txn-533300', 660, 1120, 300, 1000, 400],
-                                 ['txn-601gesr00', 1030, 540, 350, 1000, 400],
-                                 ['txn-7000', 1000, 400, 200,1000, 400],
-                                 ['txn-8222', 1170, 460, 250, 1000, 400],
-                                 ['txn-933300', 660, 1120, 300, 1000, 400],
-                                 ['txn-001gesr00', 1030, 540, 350, 1000, 400]
-                               ];
-        df.load(data, document.getElementById('dataflowsForTime'));
-        this.dataflowsForTime = df;
+        let dataflowsForTime = new DataflowsForTime();
+        dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest);
+        //dataflowsForTime.loadData(data);
+        this.dataflowsForTime = dataflowsForTime;
     }
 }

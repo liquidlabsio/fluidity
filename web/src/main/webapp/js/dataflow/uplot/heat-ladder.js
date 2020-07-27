@@ -264,7 +264,7 @@ class HeatLadder {
             let liveXValue = Math.round(u.posToVal(top, "x").toFixed(0));
             let liveYValue = Math.round(u.posToVal(top, "y"));
             console.log("yay:" + u.cursor.idx)
-            clickHandler(u.cursor.idx);
+            clickHandler(u.cursor.idx, liveXValue, liveYValue);
         });
         this.uPlot = u;
     }
