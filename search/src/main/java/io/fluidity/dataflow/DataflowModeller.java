@@ -35,7 +35,7 @@ public class DataflowModeller {
         List<Long[]> longs = correlationSet.stream().map(pair -> {
             String filename = pair.getRight();
             String[] split = filename.split(Model.DELIM);
-            return new Long[]{Long.parseLong(split[split.length - 3]), Long.parseLong(split[split.length - 2])};
+            return new Long[]{Long.parseLong(split[split.length - 4]), Long.parseLong(split[split.length - 3])};
         }).collect(Collectors.toList());
         return longs;
     }

@@ -181,7 +181,7 @@ public abstract class WorkflowRunner {
             if (!correlationFilename.contains(CORR_PREFIX)) return null;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);
-            String correlationKey = split[1];
+            String correlationKey = split[3];
             String currentCorrelationKey = currentCorrelationKeySet.isEmpty() ? null : currentCorrelationKeySet.get(0);
             if (!correlationKey.equalsIgnoreCase(currentCorrelationKey) && currentCorrelationKey != null) {
                 currentCorrelationKeySet.clear();
@@ -210,10 +210,10 @@ public abstract class WorkflowRunner {
     private void writeCorrelationFlow(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationFileSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
         FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationFileSet);
         histoCollector.add(flow.getStart(), flow);
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT, modelPath, correlationKey, flow.getStart(), DateUtil.ceilHour(flow.getEnd())), 365, flow.getStart())) {
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT_2, modelPath, flow.getStart(), DateUtil.ceilHour(flow.getEnd()), correlationKey), 365, flow.getStart())) {
             String flowJson = getMapper().writeValueAsString(flow);
             IOUtils.copy(new ByteArrayInputStream(flowJson.getBytes()), outputStream);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage(), "Failed to process:{0}", correlationKey, e);
             log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Error:" + e.toString()));

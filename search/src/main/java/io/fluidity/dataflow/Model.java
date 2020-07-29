@@ -20,7 +20,7 @@ public class Model {
     /**
      * The correlation file contains an extracted set of line items that contain a common-correlation id
      */
-    public final static String CORR_FILE_FMT = "%s/corr_%s_%d_%d_.corr";
+    public final static String CORR_FILE_FMT = "%s/corr_%d_%d_%s_.corr";
     public final static String CORR_PREFIX = "/corr_";
 
     /**
@@ -28,13 +28,13 @@ public class Model {
      * service, operation, type, meta, tag, behavior
      * These attributes are used to enrich the search functionality when analysing correlations
      */
-    public final static String CORR_DAT_FMT = "%s/dat_%s_%d_%d_.dat";
+    public final static String CORR_DAT_FMT = "%s/dat_%d_%d_%s_.dat";
     public final static String CORR_DAT_PREFIX = "/dat_";
 
     /**
      * The set of related correlation files as well as flow level stats (durations, latencies etc)
      */
-    public final static String CORR_FLOW_FMT = "%s/flow_%s_%d_%d_.flow";
+    public final static String CORR_FLOW_FMT_2 = "%s/flow_%d_%d_%s_.flow";
     public final static String CORR_FLOW_PREFIX = "/flow_";
 
     /**

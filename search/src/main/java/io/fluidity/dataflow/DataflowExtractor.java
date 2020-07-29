@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
 import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
@@ -78,6 +79,7 @@ public class DataflowExtractor implements AutoCloseable {
 
         Map<String, KvJsonPairExtractor> extractorMap = getExtractorMap();
         Map<String, String> datData = new HashMap<>();
+        AtomicInteger ops = new AtomicInteger();
         try {
             while (nextLine.isPresent()) {
 
@@ -94,14 +96,15 @@ public class DataflowExtractor implements AutoCloseable {
                     if (fieldNameAndValue.isPresent()) {
                         String correlationId = fieldNameAndValue.get().getLeft();
                         if (!currentCorrelation.equals(correlationId)) {
-                            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, correlationId);
+                            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation, ops);
                             currentCorrelation = correlationId;
                             currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
                             bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes());
                             startTime = currentTime;
+                            ops.set(0);
                         }
-                        getDatData(nextLine.get(), datData, extractorMap);
+                        getDatData(ops, nextLine.get(), datData, extractorMap);
                         if (bos.isPresent()) {
                             bos.get().write(nextLine.get().getBytes());
                             bos.get().write('\n');
@@ -113,17 +116,18 @@ public class DataflowExtractor implements AutoCloseable {
             }
         } finally {
             reader.close();
-            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation);
+            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation, ops);
         }
         return "done";
     }
 
-    private void flushToStorage(Optional<OutputStream> bos, long lastCorrelationTime, File currentFile, long startTime, Map<String, String> datData, String correlationId) throws IOException {
+    private void flushToStorage(Optional<OutputStream> bos, long lastCorrelationTime, File currentFile, long startTime, Map<String, String> datData, String correlationId, AtomicInteger ops) throws IOException {
         if (bos.isPresent()) {
             bos.get().close();
-            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
+            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, startTime, lastCorrelationTime, correlationId), 365, startTime);
             currentFile.delete();
-            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
+            datData.put("operations", ops.toString());
+            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, startTime, lastCorrelationTime, correlationId), 365, startTime);
             datData.clear();
         }
     }
@@ -162,12 +166,18 @@ public class DataflowExtractor implements AutoCloseable {
         extractorMap.put(extractor.getToken(), extractor);
     }
 
-    private void getDatData(String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
+    private void getDatData(AtomicInteger ops, String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
                 Optional<Pair<String, Long>> extracted = Optional.ofNullable(extractor.getKeyAndValue("none", nextLine));
                 if (extracted.isPresent()) {
-                    datData.put(extractor.getToken(), extracted.get().getRight().toString());
+                    String currentValue = datData.get(extractor.getToken());
+                    if (currentValue == null) currentValue = "";
+                    else currentValue = currentValue + ", ";
+                    datData.put(extractor.getToken(), currentValue + extracted.get().getLeft());
+                    if (extractor.getToken().equals("operation")) {
+                        ops.incrementAndGet();
+                    }
                 }
             } catch (Exception e) {
                 if (logWarningCount++ < 10) {

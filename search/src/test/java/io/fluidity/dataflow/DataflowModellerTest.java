@@ -1,3 +1,17 @@
+/*
+ *
+ *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *   See the License for the specific language governing permissions and  limitations under the License.
+ *
+ */
+
 package io.fluidity.dataflow;
 
 import io.fluidity.util.DateUtil;
@@ -21,9 +35,9 @@ class DataflowModellerTest {
         long middle = start + DateUtil.MINUTE * 2;
         long end = start + DateUtil.MINUTE * 5;
 
-        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", "txn123", start, start + DateUtil.MINUTE)));
-        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", "txn123", middle, middle + DateUtil.MINUTE)));
-        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", "txn123", end, end + DateUtil.MINUTE)));
+        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", start, start + DateUtil.MINUTE, "txn123")));
+        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", middle, middle + DateUtil.MINUTE, "txn123")));
+        correlationSet.add(Pair.create(end, String.format(CORR_FILE_FMT, "/path", end, end + DateUtil.MINUTE, "txn123")));
 
         FlowInfo correlationFlow = new DataflowModeller().getCorrelationFlow("txn123", correlationSet);
         assertNotNull(correlationFlow);
