@@ -34,6 +34,7 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -308,4 +309,15 @@ public class DataflowResource implements DataflowService {
         }
         return results.toString();
     }
+
+    public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
+        String json = "[\n" +
+                "                                 [\"txn\", \"Register\"],\n" +
+                "                                 [\"txn-1000\", 1000]\n" +
+                "                               ]";
+        System.out.println(json);
+        return json;
+
+    }
+
 }

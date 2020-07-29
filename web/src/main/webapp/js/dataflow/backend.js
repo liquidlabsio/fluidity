@@ -28,14 +28,14 @@ class DataflowRest  {
                 alert("Error status: " + xhr.status + " Msg: " + thrownError);
             });
     }
-    dataflowsForTime(timeX, valueY, responseCallback){
+    dataflowsForTime(self, session, modelName, timeX1, timeX2, valueY, responseCallback){
             $.Topic(Fluidity.Explorer.Topics.startSpinner).publish();
 
-             $.get(SERVICE_URL + '/dataflow/client/dataflowsForTime',
-                {tenant:DEFAULT_TENANT, session: session, model: modelName, time:timeX, valueY:valueY},
+             $.get(SERVICE_URL + '/dataflow/client/dataflows',
+                {tenant:DEFAULT_TENANT, session: session, model: modelName, timeX1:timeX1, timeX2:timeX2, valueY:valueY},
                 function(response) {
                     $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();
-                    responseCallback(response)
+                    responseCallback(self, response)
                 })
                 .fail(function (xhr, ajaxOptions, thrownError) {
                     $.Topic(Fluidity.Explorer.Topics.stopSpinner).publish();

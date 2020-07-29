@@ -258,13 +258,12 @@ class HeatLadder {
         u.root.querySelector(".over").addEventListener('click', function(e1, e2) {
 
             const {left, top, idx} = u.cursor;
-            let xVal = u.data[0][idx];
+            let xVal1 = u.data[0][idx];
+            let xVal2 = u.data[0][idx+1];
             let yVal = u.data[1][idx];
-            (u.valToPos(xVal, 'x'))
-            let liveXValue = Math.round(u.posToVal(top, "x").toFixed(0));
             let liveYValue = Math.round(u.posToVal(top, "y"));
-            console.log("yay:" + u.cursor.idx)
-            clickHandler(u.cursor.idx, liveXValue, liveYValue);
+            //console.log("yay:" + u.cursor.idx +" xVal:" + xVal1 + " - " + xVal2 + " y:" + liveYValue)
+            clickHandler(u.cursor.idx, xVal1, xVal2, liveYValue);
         });
         this.uPlot = u;
     }

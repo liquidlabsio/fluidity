@@ -124,6 +124,11 @@ public class DataflowExtractor implements AutoCloseable {
     private void flushToStorage(Optional<OutputStream> bos, long lastCorrelationTime, File currentFile, long startTime, Map<String, String> datData, String correlationId, AtomicInteger ops) throws IOException {
         if (bos.isPresent()) {
             bos.get().close();
+            // in case time extraction is being auto-calculated and got it wrong.
+            // better to use exact timestamp matching
+            if (lastCorrelationTime < startTime) {
+                lastCorrelationTime = startTime+1000;
+            }
             storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, startTime, lastCorrelationTime, correlationId), 365, startTime);
             currentFile.delete();
             datData.put("operations", ops.toString());

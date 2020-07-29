@@ -53,6 +53,7 @@ class DataflowExtractorTest {
         StorageUtil outFactory = (inputStream, region, tenant, filePath, daysRetention, lastModified) -> {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
+                System.out.println(filePath);
                 IOUtils.copy(inputStream, baos);
                 collected.put(filePath, baos.toString());
             } catch (IOException e) {

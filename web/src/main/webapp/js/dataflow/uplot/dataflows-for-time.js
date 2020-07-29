@@ -49,7 +49,7 @@ class DataflowsForTime {
         });
     }
 
-    loadData(self, data) {
+    setData(self, data) {
         let ddata = google.visualization.arrayToDataTable(data);
         self.chart.draw(ddata, self.options);
     }
@@ -59,6 +59,6 @@ class DataflowsForTime {
         console.log("Loading data for Index:" + index + " X:" + timeX + " Y:" + valueY)
         // rest - callback with data
        // this.rest.dataflowsForTime(Fluidity.Dataflow.vue.modelNameInput.name, timeX, valueY, self.loadData);
-       self.loadData(self, flowData);
+       self.setData(self, flowData);
     }
 }

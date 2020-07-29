@@ -78,8 +78,12 @@ public interface DataflowService {
     @Path("/client/volume")
     String volumeHisto(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("time") Long time);
 
-    @GET
     @Path("/client/heatmap")
+    @GET
     String heatmapHisto(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("time") Long time);
+
+    @Path("/client/dataflows")
+    @GET
+    String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1,  @QueryParam("timeX2") Long timeX2,  @QueryParam("valueY") Long valueY);
 
 }

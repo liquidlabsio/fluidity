@@ -76,9 +76,10 @@ class Dataflow {
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();
             let dataflowSelf = this;
-            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), function(index, timeX, valueY) {
+            this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), function(index, timeX1, timeX2, valueY) {
                 console.log("glue it");
-                dataflowSelf.dataflowsForTime.click(dataflowSelf.dataflowsForTime, index, timeX, valueY);
+                //dataflowSelf.dataflowsForTime.click(dataflowSelf.dataflowsForTime, index, timeX1, timeX2, valueY);
+                dataflowSelf.rest.dataflowsForTime(dataflowSelf.dataflowsForTime, dataflowSelf.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, dataflowSelf.dataflowsForTime.setData.bind( { self: dataflowSelf.dataflowsForTime } ));
             }, 100);
 
         } else {
