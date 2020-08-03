@@ -114,7 +114,6 @@ public class DataflowBuilder {
             if (itemUrl.contains(CORR_HIST_PREFIX) || itemUrl.contains(LADDER_HIST_PREFIX) ) {
                 ladderAndHistoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified), "size", Long.toString(size)));
             }
-            return null;
         });
         return ladderAndHistoUrls;
     }

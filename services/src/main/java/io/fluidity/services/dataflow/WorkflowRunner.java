@@ -178,7 +178,7 @@ public abstract class WorkflowRunner {
         log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
         storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified, size) -> {
-            if (!correlationFilename.contains(CORR_PREFIX)) return null;
+            if (!correlationFilename.contains(CORR_PREFIX)) return;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);
             String correlationKey = split[3];
@@ -194,7 +194,6 @@ public abstract class WorkflowRunner {
                 currentCorrelationKeySet.add(correlationKey);
             }
             correlationFileSet.add(Pair.create(Long.parseLong(split[2]), correlationFilename));
-            return null;
         });
 
         if (!currentCorrelationKeySet.isEmpty()) {

@@ -15,18 +15,14 @@
 package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.ClientHistoJsonConvertor;
-import io.fluidity.dataflow.ClientLadderJsonConvertor;
-import io.fluidity.dataflow.FlowLogHelper;
+import io.fluidity.dataflow.*;
 import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.TimeSeries;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
-import io.vertx.core.TimeoutStream;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -205,7 +201,6 @@ public class DataflowResource implements DataflowService {
             if (from > 0 && to > from) {
                 results.add(itemName.substring(from, to));
             }
-            return null;
         });
         return new ArrayList<>(results);
     }
@@ -260,7 +255,6 @@ public class DataflowResource implements DataflowService {
                 histoUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
 
             }
-            return null;
         });
         ClientHistoJsonConvertor convertor = new ClientHistoJsonConvertor();
         StringBuilder results = new StringBuilder();
@@ -289,7 +283,6 @@ public class DataflowResource implements DataflowService {
             if (itemUrl.contains(LADDER_HIST_PREFIX)) {
                 ladderUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
             }
-            return null;
         });
         ClientLadderJsonConvertor convertor = new ClientLadderJsonConvertor();
         StringBuilder results = new StringBuilder();
@@ -311,12 +304,17 @@ public class DataflowResource implements DataflowService {
     }
 
     public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
-        String json = "[\n" +
-                "                                 [\"txn\", \"Register\"],\n" +
-                "                                 [\"txn-1000\", 1000]\n" +
-                "                               ]";
-        System.out.println(json);
-        return json;
+        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1, timeX2, valueY, Model.LADDER_GRANULARITY);
+        storage.listBucketAndProcess(cloudRegion, tenant, convertor.getListingPrefix(timeX1), (region, itemUrl, itemName, modified, size) -> {
+            convertor.process(itemName, itemUrl);
+        });
+        List<String> flowUrls = convertor.getFlowUrls();
+        List<FlowInfo> flows = new ArrayList<>();
+        flowUrls.forEach(flowUrl -> {
+            byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
+            FlowInfo flow = convertor.fromJson(bytes);
+        });
+        return convertor.toJson(flows);
 
     }
 

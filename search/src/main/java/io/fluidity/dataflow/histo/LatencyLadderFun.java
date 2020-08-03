@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static io.fluidity.dataflow.Model.LADDER_GRANULARITY;
+
 /**
  * Maps a FLowInfo to a Ladder bucket using the time duration to choose the bucket.
  */
 public class LatencyLadderFun implements HistoFunction<Map<Long, FlowStats>, FlowInfo> {
-    private static final Long ORDINAL_MS_GRANULARITY = Long.getLong("ladder.granularity", 50l);
+
     Map<Long, Map<Long, FlowStats>> indexedFuns = new LinkedHashMap<>();
 
     public LatencyLadderFun() {
@@ -38,7 +40,7 @@ public class LatencyLadderFun implements HistoFunction<Map<Long, FlowStats>, Flo
         Map<Long, FlowStats> ladder = indexedFuns.computeIfAbsent(DateUtil.floorMin(time), k -> new HashMap<>());
 
         long duration = flowInfo.getDuration();
-        FlowStats currentStats = ladder.computeIfAbsent( nearestBucket(duration, ORDINAL_MS_GRANULARITY), k -> new FlowStats());
+        FlowStats currentStats = ladder.computeIfAbsent( nearestBucket(duration, LADDER_GRANULARITY), k -> new FlowStats());
         currentStats.update(flowInfo);
         return ladder;
     }

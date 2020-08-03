@@ -16,6 +16,7 @@ package io.fluidity.dataflow;
 
 public class Model {
 
+    public final static Long LADDER_GRANULARITY = Long.getLong("ladder.granularity", 50l);
     public final static String DELIM = "_";
     /**
      * The correlation file contains an extracted set of line items that contain a common-correlation id
@@ -50,4 +51,9 @@ public class Model {
     public final static String CORR_HIST_PREFIX = "/histo_";
 
 
+    /**
+     * Get offsets from split names
+     */
+    public static final int FROM_END_INDEX = 3;
+    public static final int TO_END_INDEX = 2;
 }
