@@ -2,11 +2,13 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+ *   with the License.  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed
+ *   on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -36,15 +38,15 @@ import java.util.Map;
 public class ClientLadderJsonConvertor {
 
     private ObjectMapper getMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
+        final ObjectMapper mapper = new ObjectMapper();
+        final SimpleModule module = new SimpleModule();
         module.addDeserializer(Pair.class, new PairDeserializer(Long.class, new TypeReference<HashMap<Long, FlowStats>>() { } ));
         mapper.registerModule(module);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper;
     }
 
-    public byte[] toJson(Series<Map<Long, FlowStats>> histo) {
+    public byte[] toJson(final Series<Map<Long, FlowStats>> histo) {
         try {
             return getMapper().writeValueAsBytes(histo);
         } catch (JsonProcessingException e) {
@@ -52,7 +54,7 @@ public class ClientLadderJsonConvertor {
             return "e.toString".getBytes();
         }
     }
-    public TimeSeries<Map<Long, FlowStats>> fromJson(byte[] json) {
+    public TimeSeries<Map<Long, FlowStats>> fromJson(final byte[] json) {
         try {
             return getMapper().readValue(json, new TimeSeries<Map<Long, FlowStats>>().getClass());
         } catch (IOException e) {
@@ -60,21 +62,21 @@ public class ClientLadderJsonConvertor {
             throw new RuntimeException(e);
         }
     }
-    public String toClientArrays(TimeSeries<Map<Long, FlowStats>> timeSeries) {
+    public String toClientArrays(final TimeSeries<Map<Long, FlowStats>> timeSeries) {
         try {
-            List<Long> times = new ArrayList<>();
-            List<List<Long>> yValue = new ArrayList<>();
-            List<List<Long>> yCount = new ArrayList<>();
+            final List<Long> times = new ArrayList<>();
+            final List<List<Long>> yValue = new ArrayList<>();
+            final List<List<Long>> yCount = new ArrayList<>();
 
             timeSeries.data().forEach(entry -> {
-                Long timestamp = entry.getLeft();
+                final Long timestamp = entry.getLeft();
                 times.add(timestamp/1000);
                 Map<Long, FlowStats> flowStats = entry.getRight();
                 if (flowStats == null) {
                     flowStats = new HashMap<>();
                 }
-                List<Long> thisYVals = new ArrayList<>();
-                List<Long> thisYCounts = new ArrayList<>();
+                final List<Long> thisYVals = new ArrayList<>();
+                final List<Long> thisYCounts = new ArrayList<>();
                 flowStats.entrySet().forEach(flowStatsEntry -> {
                     thisYVals.add(flowStatsEntry.getKey());
                     thisYCounts.add(flowStatsEntry.getValue().getCount());
@@ -83,7 +85,7 @@ public class ClientLadderJsonConvertor {
                 yCount.add(thisYCounts);
             });
 
-            ArrayList<List> results = new ArrayList<>();
+            final ArrayList<List> results = new ArrayList<>();
             results.add(times);
             results.add(yValue);
             results.add(yCount);
