@@ -108,13 +108,12 @@ public class DataflowBuilder {
         return "dunno!";
     }
 
-    public List<Map<String, String>> getModel(String region, String tenant, String session, String modelName, Storage storage) {
+    public List<Map<String, String>> getModelDataList(String region, String tenant, String session, String modelName, Storage storage) {
         List<Map<String, String>> ladderAndHistoUrls = new ArrayList<>();
         storage.listBucketAndProcess(region, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
             if (itemUrl.contains(CORR_HIST_PREFIX) || itemUrl.contains(LADDER_HIST_PREFIX) ) {
                 ladderAndHistoUrls.add(Map.of("name", itemUrl, "modified", Long.toString(modified), "size", Long.toString(size)));
             }
-            return null;
         });
         return ladderAndHistoUrls;
     }

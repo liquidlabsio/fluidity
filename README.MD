@@ -68,11 +68,12 @@ functionality that most people need.
 
 # Building
 
-#### Build and run from source
+#### Build and run from source using quarkus-dev mode
 
     $ clone
+    $ cd services
     $ ./mvnw compile quarkus:dev
-    Open index.html in a browser from Intellij (backend.js defaults to http://localhost:8080 which quarkus is running the REST endpoint)
+    Open index.html in a browser from Intellij (backend.js defaults to http://localhost:8080 where quarkus is running the REST endpoint)
 
 
 #### Server Mode 
@@ -84,9 +85,9 @@ functionality that most people need.
 Notes and limits: 
 - If you want data to load quickly to the browser then enable CORS on each S3 bucket and 
 Fluidity will use a signed URL to download directly from S3 (see etc/s3-cors.xml). 
-If not enabled, then a signed download be tried, and upon failure revert to using a Lambda.
+If not enabled, then a signed download is tried, and upon failure reverts to using a Lambda proxy.
 - The largest browsable file is 100MB before the browser starts to suffer from memory limits (about 250k lines of text) 
-The same file will gzip down to 3.6MB and can be handled by a Function call. AWS Function download limits are limited by lambda return limits -  5MB   
+The same file will gzip down to 3.6MB and can be handled by a Function call. AWS Function download limits are dictated by lambda return limits -  5MB   
 
 Prerequisites: 
 - Install AWS SAM: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html

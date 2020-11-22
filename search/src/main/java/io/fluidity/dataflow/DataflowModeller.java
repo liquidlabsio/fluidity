@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 
 /**
  * Represents stages 2 and 3 from: https://github.com/liquidlabsio/fluidity/issues/50
+ *
+ * See: https://github.com/liquidlabsio/fluidity/issues/62
+ * Also {@link io.fluidity.dataflow.Model}
  */
 public class DataflowModeller {
     public DataflowModeller() {
@@ -35,7 +38,7 @@ public class DataflowModeller {
         List<Long[]> longs = correlationSet.stream().map(pair -> {
             String filename = pair.getRight();
             String[] split = filename.split(Model.DELIM);
-            return new Long[]{Long.parseLong(split[split.length - 3]), Long.parseLong(split[split.length - 2])};
+            return new Long[]{Long.parseLong(split[split.length - 4]), Long.parseLong(split[split.length - 3])};
         }).collect(Collectors.toList());
         return longs;
     }

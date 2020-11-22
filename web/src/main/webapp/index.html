@@ -43,7 +43,7 @@
 
     <link href="https://unpkg.com/vue-bootstrap-typeahead/dist/VueBootstrapTypeahead.css" rel="stylesheet">
 
-<!--    <link href="css/uPlot.min.css" rel="stylesheet">-->
+    <link href="css/uPlot.min.css" rel="stylesheet">
     <!-- Favicons -->
     <link href="img/favicon.ico" rel="icon">
     <meta content="img/favicons/browserconfig.xml" name="msapplication-config">
@@ -496,11 +496,20 @@
 
                         ></vue-simple-suggest>
                         <b-input-group-append>
-                            <b-button v-on:click="" variant="outline-success">
+                            <b-button v-on:click="executeDataflow" variant="outline-success">
                                 <span data-feather="wind"></span>
                             </b-button>
                         </b-input-group-append>
                     </b-input-group>
+
+                    <h4 class="title">Latency and Volume</h4>
+                    <div id="dataflowHisto" style="height:500px; width:1200px"></div>
+                    <h4 class="title">Latency Heatmap Aggregated @1ms</h4>
+                    <div id="dataflowHeatmap" style="height:600px; width:1200px;"></div>
+                    <h4 class="title" style="padding-top:40px;">Dataflows for Time 'X'</h4>
+                    <div id="dataflowsForTime" style="width: 900px; height: 600px;">
+                        <! -- See trial/gchart/stacked-bar -->
+                    </div>
                 </div>
             </div>
             <div class="mainPanelTab" id="importTab" style="display: none;">
@@ -515,7 +524,7 @@
                                 <h5 class="mb-0">
                                     <button aria-controls="collapseOne" aria-expanded="true" class="btn btn-link"
                                             data-target="#collapseOne" data-toggle="collapse">
-                                        Upload data to your tenant storage
+                                        Upload local data to cloud storage
                                     </button>
                                 </h5>
                             </div>
@@ -840,9 +849,7 @@
 
 <script src="https://www.gstatic.com/charts/loader.js" type="text/javascript"></script>
 
-<script src="js/gcharts-vue.js"></script>
-
-<!--<script src="js/vendor/uPlot.iife.min.js"></script>-->
+<script src="js/vendor/uplot/uPlot.iife.js"></script>
 
 
 <!-- App -->
@@ -851,14 +858,23 @@
 <script src="js/backend.js"></script>
 <script src="js/explorer.js"></script>
 
+<!-- Dataflow model building UI -->
 <script src="js/refinery/refinery.js"></script>
 <script src="js/refinery/backend.js"></script>
 <script src="js/refinery/vue.js"></script>
 
+<!-- Dataflow UI -->
+<script src="js/dataflow/uplot/utils.js"></script>
+<script src="js/dataflow/uplot/rand.js"></script>
+<script src="js/dataflow/uplot/volume-latency-histo.js"></script>
+<script src="js/dataflow/uplot/heat-ladder.js"></script>
+<script src="js/dataflow/uplot/dataflows-for-time.js"></script>
+
+<script src="js/dataflow/backend.js"></script>
 <script src="js/dataflow/dataflow.js"></script>
 <script src="js/dataflow/vue.js"></script>
 
-
+<!-- Search UI -->
 <script src="js/search/search-apexcharts-vue.js"></script>
 <script src="js/search/vue.js"></script>
 <script src="js/search/search-hoverlink.js"></script>

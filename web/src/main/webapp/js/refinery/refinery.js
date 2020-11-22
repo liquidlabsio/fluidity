@@ -54,7 +54,7 @@ class Refinery {
             console.log("Status results:" + reply)
         })
         $.Topic(Fluidity.Refinery.Topics.modelReply).subscribe(function(reply) {
-            console.log("Model Reply results:" + reply)
+            console.log("Model Reply results:" + reply.length)
              Fluidity.Refinery.vue.modelDataUpdateStatus = 'Updated @' + new Date().toLocaleTimeString();
              Fluidity.Refinery.vue.modelTable.items.length = 0;
              // trigger refresh to update the UI
@@ -63,7 +63,6 @@ class Refinery {
                 Fluidity.Refinery.vue.modelTable.items.push({ name: item.name, modified: new Date(parseInt(item.modified)).toLocaleString(), size: item.size + 'b'} )
              })
         })
-
     }
     getTagValue(tagsInputItem) {
         if (tagsInputItem.length == 0) {

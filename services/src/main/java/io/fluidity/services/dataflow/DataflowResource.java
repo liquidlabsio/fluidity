@@ -16,8 +16,10 @@ package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.FlowLogHelper;
+import io.fluidity.dataflow.*;
+import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
+import io.fluidity.search.agg.histo.TimeSeries;
 import io.fluidity.services.query.FileMeta;
 import io.fluidity.services.query.QueryService;
 import io.fluidity.services.storage.Storage;
@@ -28,19 +30,17 @@ import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static io.fluidity.dataflow.Model.*;
 
 /**
  * API to build, maintain, and access dataflow models
@@ -116,14 +116,14 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<Map<String, String>> model(String tenant, String session, String modelName) {
+    public List<Map<String, String>> modelDataList(String tenant, String session, String modelName) {
         modelName = modelPrefix + modelName;
 
         log.info("/model:{}", session);
 
         long start = System.currentTimeMillis();
         try {
-            return dataflowBuilder.getModel(cloudRegion, tenant, session, modelName, storage);
+            return dataflowBuilder.getModelDataList(cloudRegion, tenant, session, modelName, storage);
         } finally {
             log.info("Finalize Elapsed:{}", (System.currentTimeMillis() - start));
         }
@@ -195,7 +195,6 @@ public class DataflowResource implements DataflowService {
             if (from > 0 && to > from) {
                 results.add(itemName.substring(from, to));
             }
-            return null;
         });
         return new ArrayList<>(results);
     }
@@ -237,4 +236,89 @@ public class DataflowResource implements DataflowService {
         }
         return "broken";
     }
+
+
+    @Override
+    public String volumeHisto(String tenant, String modelName, Long time) {
+
+        modelName = modelPrefix + modelName;
+
+        List<Map<String, String>> histoUrls = new ArrayList<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(CORR_HIST_PREFIX)) {
+                histoUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
+
+            }
+        });
+        ClientHistoJsonConvertor convertor = new ClientHistoJsonConvertor();
+        StringBuilder results = new StringBuilder();
+        List<TimeSeries<FlowStats>> last = new ArrayList<>();
+        histoUrls.stream().forEach(item -> {
+            byte[] jsonPayload = storage.get(cloudRegion, item.get("url"), 0);
+                TimeSeries<FlowStats> timeSeries = convertor.fromJson(jsonPayload);
+                last.add(timeSeries);
+                if (timeSeries.start() < time && timeSeries.end() > time) {
+                    results.append(convertor.toClientArrays(timeSeries));
+                }
+        });
+
+        Collections.sort(last, (o1, o2) -> Long.compare(o1.start(), o2.start()));
+        if (results.length() == 0 || true) {
+            return convertor.toClientArrays(last.get(last.size()-1));
+        }
+        return results.toString();
+    }
+
+    @Override
+    public String heatmapHisto(String tenant, String modelName, Long time) {
+
+        modelName = modelPrefix + modelName;
+
+        List<Map<String, String>> ladderUrls = new ArrayList<>();
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region1, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(LADDER_HIST_PREFIX)) {
+                ladderUrls.add(Map.of("url", itemUrl, "modified", Long.toString(modified), "data", Long.toString(size)));
+            }
+        });
+        ClientLadderJsonConvertor convertor = new ClientLadderJsonConvertor();
+        StringBuilder results = new StringBuilder();
+        List<TimeSeries<Map<Long, FlowStats>>> last = new ArrayList<>();
+        ladderUrls.stream().forEach(item -> {
+            byte[] jsonPayload = storage.get(cloudRegion, item.get("url"), 0);
+            TimeSeries<Map<Long, FlowStats>> ladder = convertor.fromJson(jsonPayload);
+            last.add(ladder);
+            if (ladder.start() < time && ladder.end() > time) {
+                results.append(convertor.toClientArrays(ladder));
+            }
+        });
+        Collections.sort(last, (o1, o2) -> Long.compare(o1.start(), o2.start()));
+        if (results.length() == 0 || true) {
+            TimeSeries<Map<Long, FlowStats>> lasty = (TimeSeries<Map<Long, FlowStats>>) last.get(last.size() - 1);
+
+            return convertor.toClientArrays(lasty);
+        }
+        return results.toString();
+    }
+
+    public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
+        modelName = modelPrefix + modelName;
+        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1*1000, timeX2*1000, valueY, Model.LADDER_GRANULARITY);
+
+        // TODO: improve PREFIXing (instead of using modelName)
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(CORR_FLOW_PREFIX)) {
+                convertor.process(itemName, itemUrl);
+            }
+        });
+        List<String> flowUrls = convertor.getFlowUrls();
+        List<FlowInfo> flows = new ArrayList<>();
+        flowUrls.forEach(flowUrl -> {
+            byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
+            FlowInfo[] flow = convertor.fromJson(bytes);
+            flows.add(flow[0]);
+        });
+        return new String(convertor.toJson(flows));
+
+    }
+
 }

@@ -63,7 +63,7 @@ public interface DataflowService {
 
     @GET
     @Path("/model")
-    List<Map<String, String>> model(@QueryParam("tenant") String tenant, @QueryParam("session") String session,
+    List<Map<String, String>> modelDataList(@QueryParam("tenant") String tenant, @QueryParam("session") String session,
                                     @QueryParam("model") String modelName);
 
     @POST
@@ -72,4 +72,18 @@ public interface DataflowService {
     String rewriteCorrelationData(@PathParam("tenant") String tenant, @PathParam("session") String session,
                                   @PathParam("files") String fileMetas, @PathParam("modelPath") String modelPath,
                                   @MultipartForm Search search);
+
+
+    @GET
+    @Path("/client/volume")
+    String volumeHisto(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("time") Long time);
+
+    @Path("/client/heatmap")
+    @GET
+    String heatmapHisto(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("time") Long time);
+
+    @Path("/client/dataflows")
+    @GET
+    String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1,  @QueryParam("timeX2") Long timeX2,  @QueryParam("valueY") Long valueY);
+
 }

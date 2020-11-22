@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.fluidity.search.Search;
 import io.fluidity.search.StorageInputStream;
-import io.fluidity.util.PairDeserializer;
+import io.fluidity.util.PairLongLongDeserializer;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.collections.Pair;
 
@@ -48,7 +48,7 @@ abstract class AbstractHistoAggregator<T> implements HistoAggregator<T> {
         // TODO: implement reduce functionality between each of the series, i.e. avg/stats/min/max etc
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addDeserializer(Pair.class, new PairDeserializer());
+        module.addDeserializer(Pair.class, new PairLongLongDeserializer());
         objectMapper.registerModule(module);
         List<List> collectedSeriesList =
                 collectedJson.stream().map(json -> {

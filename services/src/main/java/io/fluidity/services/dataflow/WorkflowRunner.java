@@ -40,7 +40,10 @@ import static io.fluidity.dataflow.Model.*;
 
 /**
  * Propagates through the stages of building the dataflow model
- * See: https://github.com/liquidlabsio/fluidity/issues/50
+ * See
+ * - https://github.com/liquidlabsio/fluidity/issues/50
+ * - https://github.com/liquidlabsio/fluidity/issues/62
+ * - {@link io.fluidity.dataflow.Model}
  * <p>
  * Stage 1.
  * Extract correlations into /bucket/modeldir/corr-{CORRELATIONID}-{TIMESTAMP}.log
@@ -135,10 +138,10 @@ public abstract class WorkflowRunner {
     private void storeHistoModel(String session, String modelPath, DataflowHistoCollector dataflowHistoCollector, long start, long end) {
         log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Start"));
         Collection<Series<FlowStats>> flowHisto = dataflowHistoCollector.flowHisto().slice(DateUtil.HOUR);
+        ClientHistoJsonConvertor jsonConvertor = new ClientHistoJsonConvertor();
         flowHisto.forEach(item -> {
             try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_HIST_FMT, modelPath, item.start(), DateUtil.ceilHour(item.end())), 365, item.start())) {
-                byte[] dataflowHistogram = getMapper().writeValueAsBytes(item);
-                IOUtils.copy(new ByteArrayInputStream(dataflowHistogram), outputStream);
+                IOUtils.copy(new ByteArrayInputStream(jsonConvertor.toJson(item)), outputStream);
             } catch (IOException e) {
                 e.printStackTrace();
                 log.info(FlowLogHelper.format(session, "builder", "storeHisto", "Failed:" + e.toString()));
@@ -162,12 +165,6 @@ public abstract class WorkflowRunner {
         log.info(FlowLogHelper.format(session, "builder", "storeLadder", "Finish"));
     }
 
-    private ObjectMapper getMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        return mapper;
-    }
-
     /**
      * Step 2.: For each dataflow generate span-information into a corr-time.flow file
      *
@@ -184,10 +181,10 @@ public abstract class WorkflowRunner {
         log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Start"));
 
         storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified, size) -> {
-            if (!correlationFilename.contains(CORR_PREFIX)) return null;
+            if (!correlationFilename.contains(CORR_PREFIX)) return;
             String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
             String[] split = filenameonly.split(Model.DELIM);
-            String correlationKey = split[1];
+            String correlationKey = split[3];
             String currentCorrelationKey = currentCorrelationKeySet.isEmpty() ? null : currentCorrelationKeySet.get(0);
             if (!correlationKey.equalsIgnoreCase(currentCorrelationKey) && currentCorrelationKey != null) {
                 currentCorrelationKeySet.clear();
@@ -200,7 +197,6 @@ public abstract class WorkflowRunner {
                 currentCorrelationKeySet.add(correlationKey);
             }
             correlationFileSet.add(Pair.create(Long.parseLong(split[2]), correlationFilename));
-            return null;
         });
 
         if (!currentCorrelationKeySet.isEmpty()) {
@@ -216,10 +212,10 @@ public abstract class WorkflowRunner {
     private void writeCorrelationFlow(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationFileSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
         FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationFileSet);
         histoCollector.add(flow.getStart(), flow);
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT, modelPath, correlationKey, flow.getStart(), DateUtil.ceilHour(flow.getEnd())), 365, flow.getStart())) {
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT_2, modelPath, flow.getStart(), flow.getEnd(), correlationKey), 365, flow.getStart())) {
             String flowJson = getMapper().writeValueAsString(flow);
             IOUtils.copy(new ByteArrayInputStream(flowJson.getBytes()), outputStream);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage(), "Failed to process:{0}", correlationKey, e);
             log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Error:" + e.toString()));
@@ -256,6 +252,10 @@ public abstract class WorkflowRunner {
     abstract String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath);
 
 
-
+    private ObjectMapper getMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        return mapper;
+    }
 
 }

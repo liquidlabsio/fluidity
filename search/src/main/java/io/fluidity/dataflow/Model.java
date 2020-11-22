@@ -14,13 +14,22 @@
 
 package io.fluidity.dataflow;
 
+/**
+ * Defines the storage filenames used to index the dataflow index. For more details see:
+ *
+ * https://github.com/liquidlabsio/fluidity/issues/62
+ * .histo (50k) => ladder(s) (20k foot) => flow(s) => .corr + .dat
+ *
+ * https://github.com/liquidlabsio/fluidity/issues/50
+ */
 public class Model {
 
+    public final static Long LADDER_GRANULARITY = Long.getLong("ladder.granularity", 50l);
     public final static String DELIM = "_";
     /**
      * The correlation file contains an extracted set of line items that contain a common-correlation id
      */
-    public final static String CORR_FILE_FMT = "%s/corr_%s_%d_%d_.corr";
+    public final static String CORR_FILE_FMT = "%s/corr_%d_%d_%s_.corr";
     public final static String CORR_PREFIX = "/corr_";
 
     /**
@@ -28,13 +37,13 @@ public class Model {
      * service, operation, type, meta, tag, behavior
      * These attributes are used to enrich the search functionality when analysing correlations
      */
-    public final static String CORR_DAT_FMT = "%s/dat_%s_%d_%d_.dat";
+    public final static String CORR_DAT_FMT = "%s/dat_%d_%d_%s_.dat";
     public final static String CORR_DAT_PREFIX = "/dat_";
 
     /**
      * The set of related correlation files as well as flow level stats (durations, latencies etc)
      */
-    public final static String CORR_FLOW_FMT = "%s/flow_%s_%d_%d_.flow";
+    public final static String CORR_FLOW_FMT_2 = "%s/flow_%d_%d_%s_.flow";
     public final static String CORR_FLOW_PREFIX = "/flow_";
 
     /**
@@ -50,4 +59,9 @@ public class Model {
     public final static String CORR_HIST_PREFIX = "/histo_";
 
 
+    /**
+     * Get offsets from split names
+     */
+    public static final int FROM_END_INDEX = 4;
+    public static final int TO_END_INDEX = 3;
 }

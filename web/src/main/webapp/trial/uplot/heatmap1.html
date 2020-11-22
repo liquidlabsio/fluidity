@@ -1,0 +1,143 @@
+<!--
+  ~
+  ~  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~
+  ~   See the License for the specific language governing permissions and  limitations under the License.
+  ~
+  -->
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Heatmap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="uplot/uPlot.min.css">
+</head>
+<body>
+<script src="rand.js"></script>
+<script src="uplot/uPlot.iife.js"></script>
+<script>
+			function rawData(xCount, ySeriesCount, yCountMin, yCountMax, yMin, yMax) {
+				xCount = xCount || 100;
+				ySeriesCount = ySeriesCount || 1;
+
+				// 50-300 samples per x
+				yCountMin = yCountMin || 200;
+				yCountMax = yCountMax || 500;
+
+				// y values in 0 - 1000 range
+				yMin = yMin || 5;
+				yMax = yMax || 1000;
+
+				let data = [
+					[],
+					...Array(ySeriesCount).fill(null).map(_ => []),
+				];
+
+				let now = Math.round(new Date() / 1e3);
+
+				let finalCount = 0;
+
+				for (let xi = 0; xi < xCount; xi++) {
+					data[0][xi] = now++;
+
+					for (let si = 1; si <= ySeriesCount; si++) {
+						let yCount = randInt(yCountMin, yCountMax);
+
+						let vals = data[si][xi] = [];
+
+						while (yCount-- > 0) {
+						//	vals.push(Math.round(randn_bm(yMin, yMax, 3)));
+							vals.push(Math.max(randomSkewNormal(Math.random, 30, 30, 3), yMin));
+							finalCount++;
+						}
+
+						vals.sort((a, b) => a - b);
+					}
+				}
+
+				console.log(finalCount);
+				return data;
+			}
+
+			console.time("rawData");
+			let raw = rawData();
+			console.timeEnd("rawData");
+	//		console.log(raw);
+
+			let data = [
+				raw[0],
+				raw[1].map(vals => vals[0]),
+				raw[1].map(vals => vals[vals.length - 1]),
+				raw[1],
+			];
+
+			function heatmapPlugin() {
+				return {
+					hooks: {
+						draw: u => {
+							const { ctx, data } = u;
+
+							let yData = data[3];
+
+							yData.forEach((yVals, xi) => {
+								let xPos = Math.round(u.valToPos(data[0][xi], 'x', true));
+
+								yVals.forEach(yVal => {
+									let yPos = Math.round(u.valToPos(yVal, 'y', true));
+									ctx.fillStyle = "rgba(255,0,0,0.4)";
+									ctx.fillRect(
+										xPos - 4,
+										yPos,
+										10,
+										1,
+									);
+								});
+							});
+						}
+					}
+				};
+			}
+
+			const opts = {
+				width: 1800,
+				height: 600,
+				title: "Latency Heatmap (~20k)",
+				plugins: [
+					heatmapPlugin(),
+				],
+				cursor: {
+					drag: {
+						y: true,
+					},
+					points: {
+						show: false
+					}
+				},
+				series: [
+					{},
+					{
+						paths: () => null,
+						points: {show: false},
+					},
+					{
+						paths: () => null,
+						points: {show: false},
+					},
+				],
+			};
+
+			let u = new uPlot(opts, data, document.body);
+
+
+		</script>
+</body>
+</html>

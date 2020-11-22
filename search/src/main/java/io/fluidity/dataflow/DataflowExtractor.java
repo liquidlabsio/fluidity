@@ -2,11 +2,13 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -26,17 +28,28 @@ import org.graalvm.collections.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
 import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
 
 /**
- * Extract correlated data to relevant files and store on CloudStorage Dataflow model directory.
+ * Extract correlated data to relevant files and stores within the CloudStorage Dataflow model directory.
  */
 public class DataflowExtractor implements AutoCloseable {
     private final Logger log = LoggerFactory.getLogger(DataflowExtractor.class);
@@ -48,7 +61,8 @@ public class DataflowExtractor implements AutoCloseable {
     private final String tenant;
     private int logWarningCount = 0;
 
-    public DataflowExtractor(StorageInputStream inputStream, StorageUtil storageUtil, String modelPath, String region, String tenant) {
+    public DataflowExtractor(final StorageInputStream inputStream, final StorageUtil storageUtil, final String modelPath,
+                             final String region, final String tenant) {
         this.input = inputStream;
         this.storageUtil = storageUtil;
         this.modelPath = modelPath;
@@ -56,16 +70,19 @@ public class DataflowExtractor implements AutoCloseable {
         this.tenant = tenant;
     }
 
-    public String process(boolean isCompressed, Search search, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
+    public String process(final boolean isCompressed, final Search search, final long fileFromTime,
+                          final long fileToTime, final long fileLength, final String timeFormat) throws IOException {
 
-        DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
+        final DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
 
-        LinkedList<Integer> lengths = new LinkedList<>();
+        final LinkedList<Integer> lengths = new LinkedList<>();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input.inputStream)));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input.inputStream)));
         Optional<String> nextLine = Optional.ofNullable(reader.readLine());
 
-        if (nextLine.isPresent()) lengths.add(nextLine.get().length());
+        if (nextLine.isPresent()) {
+            lengths.add(nextLine.get().length());
+        }
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
 
@@ -76,8 +93,9 @@ public class DataflowExtractor implements AutoCloseable {
         long startTime = 0;
         long lastCorrelationTime = 0;
 
-        Map<String, KvJsonPairExtractor> extractorMap = getExtractorMap();
-        Map<String, String> datData = new HashMap<>();
+        final Map<String, KvJsonPairExtractor> extractorMap = getExtractorMap();
+        final Map<String, String> datData = new HashMap<>();
+        final AtomicInteger ops = new AtomicInteger();
         try {
             while (nextLine.isPresent()) {
 
@@ -89,19 +107,21 @@ public class DataflowExtractor implements AutoCloseable {
                 if (search.matches(nextLine.get())) {
                     currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
 
-                    Optional<Pair<String, Long>> fieldNameAndValue = Optional.ofNullable(search.getFieldNameAndValue("file-name-source", nextLine.get()));
+                    final Optional<Pair<String, Long>> fieldNameAndValue = Optional.ofNullable(search
+                            .getFieldNameAndValue("file-name-source", nextLine.get()));
 
                     if (fieldNameAndValue.isPresent()) {
-                        String correlationId = fieldNameAndValue.get().getLeft();
+                        final String correlationId = fieldNameAndValue.get().getLeft();
                         if (!currentCorrelation.equals(correlationId)) {
-                            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, correlationId);
+                            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation, ops);
                             currentCorrelation = correlationId;
                             currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
                             bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes());
                             startTime = currentTime;
+                            ops.set(0);
                         }
-                        getDatData(nextLine.get(), datData, extractorMap);
+                        getDatData(ops, nextLine.get(), datData, extractorMap);
                         if (bos.isPresent()) {
                             bos.get().write(nextLine.get().getBytes());
                             bos.get().write('\n');
@@ -113,23 +133,33 @@ public class DataflowExtractor implements AutoCloseable {
             }
         } finally {
             reader.close();
-            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation);
+            flushToStorage(bos, lastCorrelationTime, currentFile, startTime, datData, currentCorrelation, ops);
         }
         return "done";
     }
 
-    private void flushToStorage(Optional<OutputStream> bos, long lastCorrelationTime, File currentFile, long startTime, Map<String, String> datData, String correlationId) throws IOException {
+    private void flushToStorage(final Optional<OutputStream> bos, long lastCorrelationTime, final File currentFile,
+                                final long startTime, final Map<String, String> datData, final String correlationId,
+                                final  AtomicInteger ops) throws IOException {
         if (bos.isPresent()) {
             bos.get().close();
-            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
+            // in case time extraction is being auto-calculated and got it wrong.
+            // better to use exact timestamp matching
+            if (lastCorrelationTime < startTime) {
+                lastCorrelationTime = startTime+1000;
+            }
+            storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath,
+                    startTime, lastCorrelationTime, correlationId), 365, startTime);
             currentFile.delete();
-            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath, correlationId, startTime, lastCorrelationTime), 365, startTime);
+            datData.put("operations", ops.toString());
+            storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath,
+                    startTime, lastCorrelationTime, correlationId), 365, startTime);
             datData.clear();
         }
     }
 
-    private InputStream makeDatFile(Map<String, String> datData) {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private InputStream makeDatFile(final Map<String, String> datData) {
+        final ObjectMapper objectMapper = new ObjectMapper();
         String json = null;
         try {
             json = objectMapper.writeValueAsString(datData);
@@ -142,7 +172,7 @@ public class DataflowExtractor implements AutoCloseable {
 
     private Map<String, KvJsonPairExtractor> getExtractorMap() {
         // look for json information about which stage of a trace or the name of the service being processed
-        HashMap<String, KvJsonPairExtractor> extractorMap = new HashMap<>();
+        final HashMap<String, KvJsonPairExtractor> extractorMap = new HashMap<>();
         // loginService
         addToMap(extractorMap, new KvJsonPairExtractor("service"));
         // doStuff
@@ -158,16 +188,26 @@ public class DataflowExtractor implements AutoCloseable {
         return extractorMap;
     }
 
-    private void addToMap(HashMap<String, KvJsonPairExtractor> extractorMap, KvJsonPairExtractor extractor) {
+    private void addToMap(final HashMap<String, KvJsonPairExtractor> extractorMap, final KvJsonPairExtractor extractor) {
         extractorMap.put(extractor.getToken(), extractor);
     }
 
-    private void getDatData(String nextLine, Map<String, String> datData, Map<String, KvJsonPairExtractor> extractorMap) {
+    private void getDatData(final AtomicInteger ops, final String nextLine, final Map<String, String> datData,
+                            final Map<String, KvJsonPairExtractor> extractorMap) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
-                Optional<Pair<String, Long>> extracted = Optional.ofNullable(extractor.getKeyAndValue("none", nextLine));
+                final Optional<Pair<String, Long>> extracted = Optional.ofNullable(extractor.getKeyAndValue("none", nextLine));
                 if (extracted.isPresent()) {
-                    datData.put(extractor.getToken(), extracted.get().getRight().toString());
+                    String currentValue = datData.get(extractor.getToken());
+                    if (currentValue == null) {
+                        currentValue = "";
+                    } else {
+                        currentValue = currentValue + ", ";
+                    }
+                    datData.put(extractor.getToken(), currentValue + extracted.get().getLeft());
+                    if (extractor.getToken().equals("operation")) {
+                        ops.incrementAndGet();
+                    }
                 }
             } catch (Exception e) {
                 if (logWarningCount++ < 10) {
