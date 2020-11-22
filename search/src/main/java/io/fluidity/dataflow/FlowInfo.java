@@ -14,6 +14,9 @@
 
 package io.fluidity.dataflow;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class FlowInfo {
@@ -37,18 +40,22 @@ public class FlowInfo {
         this.flowFiles = flowFiles;
     }
 
+    @JsonIgnore
     public long getStart() {
         return durations.get(0)[0];
     }
 
+    @JsonIgnore
     public long getEnd() {
         return durations.get(durations.size() - 1)[1];
     }
 
+    @JsonIgnore
     public long getDuration() {
         return getEnd() - getStart();
     }
 
+    @JsonIgnore
     public long[] getMinMaxOp2OpLatencyWithMaxOpAndE2E() {
         long minLatency = Long.MAX_VALUE;
         long maxLatency = 0;
@@ -66,4 +73,11 @@ public class FlowInfo {
         return new long[]{minLatency, maxLatency, maxOpDuration, durationMs};
     }
 
+    public List<Long> getDurationsAsInterval() {
+        List<Long> results = new ArrayList<>();
+        for (Long[] times : this.durations) {
+            results.add(times[1] - times[0]);
+        }
+        return results;
+    }
 }

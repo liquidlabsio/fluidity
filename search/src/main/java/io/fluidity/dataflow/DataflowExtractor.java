@@ -37,7 +37,7 @@ import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
 import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
 
 /**
- * Extract correlated data to relevant files and store on CloudStorage Dataflow model directory.
+ * Extract correlated data to relevant files and stores within the CloudStorage Dataflow model directory.
  */
 public class DataflowExtractor implements AutoCloseable {
     private final Logger log = LoggerFactory.getLogger(DataflowExtractor.class);

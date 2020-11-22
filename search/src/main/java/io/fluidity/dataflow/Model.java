@@ -14,6 +14,14 @@
 
 package io.fluidity.dataflow;
 
+/**
+ * Defines the storage filenames used to index the dataflow index. For more details see:
+ *
+ * https://github.com/liquidlabsio/fluidity/issues/62
+ * .histo (50k) => ladder(s) (20k foot) => flow(s) => .corr + .dat
+ *
+ * https://github.com/liquidlabsio/fluidity/issues/50
+ */
 public class Model {
 
     public final static Long LADDER_GRANULARITY = Long.getLong("ladder.granularity", 50l);
@@ -54,6 +62,6 @@ public class Model {
     /**
      * Get offsets from split names
      */
-    public static final int FROM_END_INDEX = 3;
-    public static final int TO_END_INDEX = 2;
+    public static final int FROM_END_INDEX = 4;
+    public static final int TO_END_INDEX = 3;
 }

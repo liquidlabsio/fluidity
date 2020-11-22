@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 
 /**
  * Represents stages 2 and 3 from: https://github.com/liquidlabsio/fluidity/issues/50
+ *
+ * See: https://github.com/liquidlabsio/fluidity/issues/62
+ * Also {@link io.fluidity.dataflow.Model}
  */
 public class DataflowModeller {
     public DataflowModeller() {

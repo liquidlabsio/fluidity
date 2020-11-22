@@ -23,9 +23,9 @@ class DataflowsForTime {
     load(element, rest) {
         this.element = element;
         this.rest = rest;
-//        this.loadGChart();
-//    }
-//    loadGChart() {
+        this.loadGChart();
+    }
+    loadGChart() {
         google.charts.load('current', {'packages':['corechart']});
         google.charts.setOnLoadCallback(this.loaded.bind({ self: this }));
     }

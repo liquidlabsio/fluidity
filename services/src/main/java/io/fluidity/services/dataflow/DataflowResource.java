@@ -37,16 +37,10 @@ import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
-import static io.fluidity.dataflow.Model.LADDER_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.*;
 
 /**
  * API to build, maintain, and access dataflow models
@@ -267,6 +261,8 @@ public class DataflowResource implements DataflowService {
                     results.append(convertor.toClientArrays(timeSeries));
                 }
         });
+
+        Collections.sort(last, (o1, o2) -> Long.compare(o1.start(), o2.start()));
         if (results.length() == 0 || true) {
             return convertor.toClientArrays(last.get(last.size()-1));
         }
@@ -295,6 +291,7 @@ public class DataflowResource implements DataflowService {
                 results.append(convertor.toClientArrays(ladder));
             }
         });
+        Collections.sort(last, (o1, o2) -> Long.compare(o1.start(), o2.start()));
         if (results.length() == 0 || true) {
             TimeSeries<Map<Long, FlowStats>> lasty = (TimeSeries<Map<Long, FlowStats>>) last.get(last.size() - 1);
 
@@ -304,17 +301,23 @@ public class DataflowResource implements DataflowService {
     }
 
     public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
-        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1, timeX2, valueY, Model.LADDER_GRANULARITY);
-        storage.listBucketAndProcess(cloudRegion, tenant, convertor.getListingPrefix(timeX1), (region, itemUrl, itemName, modified, size) -> {
-            convertor.process(itemName, itemUrl);
+        modelName = modelPrefix + modelName;
+        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1*1000, timeX2*1000, valueY, Model.LADDER_GRANULARITY);
+
+        // TODO: improve PREFIXing (instead of using modelName)
+        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
+            if (itemUrl.contains(CORR_FLOW_PREFIX)) {
+                convertor.process(itemName, itemUrl);
+            }
         });
         List<String> flowUrls = convertor.getFlowUrls();
         List<FlowInfo> flows = new ArrayList<>();
         flowUrls.forEach(flowUrl -> {
             byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
-            FlowInfo flow = convertor.fromJson(bytes);
+            FlowInfo[] flow = convertor.fromJson(bytes);
+            flows.add(flow[0]);
         });
-        return convertor.toJson(flows);
+        return new String(convertor.toJson(flows));
 
     }
 

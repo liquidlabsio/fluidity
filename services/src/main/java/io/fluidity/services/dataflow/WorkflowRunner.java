@@ -40,7 +40,10 @@ import static io.fluidity.dataflow.Model.*;
 
 /**
  * Propagates through the stages of building the dataflow model
- * See: https://github.com/liquidlabsio/fluidity/issues/50
+ * See
+ * - https://github.com/liquidlabsio/fluidity/issues/50
+ * - https://github.com/liquidlabsio/fluidity/issues/62
+ * - {@link io.fluidity.dataflow.Model}
  * <p>
  * Stage 1.
  * Extract correlations into /bucket/modeldir/corr-{CORRELATIONID}-{TIMESTAMP}.log
@@ -209,7 +212,7 @@ public abstract class WorkflowRunner {
     private void writeCorrelationFlow(String session, String modelPath, DataflowHistoCollector histoCollector, List<Pair<Long, String>> correlationFileSet, DataflowModeller dataflowModeller, String region, String correlationKey) {
         FlowInfo flow = dataflowModeller.getCorrelationFlow(correlationKey, correlationFileSet);
         histoCollector.add(flow.getStart(), flow);
-        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT_2, modelPath, flow.getStart(), DateUtil.ceilHour(flow.getEnd()), correlationKey), 365, flow.getStart())) {
+        try (OutputStream outputStream = storage.getOutputStream(region, tenant, String.format(CORR_FLOW_FMT_2, modelPath, flow.getStart(), flow.getEnd(), correlationKey), 365, flow.getStart())) {
             String flowJson = getMapper().writeValueAsString(flow);
             IOUtils.copy(new ByteArrayInputStream(flowJson.getBytes()), outputStream);
         } catch (Exception e) {

@@ -93,7 +93,7 @@ class Dataflow {
         google.charts.load('current', {'packages':['bar']});
         let dataflowsForTime = new DataflowsForTime();
         dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest);
-        //dataflowsForTime.loadData(data);
+//        dataflowsForTime.setData(flowData);
         this.dataflowsForTime = dataflowsForTime;
     }
 }

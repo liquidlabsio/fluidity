@@ -38,8 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DataflowExtractorTest {
-    public static final String TIMEFORMAT = "yyyy-MM-dd HH:mm.ss";
-    List<Long> times = new ArrayList<Long>();
+    List<Long> times = new ArrayList<>();
 
     @Test
     void processesMultipleCorrelationIds() throws IOException {
@@ -145,7 +144,9 @@ class DataflowExtractorTest {
         search.from = 0l;
         search.to = System.currentTimeMillis();
 
-        rewriter.process(false, search, 0, System.currentTimeMillis(), 1024, TIMEFORMAT);
+        String TIME_FORMAT = "prefix:[timestamp\":] LONG";
+
+        rewriter.process(false, search, 0, System.currentTimeMillis(), 1024, TIME_FORMAT);
         assertEquals(2, collected.size());
         List<Map.Entry<String, String>> datFile = collected.entrySet().stream().filter(entry -> entry.getKey().endsWith(".dat")).collect(Collectors.toList());
         String jsonDatData = datFile.iterator().next().getValue();
@@ -171,7 +172,7 @@ class DataflowExtractorTest {
     }
 
     private String makeFileContent(String prefix, int mins_ago) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(TIMEFORMAT);
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm.ss");
         StringBuilder fileContentAsString = new StringBuilder();
         String corrId = prefix + "-kerob";
         String data = "\"timestamp\":_TS_,\"txn\":\"" + corrId + "\",\"service\":\"rest\", \"operation\":\"myOp\"" +
