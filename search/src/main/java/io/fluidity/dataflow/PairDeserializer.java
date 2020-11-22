@@ -2,11 +2,13 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed
+ *   on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -30,27 +32,27 @@ public class PairDeserializer<K,V> extends StdDeserializer<Pair<K, V>> {
     private Class right;
     ObjectMapper mapper = new ObjectMapper();
 
-    public PairDeserializer(Class left, Class right) {
+    public PairDeserializer(final Class left, final Class right) {
         this(null);
         this.left = left;
         this.right = right;
     }
 
-    public PairDeserializer(Class left, TypeReference rightType) {
+    public PairDeserializer(final Class left, final TypeReference rightType) {
         this(null);
         this.left = left;
         this.rightType = rightType;
     }
 
-    public PairDeserializer(Class<?> vc) {
+    public PairDeserializer(final Class<?> vc) {
         super(vc);
     }
 
     @Override
-    public Pair<K, V> deserialize(JsonParser jp, DeserializationContext deserializationContext) throws IOException {
-        JsonNode node = jp.getCodec().readTree(jp);
-        Object left = mapper.readValue(node.get("left").toString(), this.left);
-        Object right = rightType != null ?
+    public Pair<K, V> deserialize(final JsonParser jp, final DeserializationContext deserializationContext) throws IOException {
+        final JsonNode node = jp.getCodec().readTree(jp);
+        final Object left = mapper.readValue(node.get("left").toString(), this.left);
+        final Object right = rightType != null ?
                 mapper.readValue(node.get("right").toString(), this.rightType) :
                 mapper.readValue(node.get("right").toString(), this.right);
             return (Pair<K, V>) Pair.create(left, right);

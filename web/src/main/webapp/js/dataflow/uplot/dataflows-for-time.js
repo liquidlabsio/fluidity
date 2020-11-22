@@ -47,6 +47,8 @@ class DataflowsForTime {
           //table.setSelection(orgchart.getSelection());
           console.log("Clicked to drill-down:" + event)
         });
+
+        self.setData(self, flowData)
     }
 
     setData(self, data) {

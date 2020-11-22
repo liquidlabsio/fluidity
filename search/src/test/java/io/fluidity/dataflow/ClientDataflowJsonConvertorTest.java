@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ClientDataflowJsonConvertorTest {
 
@@ -20,7 +20,8 @@ class ClientDataflowJsonConvertorTest {
     }
     @Test
     void toClientJson() {
-        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(1l, System.currentTimeMillis(), 100l, 100l);
+        final ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(1l, System.currentTimeMillis(),
+                100l, 100l);
         FlowInfo flowInfo = new FlowInfo("flowId", Collections.singletonList("file1"), Collections.singletonList(new Long[]{1l, 1000l}));
         String flowInfoItem = convertor.rewriteToClientJson(flowInfo);
         assertEquals(flowInfoItem, "['flowId',999]");

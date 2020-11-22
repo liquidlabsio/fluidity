@@ -2,11 +2,14 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License.  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Unless required by applicable law or agreed to in writing, software  distributed under
+ * the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -56,15 +59,15 @@ import java.util.List;
  */
 public class ClientHistoJsonConvertor {
     private ObjectMapper getMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
+        final ObjectMapper mapper = new ObjectMapper();
+        final SimpleModule module = new SimpleModule();
         module.addDeserializer(Pair.class, new PairDeserializer(Long.class, FlowStats.class));
         mapper.registerModule(module);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper;
     }
 
-    public byte[] toJson(Series<FlowStats> histo) {
+    public byte[] toJson(final Series<FlowStats> histo) {
         try {
             return getMapper().writeValueAsBytes(histo);
         } catch (JsonProcessingException e) {
@@ -72,7 +75,7 @@ public class ClientHistoJsonConvertor {
             return "e.toString".getBytes();
         }
     }
-    public TimeSeries<FlowStats> fromJson(byte[] json) {
+    public TimeSeries<FlowStats> fromJson(final byte[] json) {
         try {
             return getMapper().readValue(json, new TimeSeries<FlowStats>().getClass());
         } catch (IOException e) {
@@ -80,16 +83,16 @@ public class ClientHistoJsonConvertor {
             throw new RuntimeException(e);
         }
     }
-    public String toClientArrays(TimeSeries<FlowStats> timeSeries) {
+    public String toClientArrays(final TimeSeries<FlowStats> timeSeries) {
         try {
-            List<Long> times = new ArrayList<>();
-            List<Long> min = new ArrayList<>();
-            List<Long> max = new ArrayList<>();
-            List<Long> avg = new ArrayList<>();
-            List<Long> volume = new ArrayList<>();
+            final List<Long> times = new ArrayList<>();
+            final List<Long> min = new ArrayList<>();
+            final List<Long> max = new ArrayList<>();
+            final List<Long> avg = new ArrayList<>();
+            final List<Long> volume = new ArrayList<>();
 
             timeSeries.data().forEach(entry -> {
-                Long timestamp = entry.getLeft();
+                final Long timestamp = entry.getLeft();
                 FlowStats flowStats = entry.getRight();
                 if (flowStats == null) {
                     flowStats = new FlowStats();
@@ -103,7 +106,7 @@ public class ClientHistoJsonConvertor {
                 volume.add(flowStats.getCount());
             });
 
-            ArrayList<List<Long>> results = new ArrayList<>();
+            final ArrayList<List<Long>> results = new ArrayList<>();
             results.add(times);
             results.add(min);
             results.add(avg);

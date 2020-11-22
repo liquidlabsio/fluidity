@@ -35,7 +35,8 @@ public class ClientDataflowJsonConvertor {
     private Long granularityY;
     private List<String> urls = new ArrayList<>();
 
-    public ClientDataflowJsonConvertor(Long timeX1, Long timeX2, Long valueY, Long granularityY) {
+    public ClientDataflowJsonConvertor(final Long timeX1, final Long timeX2, final Long valueY,
+                                       final Long granularityY) {
         this.timeX1 = timeX1;
         this.timeX2 = timeX2;
         this.valueY = valueY;
@@ -43,8 +44,8 @@ public class ClientDataflowJsonConvertor {
     }
 
     private ObjectMapper getMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
+        final ObjectMapper mapper = new ObjectMapper();
+        final SimpleModule module = new SimpleModule();
 //        module.addDeserializer(FlowInfo.class);
         mapper.registerModule(module);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -57,9 +58,10 @@ public class ClientDataflowJsonConvertor {
      *                                  ['txn-1000', 1000, 400, 200,1000, 400],
      *                                  ['txn-1222', 1170, 460, 250, 1000, 400]
      *                                ];
+     *  See trial/gchart/stacked-bar
      * @return
      */
-    public byte[] toJson(List<FlowInfo> flows) {
+    public byte[] toJson(final List<FlowInfo> flows) {
         try {
 //            String json = "[\n" +
 //                    "                                 [\"txn\", \"Register\"],\n" +
@@ -74,7 +76,7 @@ public class ClientDataflowJsonConvertor {
         }
     }
 
-    public FlowInfo[] fromJson(byte[] json) {
+    public FlowInfo[] fromJson(final byte[] json) {
         try {
             return getMapper().readValue(json, new FlowInfo[0].getClass());
         } catch (IOException e) {
@@ -83,23 +85,23 @@ public class ClientDataflowJsonConvertor {
         }
     }
 
-    public String getListingPrefix(Long timeX1) {
+    public String getListingPrefix(final Long timeX1) {
         return null;
     }
 
-    public void process(String itemName, String itemUrl) {
+    public void process(final String itemName, final String itemUrl) {
         // split item name to get X and latency
         if (isMatch(itemName)) {
             this.urls.add(itemUrl);
         }
     }
 
-    private boolean isMatch(String itemName) {
-        String[] split = itemName.split(Model.DELIM);
-        long from = Long.parseLong(split[split.length - Model.FROM_END_INDEX]);
-        long to = Long.parseLong(split[split.length - Model.TO_END_INDEX]);
+    private boolean isMatch(final String itemName) {
+        final String[] split = itemName.split(Model.DELIM);
+        final long from = Long.parseLong(split[split.length - Model.FROM_END_INDEX]);
+        final long to = Long.parseLong(split[split.length - Model.TO_END_INDEX]);
         if (from > timeX1 && from < timeX2) {
-            long latency = to - from;
+            final long latency = to - from;
             return latency > valueY - granularityY && latency < valueY + granularityY;
         }
         return false;
@@ -114,10 +116,10 @@ public class ClientDataflowJsonConvertor {
      * @param flowInfo1
      * @return
      */
-    public String rewriteToClientJson(FlowInfo flowInfo1) {
-        StringBuilder results = new StringBuilder("[");
+    public String rewriteToClientJson(final FlowInfo flowInfo1) {
+        final StringBuilder results = new StringBuilder("[");
         results.append("'").append(flowInfo1.flowId).append("'");
-        List<Long> durationsAsInterval = flowInfo1.getDurationsAsInterval();
+        final List<Long> durationsAsInterval = flowInfo1.getDurationsAsInterval();
         durationsAsInterval.forEach(duration -> results.append(",").append(duration));
         results.append("]");
         return results.toString();
