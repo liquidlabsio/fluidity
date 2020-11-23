@@ -60,8 +60,8 @@ public class FlowInfo {
     @JsonIgnore
     public long[] getMinMaxOp2OpLatencyWithMaxOpAndE2E() {
         long minLatency = Long.MAX_VALUE;
-        long maxLatency = 0;
-        long maxOpDuration = 0;
+        long maxLatency = 1;
+        long maxOpDuration = 1;
         for (int i = 0; i < durations.size(); i++) {
             if (i > 0) {
                 final long interval = durations.get(i)[START_TIME_INDEX] - durations.get(i - 1)[END_TIME_INDEX];
@@ -73,12 +73,15 @@ public class FlowInfo {
                 }
             }
             final long duration = durations.get(i)[1] - durations.get(i)[0];
-            if (maxOpDuration < duration) {
+            if (maxOpDuration < duration && duration > 0) {
                 maxOpDuration = duration;
             }
         }
         if (durations.size() == 1) {
-            minLatency = 0;
+            minLatency = 1;
+        }
+        if (durationMs == 0) {
+            durationMs = 2;
         }
         return new long[]{minLatency, maxLatency, maxOpDuration, durationMs};
     }
@@ -89,5 +92,17 @@ public class FlowInfo {
             results.add(times[1] - times[0]);
         }
         return results;
+    }
+
+    /**
+     * Converts to UI flow format:
+     * ['txn-1000', 1000, 400, 200,1000, 400],
+     * @return
+     */
+    public List<Object> durations() {
+        List list = new ArrayList();
+        list.add(flowId);
+         durations.stream().forEach(duration -> list.add(duration[1] - duration[0]));
+        return list;
     }
 }

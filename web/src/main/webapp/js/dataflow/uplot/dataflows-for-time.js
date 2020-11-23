@@ -27,22 +27,25 @@ class DataflowsForTime {
     }
     loadGChart() {
         google.charts.load('current', {'packages':['corechart']});
+//         google.charts.load('current', {'packages':['bar']});
         google.charts.setOnLoadCallback(this.loaded.bind({ self: this }));
     }
     loaded() {
         var options = {
           isStacked: true,
           bars: 'horizontal', // Required for Material Bar Charts.
-          width:'100%',
-          height:'100%',
-          isStacked: true,
-          theme: 'material'
+          width:'1600',
+          height:'800',
+           colors: [ '#4285f4','#689df6','#8eb6f8','#b3cefb','#d9e7fd', '#1b9e77', '#d95f02', '#7570b3'],
+
         };
+
 
         self = this.self;
 
         self.options = options;
         self.chart = new google.visualization.BarChart(self.element);
+//        self.chart = new google.charts.Bar(self.element);
         google.visualization.events.addListener(self.chart, 'click', function() {
           //table.setSelection(orgchart.getSelection());
           console.log("Clicked to drill-down:" + event)
@@ -53,6 +56,7 @@ class DataflowsForTime {
 
     setData(self, data) {
         let ddata = google.visualization.arrayToDataTable(data);
+//        self.chart.draw(ddata, google.charts.Bar.convertOptions(self.options));
         self.chart.draw(ddata, self.options);
     }
 

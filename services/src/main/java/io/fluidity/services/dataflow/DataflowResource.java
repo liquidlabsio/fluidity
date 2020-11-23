@@ -241,6 +241,7 @@ public class DataflowResource implements DataflowService {
     @Override
     public String volumeHisto(String tenant, String modelName, Long time) {
 
+        log.info("volumeHisto:" + modelName + " time:" + new Date(time));
         modelName = modelPrefix + modelName;
 
         List<Map<String, String>> histoUrls = new ArrayList<>();
@@ -272,6 +273,8 @@ public class DataflowResource implements DataflowService {
     @Override
     public String heatmapHisto(String tenant, String modelName, Long time) {
 
+        log.info("heatmapHisto:" + modelName + " time:" + new Date(time));
+
         modelName = modelPrefix + modelName;
 
         List<Map<String, String>> ladderUrls = new ArrayList<>();
@@ -301,24 +304,36 @@ public class DataflowResource implements DataflowService {
     }
 
     public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
+
+        log.info("dataflows:" + modelName + " time:" + new Date(timeX1*1000) + " - " + new Date(timeX2*1000));
+
         modelName = modelPrefix + modelName;
-        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1*1000, timeX2*1000, valueY, Model.LADDER_GRANULARITY);
 
-        // TODO: improve PREFIXing (instead of using modelName)
-        storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
-            if (itemUrl.contains(CORR_FLOW_PREFIX)) {
-                convertor.process(itemName, itemUrl);
-            }
-        });
-        List<String> flowUrls = convertor.getFlowUrls();
-        List<FlowInfo> flows = new ArrayList<>();
-        flowUrls.forEach(flowUrl -> {
-            byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
-            FlowInfo[] flow = convertor.fromJson(bytes);
-            flows.add(flow[0]);
-        });
-        return new String(convertor.toJson(flows));
+        // Todo = expose granularity control to the client - for now pull in the whole time period
+        ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1*1000, timeX2*1000, valueY,
+                -1L);//Model.LADDER_GRANULARITY);
+        try {
 
+            List<String> matchingFlowsUrls = new ArrayList<>();
+            // TODO: improve PREFIXing (instead of using modelName)
+            storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
+                if (itemUrl.contains(CORR_FLOW_PREFIX)) {
+                    if (convertor.isMatch(itemName)) {
+                        matchingFlowsUrls.add(itemUrl);
+                    }
+                }
+            });
+            List<FlowInfo> flows = new ArrayList<>();
+            matchingFlowsUrls.forEach(flowUrl -> {
+                byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
+                FlowInfo[] flow = convertor.fromJson(("[" + new String(bytes) + "]").getBytes(StandardCharsets.UTF_8));
+                flows.add(flow[0]);
+            });
+            return new String(convertor.toClientFlowsList(flows));
+        } catch (Throwable t) {
+            log.error("Failed list list dataFlows:" + modelName, t);
+            return t.toString();
+        }
     }
 
 }

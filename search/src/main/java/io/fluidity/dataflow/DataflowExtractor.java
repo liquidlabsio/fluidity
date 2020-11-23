@@ -49,9 +49,12 @@ import static io.fluidity.dataflow.Model.CORR_DAT_FMT;
 import static io.fluidity.dataflow.Model.CORR_FILE_FMT;
 
 /**
- * Extract correlated data to relevant files and stores within the CloudStorage Dataflow model directory.
+ * Extract .cor and .dat files to cloud storage. A corr and dat is creates for each correlated key
+ * - i.e. txn-id-time-0---time-1.corr  * Dataflow model directory.
+ * See @{@link io.fluidity.dataflow.Model}
  */
 public class DataflowExtractor implements AutoCloseable {
+    public static final int DAYS_RETENTION = 365;
     private final Logger log = LoggerFactory.getLogger(DataflowExtractor.class);
 
     private final StorageInputStream input;
@@ -145,15 +148,18 @@ public class DataflowExtractor implements AutoCloseable {
             bos.get().close();
             // in case time extraction is being auto-calculated and got it wrong.
             // better to use exact timestamp matching
+            if (lastCorrelationTime == startTime) {
+                lastCorrelationTime = startTime+1;
+            }
             if (lastCorrelationTime < startTime) {
                 lastCorrelationTime = startTime+1000;
             }
             storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath,
-                    startTime, lastCorrelationTime, correlationId), 365, startTime);
+                    startTime, lastCorrelationTime, correlationId), DAYS_RETENTION, startTime);
             currentFile.delete();
             datData.put("operations", ops.toString());
             storageUtil.copyToStorage(makeDatFile(datData), region, tenant, String.format(CORR_DAT_FMT, modelPath,
-                    startTime, lastCorrelationTime, correlationId), 365, startTime);
+                    startTime, lastCorrelationTime, correlationId), DAYS_RETENTION, startTime);
             datData.clear();
         }
     }

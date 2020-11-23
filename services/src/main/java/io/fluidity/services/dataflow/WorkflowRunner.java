@@ -109,12 +109,12 @@ public abstract class WorkflowRunner {
 
             DataflowHistoCollector dataflowHistoCollector = new DataflowHistoCollector(search);
 
-            // Stage 2. Build DataFlows info for each correlation-set, collect histogram from all correlation-filenames
+            // Stage 2. Build DataFlow info for each correlation-set, collect histogram from all correlation-filenames
             buildDataFlowIndexForCorrelations(this.session, modelPath, dataflowHistoCollector);
 
             // Stage 3. Write it off to disk
-            storeHistoModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
             storeLadderModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
+            storeHistoModel(this.session, modelPath, dataflowHistoCollector, search.from, search.to);
         } catch (Exception ex) {
             ex.printStackTrace();
             log.info(FlowLogHelper.format(session, "builder", "workflow", "Failed:" + ex.toString()));
@@ -128,7 +128,7 @@ public abstract class WorkflowRunner {
     }
 
     /**
-     * an all index files to extract histogram analytics including:
+     * Scan all flow files to extract histogram analytics including:
      * number of dataflows
      * percentile breakdown of min,max,avg, 95th percentile, 99th percentile data
      *
@@ -178,12 +178,12 @@ public abstract class WorkflowRunner {
         DataflowModeller dataflowModeller = new DataflowModeller();
         AtomicInteger foundCorrelations = new AtomicInteger();
 
-        log.info(FlowLogHelper.format(session, "builder", "buildCorrelations", "Start"));
+        log.info(FlowLogHelper.format(session, "builder", "buildCorrelationFlows", "Start"));
 
         storage.listBucketAndProcess(region, tenant, modelPath, (region, itemUrl, correlationFilename, modified, size) -> {
             if (!correlationFilename.contains(CORR_PREFIX)) return;
-            String filenameonly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
-            String[] split = filenameonly.split(Model.DELIM);
+            String filenameOnly = correlationFilename.substring(correlationFilename.lastIndexOf('/') + 1);
+            String[] split = filenameOnly.split(Model.DELIM);
             String correlationKey = split[3];
             String currentCorrelationKey = currentCorrelationKeySet.isEmpty() ? null : currentCorrelationKeySet.get(0);
             if (!correlationKey.equalsIgnoreCase(currentCorrelationKey) && currentCorrelationKey != null) {
@@ -223,7 +223,7 @@ public abstract class WorkflowRunner {
     }
 
     /**
-     * Fan out to rewrite correlation information
+     * Fan out to extract correlation data from source files and write to storage
      *
      * @param search
      * @param submit
