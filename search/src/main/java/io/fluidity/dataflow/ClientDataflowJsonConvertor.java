@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Flips the server side ladder format to client side.
@@ -33,7 +35,6 @@ public class ClientDataflowJsonConvertor {
     private final Long timeX2;
     private final Long valueY;
     private Long granularityY;
-    private List<String> urls = new ArrayList<>();
 
     public ClientDataflowJsonConvertor(final Long timeX1, final Long timeX2, final Long valueY,
                                        final Long granularityY) {
@@ -61,19 +62,46 @@ public class ClientDataflowJsonConvertor {
      *  See trial/gchart/stacked-bar
      * @return
      */
-    public byte[] toJson(final List<FlowInfo> flows) {
+    public byte[] toClientFlowsList(final List<FlowInfo> flows) {
         try {
-//            String json = "[\n" +
-//                    "                                 [\"txn\", \"Register\"],\n" +
-//                    "                                 [\"txn-1000\", 1000]\n" +
-//                    "                               ]";
-//            System.out.println(json);
-            return getMapper().writeValueAsBytes(flows);
-//            return json;
+            List<List<Object>> allflows = flows.stream().map(flow -> flow.durations()).collect(Collectors.toList());
+
+            final AtomicLong columnCount = new AtomicLong(1L);
+            allflows.forEach(row -> columnCount.set(Math.max(columnCount.get(), row.size())));
+
+            // make durations lists the same length
+            alignSizesForColumnCount(columnCount.intValue(), allflows);
+
+            sortByDuration(allflows);
+
+
+            List<Object> columnNames = new ArrayList<>();
+            columnNames.add("id");
+            for (int i = 0; i < columnCount.intValue()-1; i++) {
+                columnNames.add("stage-" + i);
+            }
+            allflows.add(0, columnNames);
+            return getMapper().writeValueAsBytes (allflows);
         } catch (Exception e) {
             e.printStackTrace();
-            return new byte[0];//e.toString();
+            return new byte[0];
         }
+    }
+
+    private void sortByDuration(List<List<Object>> allflows) {
+        allflows.sort((o1, o2) -> {
+            Long o1Sum = o1.stream().filter(item -> item instanceof Long).mapToLong(item -> (Long) item).sum();
+            Long o2Sum = o2.stream().filter(item -> item instanceof Long).mapToLong(item -> (Long) item).sum();
+            return o2Sum.compareTo(o1Sum);
+        });
+    }
+
+    private void alignSizesForColumnCount(final int intValue, final List<List<Object>> allflows) {
+        allflows.forEach(flowList -> {
+            while (flowList.size() < intValue) {
+                flowList.add(1L);
+            }
+        });
     }
 
     public FlowInfo[] fromJson(final byte[] json) {
@@ -85,43 +113,17 @@ public class ClientDataflowJsonConvertor {
         }
     }
 
-    public String getListingPrefix(final Long timeX1) {
-        return null;
-    }
-
-    public void process(final String itemName, final String itemUrl) {
-        // split item name to get X and latency
-        if (isMatch(itemName)) {
-            this.urls.add(itemUrl);
-        }
-    }
-
-    private boolean isMatch(final String itemName) {
+    public boolean isMatch(final String itemName) {
         final String[] split = itemName.split(Model.DELIM);
         final long from = Long.parseLong(split[split.length - Model.FROM_END_INDEX]);
         final long to = Long.parseLong(split[split.length - Model.TO_END_INDEX]);
-        if (from > timeX1 && from < timeX2) {
+        // overlapping times
+        if (from <= timeX2 && from >= timeX1 || to <= timeX2 && to >= timeX1 ||
+        from <= timeX1 && to >= timeX2) {
             final long latency = to - from;
-            return latency > valueY - granularityY && latency < valueY + granularityY;
+            return latency > valueY - granularityY && latency < valueY + granularityY || granularityY == -1;
         }
         return false;
     }
 
-    public List<String> getFlowUrls() {
-        return urls;
-    }
-
-    /**
-     * Output as:  ['txn-1000', 1000, 400, 200,1000, 400],
-     * @param flowInfo1
-     * @return
-     */
-    public String rewriteToClientJson(final FlowInfo flowInfo1) {
-        final StringBuilder results = new StringBuilder("[");
-        results.append("'").append(flowInfo1.flowId).append("'");
-        final List<Long> durationsAsInterval = flowInfo1.getDurationsAsInterval();
-        durationsAsInterval.forEach(duration -> results.append(",").append(duration));
-        results.append("]");
-        return results.toString();
-    }
 }

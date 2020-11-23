@@ -75,11 +75,12 @@ class Dataflow {
 
         if (this.heatmap == null) {
             this.heatmap = new HeatLadder();
-            let dataflowSelf = this;
+            let self = this;
             this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), function(index, timeX1, timeX2, valueY) {
                 console.log("glue it");
                 //dataflowSelf.dataflowsForTime.click(dataflowSelf.dataflowsForTime, index, timeX1, timeX2, valueY);
-                dataflowSelf.rest.dataflowsForTime(dataflowSelf.dataflowsForTime, dataflowSelf.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, dataflowSelf.dataflowsForTime.setData.bind( { self: dataflowSelf.dataflowsForTime } ));
+               // dataflowSelf.rest.dataflowsForTime(dataflowSelf.dataflowsForTime, dataflowSelf.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, dataflowSelf.dataflowsForTime.setData.bind( { self: dataflowSelf.dataflowsForTime } ));
+                self.rest.dataflowsForTime(self.dataflowsForTime, self.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, self.dataflowsForTime.setData.bind( { self: self.dataflowsForTime } ));
             }, 100);
 
         } else {
@@ -90,10 +91,7 @@ class Dataflow {
     * Load detailed dataflow view for selected heatmap time and latency
     **/
     loadDataflowsForTimeX() {
-        google.charts.load('current', {'packages':['bar']});
-        let dataflowsForTime = new DataflowsForTime();
-        dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest);
-//        dataflowsForTime.setData(flowData);
-        this.dataflowsForTime = dataflowsForTime;
+        this.dataflowsForTime = new DataflowsForTime();
+        this.dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest);
     }
 }
