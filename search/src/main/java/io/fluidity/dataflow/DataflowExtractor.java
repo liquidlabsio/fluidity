@@ -87,7 +87,7 @@ public class DataflowExtractor implements AutoCloseable {
             lengths.add(nextLine.get().length());
         }
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
-        long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
+        long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine.get());
 
         long scanFilePos = 0;
         File currentFile = null;
@@ -103,15 +103,16 @@ public class DataflowExtractor implements AutoCloseable {
             while (nextLine.isPresent()) {
 
                 // recalibrate the time interval as more line lengths are known
-                lengths.add(nextLine.get().length());
+                final String lineContent = nextLine.get();
+                lengths.add(lineContent.length());
                 guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                scanFilePos += nextLine.get().length() + 2;
+                scanFilePos += lineContent.length() + 2;
 
-                if (search.matches(nextLine.get())) {
-                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
+                if (search.matches(lineContent) && lineContent.length() > 0) {
+                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, lineContent);
 
                     final Optional<Pair<String, Long>> fieldNameAndValue = Optional.ofNullable(search
-                            .getFieldNameAndValue("file-name-source", nextLine.get()));
+                            .getFieldNameAndValue("file-name-source", lineContent));
 
                     if (fieldNameAndValue.isPresent()) {
                         final String correlationId = fieldNameAndValue.get().getLeft();
@@ -124,13 +125,13 @@ public class DataflowExtractor implements AutoCloseable {
                             startTime = currentTime;
                             ops.set(0);
                         }
-                        getDatData(ops, nextLine.get(), datData, extractorMap);
+                        getDatData(ops, lineContent, datData, extractorMap);
                         if (bos.isPresent()) {
-                            bos.get().write(nextLine.get().getBytes());
+                            bos.get().write(lineContent.getBytes());
                             bos.get().write('\n');
                         }
+                        lastCorrelationTime = currentTime;
                     }
-                    lastCorrelationTime = currentTime;
                 }
                 nextLine = Optional.ofNullable(reader.readLine());
             }
@@ -152,7 +153,8 @@ public class DataflowExtractor implements AutoCloseable {
                 lastCorrelationTime = startTime+1;
             }
             if (lastCorrelationTime < startTime) {
-                lastCorrelationTime = startTime+1000;
+                log.warn("Nudged endTime for:" + correlationId);
+                lastCorrelationTime = startTime+10;
             }
             storageUtil.copyToStorage(new FileInputStream(currentFile), region, tenant, String.format(CORR_FILE_FMT, modelPath,
                     startTime, lastCorrelationTime, correlationId), DAYS_RETENTION, startTime);

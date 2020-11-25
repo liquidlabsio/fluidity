@@ -2,11 +2,13 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS"
+ *   BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -16,7 +18,12 @@ package io.fluidity.services.dataflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fluidity.dataflow.*;
+import com.google.common.collect.ImmutableList;
+import io.fluidity.dataflow.ClientDataflowJsonConvertor;
+import io.fluidity.dataflow.ClientHistoJsonConvertor;
+import io.fluidity.dataflow.ClientLadderJsonConvertor;
+import io.fluidity.dataflow.FlowInfo;
+import io.fluidity.dataflow.FlowLogHelper;
 import io.fluidity.dataflow.histo.FlowStats;
 import io.fluidity.search.Search;
 import io.fluidity.search.agg.histo.TimeSeries;
@@ -37,10 +44,19 @@ import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.fluidity.dataflow.Model.*;
+import static io.fluidity.dataflow.Model.CORR_FLOW_PREFIX;
+import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.LADDER_HIST_PREFIX;
 
 /**
  * API to build, maintain, and access dataflow models
@@ -80,7 +96,7 @@ public class DataflowResource implements DataflowService {
      * @return
      */
     @Override
-    public String status(String tenant, String session, String modelName) {
+    public String status(final String tenant, final String session, final String modelName) {
         log.info("/status:{}", session);
         return dataflowBuilder.status(session, modelPrefix + modelName);
     }
@@ -95,19 +111,21 @@ public class DataflowResource implements DataflowService {
      * @return
      * @throws JsonProcessingException
      */
-    public static String rewriteCorrelationDataS(String tenant, String sessionId, FileMeta[] fileMetas, Search search, String apiUrl, String modelPath) throws JsonProcessingException {
-        String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
-        String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
-        String modelPathJson = URLEncoder.encode(modelPath, StandardCharsets.UTF_8);
+    public static String rewriteCorrelationDataS(final String tenant, final String sessionId, final FileMeta[] fileMetas,
+                                                 final Search search, final String apiUrl, final String modelPath) throws JsonProcessingException {
+        final String fileMetaString = new ObjectMapper().writeValueAsString(fileMetas);
+        final String fileMetaJsonString = URLEncoder.encode(fileMetaString, StandardCharsets.UTF_8);
+        final String modelPathJson = URLEncoder.encode(modelPath, StandardCharsets.UTF_8);
 
-        ResteasyClient client = new ResteasyClientBuilderImpl().build();
+        final ResteasyClient client = new ResteasyClientBuilderImpl().build();
         try {
-            ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
-            DataflowService proxy = target.proxy(DataflowService.class);
+            final ResteasyWebTarget target = client.target(UriBuilder.fromPath(apiUrl));
+            final DataflowService proxy = target.proxy(DataflowService.class);
             return proxy.rewriteCorrelationData(tenant, sessionId, fileMetaJsonString, modelPathJson, search);
         } catch (Exception ex) {
             ex.printStackTrace();
-            String failedMessage = "Failed to call onto REST API:" + ex.toString() + " URL:" + apiUrl + "Files:" + fileMetas[0];
+            final String failedMessage =
+                    "Failed to call onto REST API:" + ex.toString() + " URL:" + apiUrl + "Files:" + fileMetas[0];
             System.out.println(failedMessage);
             return failedMessage;
         } finally {
@@ -116,12 +134,12 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<Map<String, String>> modelDataList(String tenant, String session, String modelName) {
-        modelName = modelPrefix + modelName;
+    public List<Map<String, String>> modelDataList(final String tenant, final String session, final String modelNameParam) {
+        final String modelName = modelPrefix + modelNameParam;
 
         log.info("/model:{}", session);
 
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         try {
             return dataflowBuilder.getModelDataList(cloudRegion, tenant, session, modelName, storage);
         } finally {
@@ -130,13 +148,14 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public String submit(String tenant, Search search, String modelName, String serviceAddress) {
+    public String submit(final String tenant, final Search search, String modelNameParam, final String serviceAddress) {
 
-        String sessionId = search.uid;
-        modelName = modelPrefix + modelName;
+        final String sessionId = search.uid;
+        final String modelName = modelPrefix + modelNameParam;
         AtomicInteger rewritten = new AtomicInteger();
         log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
-        WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder, modelName) {
+        final WorkflowRunner runner = new WorkflowRunner(tenant, cloudRegion, storage, query, dataflowBuilder,
+                modelName) {
             @Override
             String rewriteCorrelationData(String tenant, String session, FileMeta[] fileMeta, Search search, String modelPath) {
                 try {
@@ -150,7 +169,7 @@ public class DataflowResource implements DataflowService {
                 }
             }
         };
-        String userSession = runner.run(search, sessionId);
+        final String userSession = runner.run(search, sessionId);
         log.info(FlowLogHelper.format(sessionId, "dataflow", "submit", "Starting:" + search));
 
         try {
@@ -162,16 +181,16 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public String rewriteCorrelationData(String tenant, String session, String fileMetas,
-                                         String modelPathEnc, Search search) {
+    public String rewriteCorrelationData(final String tenant, final String session, final String fileMetas,
+                                         final String modelPathEnc, final Search search) {
         log.info(FlowLogHelper.format(session, "workflow", "rewriteCorrelationData", "Start:" + fileMetas.length()));
 
         try {
             search.decodeJsonFields();
-            ObjectMapper objectMapper = new ObjectMapper();
-            String modelPath = URLDecoder.decode(modelPathEnc, StandardCharsets.UTF_8);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final String modelPath = URLDecoder.decode(modelPathEnc, StandardCharsets.UTF_8);
 
-            FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
+            final FileMeta[] files = objectMapper.readValue(URLDecoder.decode(fileMetas, StandardCharsets.UTF_8), FileMeta[].class);
             log.info("/file/{}", files[0].filename);
 
             return dataflowBuilder.extractCorrelationData(session, files, search, storage, cloudRegion, tenant, modelPath);
@@ -186,7 +205,7 @@ public class DataflowResource implements DataflowService {
     }
 
     @Override
-    public List<String> listModels(String tenant) {
+    public List<String> listModels(final String tenant) {
 
         Set<String> results = new HashSet<>();
         storage.listBucketAndProcess(cloudRegion, tenant, MODELS, (region, itemUrl, itemName, modified, size) -> {
@@ -329,6 +348,10 @@ public class DataflowResource implements DataflowService {
                 FlowInfo[] flow = convertor.fromJson(("[" + new String(bytes) + "]").getBytes(StandardCharsets.UTF_8));
                 flows.add(flow[0]);
             });
+            if (flows.isEmpty()) {
+                flows.add(new FlowInfo("empty", List.of("empty"),
+                        ImmutableList.of(new Long[] { 1L ,2L})));
+            }
             return new String(convertor.toClientFlowsList(flows));
         } catch (Throwable t) {
             log.error("Failed list list dataFlows:" + modelName, t);

@@ -2,11 +2,13 @@
  *
  *  Copyright (c) 2020. Liquidlabs Ltd <info@liquidlabs.com>
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   Unless required by applicable law or agreed to in writing, software  distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  *   See the License for the specific language governing permissions and  limitations under the License.
  *
@@ -39,38 +41,43 @@ public class SearchEventCollector implements EventCollector {
     private InputStream input;
     private OutputStream output;
 
-    public SearchEventCollector(HistoCollector histoCollector, InputStream input, OutputStream output) {
+    public SearchEventCollector(final HistoCollector histoCollector, final InputStream input,
+                                final OutputStream output) {
         this.histoCollector = histoCollector;
         this.input = input;
         this.output = output;
     }
 
     @Override
-    public Integer[] process(boolean isCompressed, Search search, long fileFromTime, long fileToTime, long fileLength, String timeFormat) throws IOException {
+    public Integer[] process(final boolean isCompressed, final Search search, final long fileFromTime,
+                             final long fileToTime, final long fileLength, final String timeFormat) throws IOException {
 
         int readEvents = 0;
         int totalEvents = 0;
 
-        DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
-        BufferedOutputStream bos = new BufferedOutputStream(output);
-        BufferedInputStream bis = new BufferedInputStream(input);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
+        final DateTimeExtractor dateTimeExtractor = new DateTimeExtractor(timeFormat);
+        final BufferedOutputStream bos = new BufferedOutputStream(output);
+        final BufferedInputStream bis = new BufferedInputStream(input);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(bis));
         long bytePosition = 0;
 
-        LinkedList<Integer> lengths = new LinkedList<>();
+        final LinkedList<Integer> lengths = new LinkedList<>();
 
         Optional<String> nextLine = Optional.ofNullable(reader.readLine());
-        if (nextLine.isPresent()) lengths.add(nextLine.get().length());
+        if (nextLine.isPresent()) {
+            lengths.add(nextLine.get().length());
+        }
         long guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, fileFromTime, fileToTime, fileLength, 0, lengths);
         long scanFilePos = 0;
 
-        long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine);
+        long currentTime = dateTimeExtractor.getTimeMaybe(fileFromTime, guessTimeInterval, nextLine.get());
         try {
 
             while (nextLine.isPresent()) {
 
                 if (currentTime > search.from && currentTime < search.to && search.matches(nextLine.get())) {
-                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(bytePosition).append(':').append(nextLine.get()).append('\n').toString().getBytes();
+                    byte[] bytes = new StringBuilder().append(currentTime).append(':').append(bytePosition).append(':')
+                            .append(nextLine.get()).append('\n').toString().getBytes();
                     bos.write(bytes);
                     histoCollector.add(currentTime, bytePosition, nextLine.get());
                     readEvents++;
@@ -86,11 +93,13 @@ public class SearchEventCollector implements EventCollector {
 
                 // recalibrate the time interval as more line lengths are known
                 if (nextLine.isPresent()) {
-                    lengths.add(nextLine.get().length());
+                    String line = nextLine.get();
+                    int length = nextLine.get().length();
+                    lengths.add(length);
                     guessTimeInterval = DateUtil.guessTimeInterval(isCompressed, currentTime, fileToTime, fileLength, scanFilePos, lengths);
-                    scanFilePos += nextLine.get().length() + 2;
+                    scanFilePos += length + 2;
 
-                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, nextLine);
+                    currentTime = dateTimeExtractor.getTimeMaybe(currentTime, guessTimeInterval, line);
                 }
                 totalEvents++;
             }

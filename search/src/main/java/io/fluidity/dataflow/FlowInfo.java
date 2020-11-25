@@ -19,7 +19,10 @@ package io.fluidity.dataflow;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FlowInfo {
     public static final int START_TIME_INDEX = 0;
@@ -31,6 +34,7 @@ public class FlowInfo {
     public List<String> flowFiles;
     public long durationMs;
     public List<Long[]> durations;
+    public List<String> times;
 
     public FlowInfo() {
     }
@@ -40,6 +44,8 @@ public class FlowInfo {
         this.durations = durations;
         this.durationMs = getEnd() - getStart();
         this.flowFiles = flowFiles;
+        this.times =
+                durations.stream().flatMap(ddd -> Arrays.stream(ddd).map(dd -> new Date(dd).toString())).collect(Collectors.toList());
     }
 
     @JsonIgnore
@@ -100,7 +106,7 @@ public class FlowInfo {
      * @return
      */
     public List<Object> durations() {
-        List list = new ArrayList();
+        final List list = new ArrayList();
         list.add(flowId);
          durations.stream().forEach(duration -> list.add(duration[1] - duration[0]));
         return list;
