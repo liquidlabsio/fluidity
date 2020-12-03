@@ -152,7 +152,8 @@ class DataflowExtractorTest {
         String jsonDatData = datFile.iterator().next().getValue();
 
         assertFilenameTimesAreCorrect(collected.keySet().iterator().next());
-        assertEquals(6, jsonDatData.split(":").length, "JSON split by : didnt provide 5 segments json was:" + jsonDatData);
+        assertEquals(28, jsonDatData.split(", ").length,
+                "JSON split by : didnt provide 5 segments json was:" + jsonDatData);
     }
 
     /**

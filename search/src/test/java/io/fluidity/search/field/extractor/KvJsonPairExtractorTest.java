@@ -17,6 +17,14 @@ class KvJsonPairExtractorTest {
         assertEquals("wikidatawiki", pair.getLeft());
     }
     @Test
+    void testCompositeStringExtraction() {
+        String data = "\"timestamp\":1587210348,\"service\":\"security\",\"operation\":\"login\",\"minor\":false,";
+        KvJsonPairExtractor extractor = new KvJsonPairExtractor("service.operation");
+        Pair<String, Long> pair = extractor.getKeyAndValue("pair", data);
+        assertEquals("security.login", pair.getLeft());
+    }
+
+    @Test
     void testStringExtraction() {
         String data = "\"timestamp\":1587210348,\"user\":\"99kerob\",\"bot\":false,\"minor\":false,";
         KvJsonPairExtractor extractor = new KvJsonPairExtractor("user");
