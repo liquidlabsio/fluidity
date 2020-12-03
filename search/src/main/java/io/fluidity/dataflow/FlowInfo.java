@@ -17,12 +17,17 @@
 package io.fluidity.dataflow;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FlowInfo {
     public static final int START_TIME_INDEX = 0;
@@ -46,6 +51,43 @@ public class FlowInfo {
         this.flowFiles = flowFiles;
         this.times =
                 durations.stream().flatMap(ddd -> Arrays.stream(ddd).map(dd -> new Date(dd).toString())).collect(Collectors.toList());
+    }
+
+    public static String datsToJson(ObjectMapper mapper, List<Map<String, Object>> dats) throws JsonProcessingException {
+        if (dats.size() > 0) {
+            List<String> timeSortedOperations = sortByTime((String) dats.get(0).get("service.operation"));
+
+            List<Object> columns = List.of("Operation", "start", "end");
+            List<List> rows = new ArrayList<>();
+            rows.add(columns);
+
+            String firstValue = timeSortedOperations.iterator().next();
+            long startTime = Long.valueOf(firstValue.split(":")[1]);
+
+            // generate a row for each operation:  ['txn-1000', 1000, 400, 200,1000, 400],
+            timeSortedOperations.forEach(item -> {
+                String[] operationTime = item.split(":");
+                Long from = Long.valueOf(operationTime[1]) - startTime;
+                Long to = from + 100;
+                rows.add(List.of(operationTime[0], from, to));
+            });
+
+            return mapper.writeValueAsString(rows);
+        }
+        return "{}";
+    }
+
+    private static List<String> sortByTime(String operationsListAll) {
+
+        String[] operationsList = operationsListAll.split(",");
+        return Arrays.stream(operationsList)
+                .sorted((c1, c2) -> {
+                    // values come with "doingStuff:timestamp_millis"
+                    Long v1 = Long.valueOf(c1.trim().split(":")[1]);
+                    Long v2 = Long.valueOf(c2.trim().split(":")[1]);
+                    return v1.compareTo(v2);
+                })
+                .collect(Collectors.toList());
     }
 
     @JsonIgnore

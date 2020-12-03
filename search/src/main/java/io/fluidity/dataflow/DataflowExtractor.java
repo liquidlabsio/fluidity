@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -80,7 +81,9 @@ public class DataflowExtractor implements AutoCloseable {
 
         final LinkedList<Integer> lengths = new LinkedList<>();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(input.inputStream)));
+        final BufferedReader reader =
+                new BufferedReader(new InputStreamReader(new BufferedInputStream(input.inputStream),
+                        StandardCharsets.UTF_8));
         Optional<String> nextLine = Optional.ofNullable(reader.readLine());
 
         if (nextLine.isPresent()) {
@@ -121,11 +124,11 @@ public class DataflowExtractor implements AutoCloseable {
                             currentCorrelation = correlationId;
                             currentFile = File.createTempFile(correlationId, ".log");
                             bos = Optional.of(new BufferedOutputStream(new FileOutputStream(currentFile)));
-                            bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes());
+                            bos.get().write(("source:" + input.name + " offset:" + scanFilePos + "\n").getBytes(StandardCharsets.UTF_8));
                             startTime = currentTime;
                             ops.set(0);
                         }
-                        getDatData(ops, lineContent, datData, extractorMap);
+                        getDatData(ops, nextLine.get(), datData, extractorMap, currentTime);
                         if (bos.isPresent()) {
                             bos.get().write(lineContent.getBytes());
                             bos.get().write('\n');
@@ -175,16 +178,14 @@ public class DataflowExtractor implements AutoCloseable {
             json = e.toString();
 
         }
-        return new ByteArrayInputStream(json.getBytes());
+        return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
     }
 
     private Map<String, KvJsonPairExtractor> getExtractorMap() {
         // look for json information about which stage of a trace or the name of the service being processed
         final HashMap<String, KvJsonPairExtractor> extractorMap = new HashMap<>();
-        // loginService
-        addToMap(extractorMap, new KvJsonPairExtractor("service"));
-        // doStuff
-        addToMap(extractorMap, new KvJsonPairExtractor("operation"));
+        // loginService.dostuff
+        addToMap(extractorMap, new KvJsonPairExtractor("service.operation"));
         // REST, SQL, Lambda, Micro-thingy
         addToMap(extractorMap, new KvJsonPairExtractor("type"));
         // anthing else that is useful
@@ -201,7 +202,7 @@ public class DataflowExtractor implements AutoCloseable {
     }
 
     private void getDatData(final AtomicInteger ops, final String nextLine, final Map<String, String> datData,
-                            final Map<String, KvJsonPairExtractor> extractorMap) {
+                            final Map<String, KvJsonPairExtractor> extractorMap, final long timestamp) {
         extractorMap.values().stream().forEach(extractor -> {
             try {
                 final Optional<Pair<String, Long>> extracted = Optional.ofNullable(extractor.getKeyAndValue("none", nextLine));
@@ -212,8 +213,9 @@ public class DataflowExtractor implements AutoCloseable {
                     } else {
                         currentValue = currentValue + ", ";
                     }
-                    datData.put(extractor.getToken(), currentValue + extracted.get().getLeft());
-                    if (extractor.getToken().equals("operation")) {
+                    datData.put(extractor.getToken(),
+                            currentValue + extracted.get().getLeft() + ":" + timestamp);
+                    if (extractor.getToken().contains("operation")) {
                         ops.incrementAndGet();
                     }
                 }

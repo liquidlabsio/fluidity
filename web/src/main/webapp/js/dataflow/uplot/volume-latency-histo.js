@@ -227,7 +227,7 @@ class VolumeLatencyHisto {
         const tzDate = ts => uPlot.tzDate(new Date(ts * 1e3), "Etc/UTC");
         const opts = {
             width: 1800,
-            height: 500,
+            height: 400,
             //title: "Dataflow Latency and Volume",
             tzDate,
             plugins: [

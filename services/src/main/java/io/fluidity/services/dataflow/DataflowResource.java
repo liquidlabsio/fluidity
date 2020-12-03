@@ -54,8 +54,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static io.fluidity.dataflow.Model.CORR_DAT_PREFIX;
 import static io.fluidity.dataflow.Model.CORR_FLOW_PREFIX;
 import static io.fluidity.dataflow.Model.CORR_HIST_PREFIX;
+import static io.fluidity.dataflow.Model.CORR_PREFIX;
 import static io.fluidity.dataflow.Model.LADDER_HIST_PREFIX;
 
 /**
@@ -322,11 +324,12 @@ public class DataflowResource implements DataflowService {
         return results.toString();
     }
 
-    public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
+    public String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") final String modelNameParam,
+                            @QueryParam("timeX1") Long timeX1, @QueryParam("timeX2") Long timeX2, @QueryParam("valueY") Long valueY){
 
-        log.info("dataflows:" + modelName + " time:" + new Date(timeX1*1000) + " - " + new Date(timeX2*1000));
+        log.info("dataflows:" + modelNameParam + " time:" + new Date(timeX1*1000) + " - " + new Date(timeX2*1000));
 
-        modelName = modelPrefix + modelName;
+        String modelName = modelPrefix + modelNameParam;
 
         // Todo = expose granularity control to the client - for now pull in the whole time period
         ClientDataflowJsonConvertor convertor = new ClientDataflowJsonConvertor(timeX1*1000, timeX2*1000, valueY,
@@ -345,16 +348,73 @@ public class DataflowResource implements DataflowService {
             List<FlowInfo> flows = new ArrayList<>();
             matchingFlowsUrls.forEach(flowUrl -> {
                 byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
-                FlowInfo[] flow = convertor.fromJson(("[" + new String(bytes) + "]").getBytes(StandardCharsets.UTF_8));
+                FlowInfo[] flow =
+                        convertor.fromJson(("[" + new String(bytes, StandardCharsets.UTF_8) + "]").getBytes(StandardCharsets.UTF_8));
                 flows.add(flow[0]);
             });
             if (flows.isEmpty()) {
                 flows.add(new FlowInfo("empty", List.of("empty"),
                         ImmutableList.of(new Long[] { 1L ,2L})));
             }
-            return new String(convertor.toClientFlowsList(flows));
+            return new String(convertor.toClientFlowsList(flows), StandardCharsets.UTF_8);
         } catch (Throwable t) {
             log.error("Failed list list dataFlows:" + modelName, t);
+            return t.toString();
+        }
+    }
+    @Override
+    public String dataflow(final String tenant, final String modelNameParam, final String correlation) {
+        log.info("dataflow:" + modelNameParam + " dataflow:" + correlation);
+
+        final String modelName = modelPrefix + modelNameParam;
+
+        try {
+            List<String> matchingFlowsUrls = new ArrayList<>();
+            storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
+                if (itemUrl.contains(CORR_DAT_PREFIX) && itemUrl.contains(correlation)) {
+                    matchingFlowsUrls.add(itemUrl);
+                }
+            });
+            List<Map<String, Object>> dats = new ArrayList<>();
+            ObjectMapper mapper = new ObjectMapper();
+            matchingFlowsUrls.forEach(flowUrl -> {
+                byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
+                try {
+                    dats.add(mapper.readValue(bytes, Map.class));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return FlowInfo.datsToJson(mapper, dats);
+        } catch (Throwable t) {
+            log.error("Failed list correlation dats:" + modelName, t);
+            return t.toString();
+        }
+    }
+
+    @Override
+    public String correlation(final String tenant, final String modelNameParam, final String correlation) {
+        log.info("dataflow:" + modelNameParam + " dataflow:" + correlation);
+
+        final String modelName = modelPrefix + modelNameParam;
+
+        try {
+            List<String> matchingFlowsUrls = new ArrayList<>();
+            storage.listBucketAndProcess(cloudRegion, tenant, modelName, (region, itemUrl, itemName, modified, size) -> {
+                if (itemUrl.contains(CORR_PREFIX) && itemUrl.contains(correlation)) {
+                        matchingFlowsUrls.add(itemUrl);
+                }
+            });
+            Map<String, String> dats = new HashMap<>();
+            ObjectMapper mapper = new ObjectMapper();
+            matchingFlowsUrls.forEach(flowUrl -> {
+                byte[] bytes = storage.get(cloudRegion, flowUrl, 0);
+                    dats.put("value", new String(bytes));
+            });
+
+            return mapper.writeValueAsString(dats);
+        } catch (Throwable t) {
+            log.error("Failed list correlation dats:" + modelName, t);
             return t.toString();
         }
     }

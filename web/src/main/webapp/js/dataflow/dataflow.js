@@ -28,8 +28,10 @@ class Dataflow {
     }
     bind() {
         this.loadDataflowsForTimeX();
+        this.loadDataflowsForCorrelation();
         this.loadHeatmap();
         this.loadHistogram();
+        this.loadCorrelationView();
     }
     loadHistogramData(modelName) {
         let thisHisto = this.histo;
@@ -78,8 +80,6 @@ class Dataflow {
             let self = this;
             this.heatmap.setup(aggData, document.getElementById('dataflowHeatmap'), function(index, timeX1, timeX2, valueY) {
                 console.log("glue it");
-                //dataflowSelf.dataflowsForTime.click(dataflowSelf.dataflowsForTime, index, timeX1, timeX2, valueY);
-               // dataflowSelf.rest.dataflowsForTime(dataflowSelf.dataflowsForTime, dataflowSelf.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, dataflowSelf.dataflowsForTime.setData.bind( { self: dataflowSelf.dataflowsForTime } ));
                 self.rest.dataflowsForTime(self.dataflowsForTime, self.uuid, Fluidity.Dataflow.vue.modelNameInput.name, timeX1, timeX2, valueY, self.dataflowsForTime.setData.bind( { self: self.dataflowsForTime } ));
             }, 100);
 
@@ -92,6 +92,31 @@ class Dataflow {
     **/
     loadDataflowsForTimeX() {
         this.dataflowsForTime = new DataflowsForTime();
-        this.dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest);
+        let self = this;
+        this.dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest, function(correlationName) {
+            // load dataflows for this correlation
+            console.log("doing stuff:" + correlationName)
+            self.rest.dataflowsForCorrelation(self.dataflowsForCorrelation, self.uuid.toString(), Fluidity.Dataflow.vue.modelNameInput.name, correlationName, self.dataflowsForCorrelation.setData.bind( { self: self.dataflowsForCorrelation } ));
+            self.rest.loadCorrelation(self, self.uuid.toString(), Fluidity.Dataflow.vue.modelNameInput.name, correlationName, self.setCorrelationData);
+        });
+//        this.dataflowsForTime.load(document.getElementById('dataflowsForTime'), this.rest, function(correlationName) {
+//            // load dataflows for this correlation
+//            console.log("doing stuff:" + correlationName)
+//
+//        });
+    }
+
+    loadDataflowsForCorrelation() {
+        this.dataflowsForCorrelation = new DataflowsForCorrelation();
+        this.dataflowsForCorrelation.load(document.getElementById('dataflowsForCorrelation'), this.rest);
+    }
+    loadCorrelationView() {
+            this.searchEditor = ace.edit("correlationResultsEditor");
+            this.searchEditor.setTheme("ace/theme/monokai");
+            this.searchEditor.session.setMode("ace/mode/json");
+            this.searchEditor.session.setUseWrapMode(true);
+    }
+    setCorrelationData(self, data) {
+        self.searchEditor.setValue(data);
     }
 }

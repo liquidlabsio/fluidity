@@ -1,4 +1,4 @@
-let flowData = [
+let flowData2 = [
                                  ['Correlation', 'Register', 'Process', 'Load','Complete', 'Acknowledge'],
                                  ['txn-1000', 1000, 400, 200,1000, 400],
                                  ['txn-1222', 1170, 460, 250, 1000, 400],
@@ -18,25 +18,24 @@ let flowData = [
                                  ['txn-001gesr00', 1030, 540, 350, 1000, 400]
                                ];
 
-class DataflowsForTime {
+class DataflowsForCorrelation {
 
-    load(element, rest, callback) {
+    load(element, rest) {
         this.element = element;
         this.rest = rest;
-        this.callback = callback;
         this.loadGChart();
     }
     loadGChart() {
         google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(this.loaded1.bind({ self: this }));
+        google.charts.setOnLoadCallback(this.loaded2.bind({ self: this }));
     }
-    loaded1() {
+    loaded2() {
         var options = {
           isStacked: true,
           bars: 'horizontal', // Required for Material Bar Charts.
           width:'1200',
           height:'400',
-           colors: [ '#4285f4','#689df6','#8eb6f8','#b3cefb','#d9e7fd', '#1b9e77', '#d95f02', '#7570b3'],
+           colors: [ '#FFF','#689df6','#8eb6f8','#b3cefb','#d9e7fd', '#1b9e77', '#d95f02', '#7570b3'],
 
         };
 
@@ -45,22 +44,19 @@ class DataflowsForTime {
 
         self.options = options;
         self.chart = new google.visualization.BarChart(self.element);
-        google.visualization.events.addListener(self.chart, 'click', self.drilldown.bind({self:self}));
+        google.visualization.events.addListener(self.chart, 'click', function() {
 
-        self.setData(self, flowData)
-    }
-    drilldown() {
-        self = this.self;
-        if (self.chart.getSelection().length > 0) {
-          console.log("Item Selected:" + self.chart.getSelection()[0].row + " col:" + self.chart.getSelection()[0].column)
-          console.log("Getting: UID:" + self.dataTable.getFormattedValue(self.chart.getSelection()[0].row,0))
-          self.callback(self.dataTable.getFormattedValue(self.chart.getSelection()[0].row,0));
-        }
+         if (self.chart.getSelection().length > 0) {
+              console.log("Item Selected:" + self.chart.getSelection()[0].row + " col:" + self.chart.getSelection()[0].column)
+              console.log("Getting: UID:" + self.dataTable.getFormattedValue(self.chart.getSelection()[0].row,0))
+          }
+        });
+
+        self.setData(self, flowData2)
     }
 
     setData(self, data) {
         self.dataTable = google.visualization.arrayToDataTable(data);
         self.chart.draw(self.dataTable, self.options);
     }
-
 }

@@ -21,10 +21,24 @@ public class KvJsonPairExtractor implements Extractor {
 
     @Override
     public Pair<String, Long> getKeyAndValue(String sourceName, String nextLine) {
-        int foundIndex = nextLine.indexOf("\"" + token + "\"");
+        if (token.contains(".")) {
+            String[] split = token.split("\\.");
+            Pair<String, Long> value1 = getValue(split[0], nextLine);
+            Pair<String, Long> value2 = getValue(split[1], nextLine);
+            return Pair.create(value1.getLeft() + "." + value2.getLeft(), 1L);
+        } else {
+            String key = token;
+            Pair<String, Long> result = getValue(key, nextLine);
+            return result;
+        }
+    }
+
+    private Pair<String, Long> getValue(String key, String nextLine) {
+
+        int foundIndex = nextLine.indexOf("\"" + key + "\"");
         int delimiter = nextLine.indexOf(":", foundIndex);
         if (foundIndex >= 0 && delimiter > 0) {
-            int nextFieldDelimiter  = nextLine.indexOf(",", delimiter);
+            int nextFieldDelimiter = nextLine.indexOf(",", delimiter);
             if (nextFieldDelimiter == -1) {
                 nextFieldDelimiter = nextLine.indexOf("\"", delimiter);
             }
@@ -36,25 +50,25 @@ public class KvJsonPairExtractor implements Extractor {
             if (nextFieldDelimiter < nextStringMarker) {
                 // numeric mode - token:value, OR  token: value , (missing quotations)
                 // numeric mode uses token:value pairs.
-                String valueString = nextLine.substring(delimiter+1, nextFieldDelimiter);
+                String valueString = nextLine.substring(delimiter + 1, nextFieldDelimiter);
                 String cleanValue = valueString.trim();
                 if (cleanValue.contains(".")) {
-                    return Pair.create(token, Double.valueOf(cleanValue).longValue());
+                    return Pair.create(key, Double.valueOf(cleanValue).longValue());
                 } else {
-                    return Pair.create(token, Long.valueOf(cleanValue));
+                    return Pair.create(key, Long.valueOf(cleanValue));
                 }
 
             } else {
                 // string mode - is different to numeric mode - the value is used in the KV - i.e. count how many users
-                int toIndex = nextLine.indexOf("\"", nextStringMarker+1);
-                String value = nextLine.substring(nextStringMarker+1, toIndex);
+                int toIndex = nextLine.indexOf("\"", nextStringMarker + 1);
+                String value = nextLine.substring(nextStringMarker + 1, toIndex);
                 //return Pair.create(token, value);
                 // TODO: not convinced
                 return Pair.create(value, 1l);
             }
-
-        } else {
-            return null;
         }
+        return null;
+
     }
 }
+

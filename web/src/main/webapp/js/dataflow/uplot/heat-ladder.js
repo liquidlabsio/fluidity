@@ -205,7 +205,7 @@ class HeatLadder {
 
         const opts = {
             width: 1800,
-            height: 600,
+            height: 400,
             //title: "Latency Heatmap Aggregated 10ms (~20k)",
             plugins: [
                 heatmapPlugin2(bucketIncr),

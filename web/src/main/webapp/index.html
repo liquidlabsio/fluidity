@@ -502,13 +502,19 @@
                     </b-input-group>
 
                     <h4 class="title">Latency and Volume</h4>
-                    <div id="dataflowHisto" style="height:500px; width:1200px"></div>
+                    <div id="dataflowHisto" style="height:400px; width:1200px"></div>
                     <h4 class="title">Latency Heatmap Aggregated @1ms</h4>
-                    <div id="dataflowHeatmap" style="height:600px; width:1200px;"></div>
+                    <div id="dataflowHeatmap" style="height:400px; width:1200px;"></div>
                     <h4 class="title" style="padding-top:40px;">Dataflows for Time 'X'</h4>
-                    <div id="dataflowsForTime" style="">
+                    <div id="dataflowsForTime" style="height:400px; width:1200px;">
                         <! -- See trial/gchart/stacked-bar -->
                     </div>
+                    <h4 class="title" style="padding-top:40px;">Dataflows for Correlation</h4>
+                    <div id="dataflowsForCorrelation" style="height:400px; width:1200px;">
+                    </div>
+                    <h4 class="title" style="padding-top:40px;">Correlation Data</h4>
+                    <div class="normalSizeEditor" id="correlationResultsEditor" style="height:400px; width:1200px;"></div>
+
                 </div>
             </div>
             <div class="mainPanelTab" id="importTab" style="display: none;">
@@ -868,15 +874,16 @@
 <script src="js/dataflow/uplot/volume-latency-histo.js"></script>
 <script src="js/dataflow/uplot/heat-ladder.js"></script>
 <script src="js/dataflow/uplot/dataflows-for-time.js"></script>
+<script src="js/dataflow/uplot/dataflows-for-corr.js"></script>
 
-<script src="js/dataflow/backend.js"></script>
+<script src="js/dataflow/rest.js"></script>
 <script src="js/dataflow/dataflow.js"></script>
 <script src="js/dataflow/vue.js"></script>
 
 <!-- Search UI -->
 <script src="js/search/search-apexcharts-vue.js"></script>
 <script src="js/search/vue.js"></script>
-<script src="js/search/search-hoverlink.js"></script>
+<script src="js/search/search-hoverlink. js"></script>
 <script src="js/search/search.js"></script>
 <script src="js/search/backend.js"></script>
 

@@ -86,4 +86,13 @@ public interface DataflowService {
     @GET
     String dataflows(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName, @QueryParam("timeX1") Long timeX1,  @QueryParam("timeX2") Long timeX2,  @QueryParam("valueY") Long valueY);
 
+    @Path("/client/dataflow")
+    @GET
+    String dataflow(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName,
+                    @QueryParam("correlation") String correlation);
+
+    @Path("/client/correlation")
+    @GET
+    String correlation(@QueryParam("tenant") String tenant, @QueryParam("model") String modelName,
+                    @QueryParam("correlation") String correlation);
 }
