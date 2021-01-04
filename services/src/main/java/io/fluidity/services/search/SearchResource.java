@@ -36,10 +36,7 @@ import java.util.List;
  *     searchFile(fileUrl, search)
  *     getFinalResult(searchId, searchedFiles)
  */
-@Path("/search")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-public class SearchResource {
+public class SearchResource implements SearchResourceI {
 
     private final Logger log = LoggerFactory.getLogger(SearchResource.class);
 
@@ -57,15 +54,12 @@ public class SearchResource {
     @ConfigProperty(name = "fluidity.event.limit", defaultValue = "10000")
     int eventLimit;
 
-    @GET
-    @Path("/id")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Override
     public String id() {
         return SearchResource.class.getCanonicalName();
     }
 
-    @POST
-    @Path("/submit/{tenant}")
+    @Override
     public FileMeta[] submit(@PathParam("tenant") String tenant, Search search) {
         try {
             log.info(FlowLogHelper.format(search.uid, "search", "submit", "Start:" + search.expression));
@@ -75,9 +69,7 @@ public class SearchResource {
         }
     }
 
-    @POST
-    @Path("/files/{tenant}/{files}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Override
     public List<Integer[]> file(@PathParam("tenant") String tenant, @PathParam("files") String fileMetas, @MultipartForm Search search) {
         try {
             search.decodeJsonFields();
@@ -92,9 +84,7 @@ public class SearchResource {
         }
     }
 
-    @POST
-    @Path("/finalizeEvents/{tenant}/{fromTime}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Override
     public String[] finaliseEvents(@PathParam("tenant") String tenant, @MultipartForm Search search, @PathParam("fromTime") long from) {
 
         long start = System.currentTimeMillis();
@@ -113,9 +103,7 @@ public class SearchResource {
         }
     }
 
-    @POST
-    @Path("/finalizeHisto/{tenant}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Override
     public String finaliseHisto(@PathParam("tenant") String tenant, @MultipartForm Search search) {
 
         long start = System.currentTimeMillis();

@@ -68,17 +68,37 @@ functionality that most people need.
 
 # Building
 
-#### Build and run from source using quarkus-dev mode
+### Build and run from source using quarkus-dev mode from Intellij
 
     $ clone
     $ cd services
     $ ./mvnw compile quarkus:dev
     Open index.html in a browser from Intellij (backend.js defaults to http://localhost:8080 where quarkus is running the REST endpoint)
 
+## SERVER mode 
+Is for standalone, non-cloud, use - usefule for local machine development activities. 
+It leverages RocksDB for indexing file data, it also uses the local file system to copy transient search artifacts
 
-#### Server Mode 
+### Execute JAR file in SERVER Mode 
 
-> build and run the GraalVM executable.
+1. Build all modules
+> mvn clean package -DskipTests=true
+2. Run the services standalone jar in SERVER mode (it pulls in the web artifacts during creation)
+> cd ./services
+> java  -Dmode=SERVER -jar target/services-0.1-SNAPSHOT-runner.jar
+
+### Excute SERVER MODE with the docker image
+1. Login docker login registry-1.docker.io -u USERNAME -p PASSWORD
+2. In ./services
+3. >  mvn package -DskipTests=true  -Dquarkus.container-image.build=true -Dquarkus.container-image.push=false
+
+>   mvn package -DskipTests=true  -Dquarkus.container-image.build=true -Dquarkus.container-image.push=false -Dquarkus.jib.ports=8080 -Dquarkus.jib.jvm-arguments=-Dmode=SERVER
+
+
+
+3. Point your browser to  http://0.0.0.0:8080
+4. Import data specifying the ResourceIdentifier as the directory path
+
 
 #### Cloud - AWS Deployment
 
